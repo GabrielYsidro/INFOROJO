@@ -18,6 +18,8 @@ const MAPPING = {
   'paperplane.fill': 'send',
   'chevron.left.forwardslash.chevron.right': 'code',
   'chevron.right': 'chevron-right',
+  'person.fill': 'account-circle', // usuario
+  'lock.fill': 'login',            // login con flecha
 } as IconMapping;
 
 /**
