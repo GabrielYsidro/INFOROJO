@@ -18,6 +18,19 @@ const MAPPING = {
   'paperplane.fill': 'send',
   'chevron.left.forwardslash.chevron.right': 'code',
   'chevron.right': 'chevron-right',
+  'bell.fill': 'notifications',
+  'location.fill': 'place',
+  'checkmark.circle.fill': 'check-circle',
+  'clock.fill': 'schedule',
+  'xmark.circle.fill': 'cancel',
+  'info.circle.fill': 'info',
+  'magnifyingglass': 'search',
+  'building.2.fill': 'store',
+  'cross.fill': 'local-hospital',
+  'graduationcap.fill': 'school',
+  'building.fill': 'business',
+  'arrow.up.right': 'directions',
+  'line.3.horizontal.decrease': 'filter-list',
 } as IconMapping;
 
 /**
