@@ -31,6 +31,8 @@ const MAPPING = {
   'building.fill': 'business',
   'arrow.up.right': 'directions',
   'line.3.horizontal.decrease': 'filter-list',
+  'person.fill': 'account-circle', 
+  'lock.fill': 'login'        
 } as IconMapping;
 
 /**
