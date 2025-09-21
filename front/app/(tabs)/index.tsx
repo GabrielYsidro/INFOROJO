@@ -23,11 +23,12 @@ export default function HomeScreen() {
         <HelloWave />
       </ThemedView>
       
+      {/* 
       <ThemedView style={styles.stepContainer}>
         <ThemedText type="subtitle">Historial de Viajes</ThemedText>
         <HistorialViajes />
       </ThemedView>
-      
+       */}
       <ThemedView style={styles.stepContainer}>
         <ThemedText type="subtitle">Step 1: Try it</ThemedText>
         <ThemedText>
