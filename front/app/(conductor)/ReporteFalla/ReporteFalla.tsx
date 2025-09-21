@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { Ionicons } from '@expo/vector-icons';
-import styles from './StylesReporteFalla';
+import styles from '../../(conductor)/ReporteFalla/StylesReporteFalla';
 
 export default function ReporteFalla({ navigation }: any) {
   const [motivo, setMotivo] = useState('');
