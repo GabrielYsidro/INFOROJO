@@ -8,7 +8,6 @@ export default function ReporteFalla({ navigation }: any) {
   const [motivo, setMotivo] = useState('');
   const [paradero, setParadero] = useState('auto'); 
 
-  // Color dinámico para el Picker
   const pickerTextColor = paradero === 'auto' ? '#A0A0A0' : '#222';
 
   return (
@@ -29,7 +28,7 @@ export default function ReporteFalla({ navigation }: any) {
           <Picker
             selectedValue={paradero}
             onValueChange={setParadero}
-            style={[styles.picker, { color: pickerTextColor }]}  // Cambia el color dinámicamente
+            style={[styles.picker, { color: pickerTextColor }]}  
             dropdownIconColor="#A0A0A0"
           >
             <Picker.Item label="Calcular automáticamente" value="auto" color="#A0A0A0" />
