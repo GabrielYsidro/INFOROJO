@@ -1,12 +1,12 @@
 import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { router } from 'expo-router';
+import { Button, Platform, StyleSheet } from 'react-native';
 
 
 import { HelloWave } from '@/components/HelloWave';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-import HistorialViajes from '../(cliente)/HistorialViajes/HistorialViajes';
 
 export default function HomeScreen() {
   return (
@@ -60,6 +60,10 @@ export default function HomeScreen() {
           <ThemedText type="defaultSemiBold">app-example</ThemedText>.
         </ThemedText>
       </ThemedView>
+      <Button title='Show Modal' onPress={ () => {router.push({
+  pathname: '/bus-info',
+  params: { title: 'Bus', stop: 'Paradero B', capacity: 11, max: 20 },
+})}}/>
     </ParallaxScrollView>
   );
 }
