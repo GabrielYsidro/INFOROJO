@@ -1,14 +1,16 @@
 import { Image } from 'expo-image';
-import { router } from 'expo-router';
-import { Button, Platform, StyleSheet } from 'react-native';
+import { Button, Modal, Platform, StyleSheet, View } from 'react-native';
 
 
 import { HelloWave } from '@/components/HelloWave';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import { useState } from 'react';
+import ModalBusInfo from '../(cliente)/Modals/ModalBusInfo';
 
 export default function HomeScreen() {
+  const [open, setOpen] = useState(false);
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
@@ -60,10 +62,18 @@ export default function HomeScreen() {
           <ThemedText type="defaultSemiBold">app-example</ThemedText>.
         </ThemedText>
       </ThemedView>
-      <Button title='Show Modal' onPress={ () => {router.push({
-  pathname: '/bus-info',
-  params: { title: 'Bus', stop: 'Paradero B', capacity: 11, max: 20 },
-})}}/>
+      <Button title='Show Modal' onPress={ () => setOpen(true)}/>
+      <Modal
+        visible={open}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setOpen(false)}
+      >
+        <View style={{ flex:1, backgroundColor:'rgba(0,0,0,0.35)', justifyContent:'center', alignItems:'center', padding:20 }}>
+          <ModalBusInfo onClose={() => setOpen(false)} />
+        </View>
+
+      </Modal>
     </ParallaxScrollView>
   );
 }
