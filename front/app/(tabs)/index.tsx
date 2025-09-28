@@ -1,5 +1,5 @@
 import { Image } from 'expo-image';
-import { Button, Modal, Platform, StyleSheet, View } from 'react-native';
+import { Button, Platform, StyleSheet } from 'react-native';
 
 
 import { HelloWave } from '@/components/HelloWave';
@@ -7,6 +7,7 @@ import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { useState } from 'react';
+import AppModal from '../(cliente)/Modals/AppModal';
 import ModalBusInfo from '../(cliente)/Modals/ModalBusInfo';
 
 export default function HomeScreen() {
@@ -63,17 +64,9 @@ export default function HomeScreen() {
         </ThemedText>
       </ThemedView>
       <Button title='Show Modal' onPress={ () => setOpen(true)}/>
-      <Modal
-        visible={open}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setOpen(false)}
-      >
-        <View style={{ flex:1, backgroundColor:'rgba(0,0,0,0.35)', justifyContent:'center', alignItems:'center', padding:20 }}>
-          <ModalBusInfo onClose={() => setOpen(false)} />
-        </View>
-
-      </Modal>
+      <AppModal visible={open} onClose={() => setOpen(false)}>
+        <ModalBusInfo onClose={() => setOpen(false)} />
+</AppModal>
     </ParallaxScrollView>
   );
 }
