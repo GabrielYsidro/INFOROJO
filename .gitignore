@@ -1,3 +1,6 @@
 /front/node_modules
 /back/myVenv
 /back/myVenvLinux
+/back/.env
+__pycache__/
+*.py[cod]
