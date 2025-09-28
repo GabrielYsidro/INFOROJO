@@ -1,7 +1,7 @@
-// app/(genericas)/login.tsx
 import { useRouter } from "expo-router";
-import { View, Text, TextInput, Button, StyleSheet } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
 import { useState } from "react";
+import styles from "./StylesLogin";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -9,18 +9,18 @@ export default function LoginScreen() {
   const [password, setPassword] = useState("");
 
   const handleLogin = () => {
-    // Login "fake": no valida nada
-    // Reemplaza la navegación para que no se pueda volver atrás
     router.replace("/(tabs)/" as any);
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Iniciar sesión</Text>
+      <Text style={styles.header}>Info Rojo</Text>
+      <Text style={styles.subtitle}>Ingresa a tu cuenta</Text>
 
       <TextInput
         style={styles.input}
-        placeholder="Usuario"
+        placeholder="example@gmail.com"
+        placeholderTextColor="#fff"
         value={username}
         onChangeText={setUsername}
       />
@@ -28,33 +28,22 @@ export default function LoginScreen() {
       <TextInput
         style={styles.input}
         placeholder="Contraseña"
+        placeholderTextColor="#fff"
         secureTextEntry
         value={password}
         onChangeText={setPassword}
       />
 
-      <Button title="Entrar" onPress={handleLogin} />
+      <TouchableOpacity style={styles.button} onPress={handleLogin}>
+        <Text style={styles.buttonText}>Ingresar</Text>
+      </TouchableOpacity>
+
+      <Text style={styles.registerText}>
+        Si no tienes una cuenta entonces{" "}
+        <Text style={styles.registerLink}>
+          Regístrate aquí.
+        </Text>
+      </Text>
     </View>
   );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    padding: 20,
-  },
-  title: {
-    fontSize: 24,
-    marginBottom: 20,
-    textAlign: "center",
-    fontWeight: "600",
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    padding: 10,
-    marginBottom: 12,
-  },
-});
+};
