@@ -23,6 +23,6 @@ Back:
 1. source <nombre de la venv>/bin/activate (Linux y Mac)
    <nombre de la venv>\Scripts\Activate.ps1 (Windows)
 
-1. pip install -r requirements (en la raiz del proyecto)
+1. pip install -r requirements.txt (en la raiz del proyecto)
 
 2.  uvicorn main:app --reload
