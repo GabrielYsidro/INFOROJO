@@ -26,3 +26,5 @@ Back:
 1. pip install -r requirements.txt (en la raiz del proyecto)
 
 2.  uvicorn main:app --reload
+
+(las variables de la DB para el .env solicitarlas por msj de curso)
