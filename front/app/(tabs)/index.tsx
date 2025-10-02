@@ -51,6 +51,14 @@ export default function HomeScreen() {
         </ThemedText>
       </Link>
     </ThemedView>
+    <ThemedView style={styles.stepContainer}>
+      <ThemedText type="subtitle">Ir a ReporteDesvio</ThemedText>
+      <Link href="/(conductor)/EnviarReporteDesvio/EnviarReporteDesvio">
+        <ThemedText type="defaultSemiBold" style={{ color: 'blue' }}>
+          Ir al Reporte de Desvío
+        </ThemedText>
+      </Link>
+    </ThemedView>
       {/*<><Button title='Show Modal' onPress={ () => setOpen(true)}/>
       <AppModal visible={open} onClose={() => setOpen(false)}>
         <ModalBusInfo onClose={() => setOpen(false)} />
