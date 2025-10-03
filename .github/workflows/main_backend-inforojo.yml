@@ -37,7 +37,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: python-app
-          path: back
+          path: back/**
 
   deploy:
     runs-on: ubuntu-latest
