@@ -52,19 +52,17 @@ export default function HomeScreen() {
       </Link>
     </ThemedView>
     <ThemedView style={styles.stepContainer}>
-      <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-      <ThemedText>
-        {`When you're ready, run `}
-        <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-        <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
+      <ThemedText type="subtitle">Ir a ReporteDesvio</ThemedText>
+      <Link href="/(conductor)/EnviarReporteDesvio/EnviarReporteDesvio">
+        <ThemedText type="defaultSemiBold" style={{ color: 'blue' }}>
+          Ir al Reporte de Desvío
         </ThemedText>
-      </ThemedView>
+      </Link>
+    </ThemedView>
       {/*<><Button title='Show Modal' onPress={ () => setOpen(true)}/>
       <AppModal visible={open} onClose={() => setOpen(false)}>
         <ModalBusInfo onClose={() => setOpen(false)} />
-</AppModal></>*/}
+      </AppModal></>*/}
     </ParallaxScrollView>
   );
 }
