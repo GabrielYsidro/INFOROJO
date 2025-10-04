@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from back.models.Ruta import Ruta
+from models.Ruta import Ruta
 
 class RutaService:
     def __init__(self, db: Session):
