@@ -2,5 +2,7 @@
 /back/myVenv
 /back/myVenvLinux
 /back/.env
+/front/.env
+/back/venv
 __pycache__/
 *.py[cod]
