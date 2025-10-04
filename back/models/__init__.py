@@ -8,4 +8,4 @@ from .RutaParadero import RutaParadero
 from .Reporte import Reporte
 from .HistorialUso import HistorialUso
 from .TipoReporte import TipoReporte
-from .Ruta import Ruta
+from .Rutafix import Ruta
