@@ -6,11 +6,7 @@ import os
 
 app = FastAPI()
 
-# Leer variable desde el .env
-CREAR_TABLAS = os.getenv("CREAR_TABLAS", "False").lower() in ("true", "1", "yes")
-
-if CREAR_TABLAS:
-    Base.metadata.create_all(bind=engine)
+Base.metadata.create_all(bind=engine)
 
 @app.get("/")
 def root():
