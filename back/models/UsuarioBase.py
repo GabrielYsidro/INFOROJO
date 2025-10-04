@@ -19,5 +19,11 @@ class UsuarioBase(Base):
     id_corredor_asignado = Column(Integer, ForeignKey("public.corredor.id_corredor"))
 
 
+    # Definicion de relaciones
     tipo_usuario = relationship("TipoUsuario", back_populates="usuarios")
     corredor_asignado = relationship("Corredor", back_populates="usuarios")
+    feedbacks = relationship("Feedback", back_populates="usuario")
+    reportes_emitidos = relationship("Reporte", back_populates="emisor")
+    historial_uso = relationship("HistorialUso", back_populates="usuario")
+    
+    

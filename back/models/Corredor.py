@@ -12,5 +12,7 @@ class Corredor(Base):
     ubicacion_lng = Column(Float)
     estado = Column(String)
 
-    # Relación inversa
+    # Definicion de relaciones
     usuarios = relationship("UsuarioBase", back_populates="corredor_asignado")
+    reportes_afectados = relationship("Reporte", back_populates="corredor_afectado")
+    historiales = relationship("HistorialUso", back_populates="corredor")

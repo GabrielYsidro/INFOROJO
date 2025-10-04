@@ -11,5 +11,6 @@ class RutaParadero(Base):
     id_paradero = Column(Integer, ForeignKey("public.paradero.id_paradero"), nullable=False)
     orden = Column(Integer, nullable=True)
 
+    # Definicion de relaciones
     ruta = relationship("Ruta", back_populates="ruta_paraderos")
     paradero = relationship("Paradero", back_populates="ruta_paraderos")

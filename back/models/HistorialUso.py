@@ -13,6 +13,8 @@ class HistorialUso(Base):
     id_paradero_sube = Column(Integer, ForeignKey("public.paradero.id_paradero"), nullable=True)
     id_paradero_baja = Column(Integer, ForeignKey("public.paradero.id_paradero"), nullable=True)
 
+
+    # Definicion de relaciones
     usuario = relationship("UsuarioBase", back_populates="historial_uso")
     corredor = relationship("Corredor", back_populates="historiales")
     paradero_sube = relationship("Paradero", back_populates="historial_sube", foreign_keys=[id_paradero_sube])

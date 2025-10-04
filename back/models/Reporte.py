@@ -19,6 +19,8 @@ class Reporte(Base):
     id_paradero_final = Column(Integer, ForeignKey("public.paradero.id_paradero"), nullable=True)
     tiempo_retraso_min = Column(Integer, nullable=True)
 
+
+    # Definicion de relaciones
     emisor = relationship("UsuarioBase", back_populates="reportes_emitidos")
     tipo_reporte = relationship("TipoReporte", back_populates="reportes")
     corredor_afectado = relationship("Corredor", back_populates="reportes_afectados")

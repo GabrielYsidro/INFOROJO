@@ -9,5 +9,5 @@ class TipoUsuario(Base):
     id_tipo_usuario = Column(Integer, primary_key=True, nullable=False)
     tipo = Column(String)  # Usuario, Conductor o Regulador
 
-    # Relación inversa
+    # Definicion de relaciones
     usuarios = relationship("UsuarioBase", back_populates="tipo_usuario")

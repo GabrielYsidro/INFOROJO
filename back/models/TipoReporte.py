@@ -9,4 +9,5 @@ class TipoReporte(Base):
     id_tipo_reporte = Column(Integer, primary_key=True, autoincrement=True)
     tipo = Column(Text, nullable=True)
 
+    #Definicion de relaciones
     reportes = relationship("Reporte", back_populates="tipo_reporte")

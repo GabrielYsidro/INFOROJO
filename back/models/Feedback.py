@@ -11,5 +11,7 @@ class Feedback(Base):
     fecha = Column(TIMESTAMP(timezone=True), nullable=True)
     comentario = Column(Text, nullable=True)
     calificacion = Column(Integer, nullable=True)
-
+    
+    
+    #Definicion de relaciones
     usuario = relationship("UsuarioBase", back_populates="feedbacks")
