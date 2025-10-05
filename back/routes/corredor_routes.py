@@ -2,25 +2,20 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from services.corredor_service import CorredorService
 from config.db import get_db
+from schemas.corredor import CorredorCreate, CorredorOut
 
 router = APIRouter(
     prefix="/corredor",
     tags=["corredor"]
 )
 
-@router.post("/")
+@router.post("/", response_model=CorredorOut)
 def crear_corredor(
-    capacidad_max: int,
-    ubicacion_lat: float,
-    ubicacion_lng: float,
-    estado: str,
+    payload: CorredorCreate,
     db: Session = Depends(get_db)
 ):
     return CorredorService(db).create_corredor(
-        capacidad_max=capacidad_max,
-        ubicacion_lat=ubicacion_lat,
-        ubicacion_lng=ubicacion_lng,
-        estado=estado
+        **payload.model_dump()
     )
 
 @router.get("/")
