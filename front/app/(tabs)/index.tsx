@@ -55,6 +55,14 @@ export default function HomeScreen() {
         </ThemedText>
       </Link>
     </ThemedView>
+    <ThemedView style={styles.stepContainer}>
+      <ThemedText type="subtitle">Ir a Compartir ubicacion</ThemedText>
+      <Link href="/(cliente)/CompartirUbicacion/CompartirUbicacion">
+        <ThemedText type="defaultSemiBold" style={{ color: 'blue' }}>
+          Compartir ubicacion
+        </ThemedText>
+      </Link>
+      </ThemedView>
       <Button title='Show Modal' onPress={ () => setOpen(true)}/>
       <AppModal visible={open} onClose={() => setOpen(false)}>
         <ModalBusInfo onClose={() => setOpen(false)} />
