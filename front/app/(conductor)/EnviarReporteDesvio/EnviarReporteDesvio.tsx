@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, TextInput, TouchableOpacity } from 'react-native';
-import AppModal from '@/app/(cliente)/Modals/AppModal';
+import AppModal from '@/components/Modals/AppModal';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import styles from './StylesReporteDesvio';
