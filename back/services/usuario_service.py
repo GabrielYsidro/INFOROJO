@@ -41,3 +41,9 @@ class UsuarioService:
         Retorna todos los usuarios
         """
         return self.db.query(UsuarioBase).all()
+    
+    def get_usuario_by_id(self, user_id: int) -> UsuarioBase | None:
+        """
+        Retorna un usuario por su ID, o None si no existe
+        """
+        return self.db.query(UsuarioBase).filter(UsuarioBase.id_usuario == user_id).first()
