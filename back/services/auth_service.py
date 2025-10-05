@@ -1,5 +1,5 @@
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import jwt
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
@@ -40,7 +40,7 @@ class AuthService:
         Genera un token JWT con la información del usuario y una fecha de expiración.
         """
         to_encode = data.copy()
-        expire = datetime.now(datetime.timezone.utc) + timedelta(minutes=self.ACCESS_TOKEN_EXPIRE_MINUTES)
+        expire = datetime.now(timezone.utc) + timedelta(minutes=self.ACCESS_TOKEN_EXPIRE_MINUTES)
         to_encode.update({"exp": expire})
         encoded_jwt = jwt.encode(to_encode, self.SECRET_KEY, algorithm=self.ALGORITHM)
         return encoded_jwt
