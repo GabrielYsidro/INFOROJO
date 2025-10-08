@@ -34,14 +34,13 @@ export default function LoginScreen() {
           router.replace("/(cliente)");
           break;
         case "conductor":
-          router.replace("/(conductor)/MenuPrincipal/ConductorMenuPrincipal");
+          router.replace("/(conductor)");
           break;
         case "regulador":
-          router.replace("/(regulador)/MenuPrincipal/ReguladorMenuPrincipal");
+          router.replace("/(regulador)");
           break;
         default:
           router.replace("/login");
-          //hola
       }
     } catch (err: any) {
       Alert.alert("Error de login", err.message || "Ocurrió un error");
