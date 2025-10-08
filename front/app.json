@@ -37,6 +37,10 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "API_URL_DEV": "http://10.0.2.2:8000",
+      "API_URL_PROD": "https://backend-inforojo-ckh4hedjhqdtdfaq.eastus-01.azurewebsites.net"
     }
   }
 }

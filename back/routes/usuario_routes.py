@@ -36,3 +36,10 @@ def crear_usuario(
 @router.get("/")
 def listar_usuarios(db: Session = Depends(get_db)):
     return UsuarioService(db).get_usuarios()
+
+@router.get("/{user_id}")
+def obtener_usuario_por_id(user_id: int, db: Session = Depends(get_db)):
+    usuario = UsuarioService(db).get_usuario_by_id(user_id)
+    if usuario is None:
+        return {"error": "Usuario no encontrado"}
+    return usuario
