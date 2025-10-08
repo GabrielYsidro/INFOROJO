@@ -22,13 +22,13 @@ export default function Cuenta() {
   useEffect(() => {
     const fetchUsuario = async () => {
       try {
-        // 1️⃣ Obtiene el ID de usuario desde AsyncStorage
+
+        //Chapar el userId del AS
         const idStr = await AsyncStorage.getItem("userId");
         if (!idStr) throw new Error("No se encontró el ID de usuario en AsyncStorage");
-
         const id_usuario = parseInt(idStr, 10);
 
-        // 2️⃣ Llama al servicio para obtener los datos
+        //Llamar al servicio de usuario
         const data = await getUsers.getUsers(id_usuario);
         setUsuario(data);
       } catch (error: any) {
