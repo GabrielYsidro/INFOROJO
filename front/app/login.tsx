@@ -37,7 +37,7 @@ export default function LoginScreen() {
           router.replace("/(conductor)");
           break;
         case "regulador":
-          router.replace("/(regulador)/MenuPrincipal/ReguladorMenuPrincipal");
+          router.replace("/(regulador)");
           break;
         default:
           router.replace("/login");
