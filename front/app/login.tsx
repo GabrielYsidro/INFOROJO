@@ -1,9 +1,9 @@
-import { useRouter } from "expo-router";
-import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert } from "react-native";
-import { useState } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import styles from "./StylesLogin";
 import { login } from "@/services/AuthService";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useRouter } from "expo-router";
+import { useState } from "react";
+import { Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
+import styles from "./StylesLogin";
 
 export default function LoginScreen() {
   const router = useRouter();
