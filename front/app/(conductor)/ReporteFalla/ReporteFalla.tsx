@@ -2,11 +2,14 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router'; // <-- Importa el router
 import styles from '../../(conductor)/ReporteFalla/StylesReporteFalla';
 
 export default function ReporteFalla({ navigation }: any) {
   const [motivo, setMotivo] = useState('');
   const [paradero, setParadero] = useState('auto'); 
+  const router = useRouter(); // <-- Inicializa el router
+
 
   const pickerTextColor = paradero === 'auto' ? '#A0A0A0' : '#222';
 
@@ -15,7 +18,7 @@ export default function ReporteFalla({ navigation }: any) {
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
-          onPress={() => navigation?.goBack && navigation.goBack()}
+          onPress={() => router.back()}
         >
           <Ionicons name="chevron-back" size={28} color="#222" />
         </TouchableOpacity>
