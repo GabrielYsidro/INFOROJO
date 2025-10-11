@@ -79,8 +79,8 @@ if (loading) {
       <Stack>
         <Stack.Screen name="login" options={{ headerShown: false }} />
         <Stack.Screen name="(cliente)" options={{ headerShown: false }} />
-        <Stack.Screen name="(conductor)/MenuPrincipal/ConductorMenuPrincipal.tsx" options={{ headerShown: false }} />
-        <Stack.Screen name="(regulador)/MenuPrincipal/ReguladorMenuPrincipal.tsx" options={{ headerShown: false }} />
+        <Stack.Screen name="(conductor)" options={{ headerShown: false }} />
+        <Stack.Screen name="(regulador)" options={{ headerShown: false }} />
         <Stack.Screen name="+not-found" />
       </Stack>
       <StatusBar style="auto" />
