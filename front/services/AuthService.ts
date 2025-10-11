@@ -29,6 +29,20 @@ export const login = async (correo: string, dni: string) => {
   return res.json(); // devuelve { token, user }
 };
 
+export const getMe = async (token: string) => {
+  const res = await fetch(`${API_URL}/auth/me`, {
+    method: 'GET',
+    headers: {
+    'Authorization': `Bearer ${token}`,
+  },
+  });
+
+  if (!res.ok) throw new Error('No se pudo obtener el usuario');
+
+  return res.json(); // devuelve { id_usuario, nombre, correo, rol }
+};
+
 export default {
   login,
+  getMe
 };
