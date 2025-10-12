@@ -1,7 +1,16 @@
+import { getDashboard } from "@/services/getDashboard";
 import { useRouter } from "expo-router"; // 👈 para navegación
+import { useEffect, useState } from "react";
 import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { LineChart } from "react-native-chart-kit";
 import Svg, { Circle, G } from "react-native-svg";
+
+interface DashboardData {
+  numero_fallas: number;
+  numero_desvios: number;
+  retrasos_dia_valor: number[];
+  retrasos_dia_fecha: string[];
+}
 
 const { width } = Dimensions.get("window");
 const CARD_GAP = 12;
@@ -9,12 +18,20 @@ const CHART_WIDTH = width - 24;
 
 export default function DashboardScreen() {
   const router = useRouter();
-  const dashboardData = {
-    numero_fallas: 21,
-    numero_desvios: 17,
-    retrasos_dia_valor: [10, 5, 1, 15, 6, 6, 3, 1],
-    retrasos_dia_fecha: ["Nov 23", "24", "25", "26", "27", "28", "29", "30"]
-  }
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await getDashboard();
+        setDashboardData(data);
+      } catch (error) {
+        console.error("Error al obtener dashboard:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -34,11 +51,11 @@ export default function DashboardScreen() {
       <View style={[styles.row, { marginTop: 8 }]}>
         <View style={[styles.card, styles.cardHalf]}>
           <Text style={styles.cardTitle}>Fallas</Text>
-          <Text style={styles.cardNumber}>{dashboardData.numero_fallas}</Text>
+          <Text style={styles.cardNumber}>{dashboardData?.numero_fallas}</Text>
         </View>
         <View style={[styles.card, styles.cardHalf]}>
           <Text style={styles.cardTitle}>Desvios</Text>
-          <Text style={styles.cardNumber}>{dashboardData.numero_desvios}</Text>
+          <Text style={styles.cardNumber}>{dashboardData?.numero_desvios}</Text>
         </View>
       </View>
 
@@ -46,13 +63,13 @@ export default function DashboardScreen() {
       <View style={[styles.card, { marginTop: 12 }]}>
         <View style={styles.chartHeader}>
           <Text style={styles.cardTitle}>Retrasos</Text>
-          <Text style={styles.chartTotal}>{dashboardData.retrasos_dia_valor.reduce((a, b) => a + b, 0)}</Text>
+          <Text style={styles.chartTotal}>{dashboardData?.retrasos_dia_valor.reduce((a, b) => a + b, 0)}</Text>
         </View>
 
         <LineChart
           data={{
-            labels: dashboardData.retrasos_dia_fecha,
-            datasets: [{ data: dashboardData.retrasos_dia_valor, color: () => "#EB5E55" }],
+            labels: dashboardData?dashboardData.retrasos_dia_fecha:["Error"],
+            datasets: [{ data: dashboardData?dashboardData.retrasos_dia_valor:[1,2,3,4,5], color: () => "#EB5E55" }],
           }}
           width={CHART_WIDTH}
           height={220}
