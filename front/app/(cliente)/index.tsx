@@ -28,6 +28,15 @@ export default function ClienteMenuPrincipal() {
 
             {/* Bottom Navigation */}
             <View style={styles.bottomNav}>
+                {/* COMPARTIR UBICACION */}
+                <TouchableOpacity
+                    style={styles.navButton}
+                    onPress={() => router.push("/(cliente)/CompartirUbicacion/CompartirUbicacion")}
+                >
+                    <Icon name="crosshairs-gps" size={28} color="#c62828" />
+                    <Text style={styles.navButtonText}>Compartir Ubi</Text>
+                </TouchableOpacity>
+                
                 <TouchableOpacity style={styles.navButtonActive}
                     onPress={async () => {
                         await AsyncStorage.clear();
@@ -44,6 +53,7 @@ export default function ClienteMenuPrincipal() {
                     <Icon name="account-circle" size={28} color="#c62828" />
                     <Text style={styles.navButtonText}>Cuenta</Text>
                 </TouchableOpacity>
+                
             </View>
         </View>
     );
