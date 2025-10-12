@@ -1,62 +1,162 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Button } from 'react-native';
-import styles from './StylesHistorialViajes';
 
-// Simulación de datos (luego se reemplaza por fetch a la DB)
+import React, { useEffect, useState } from 'react';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
+import { useRouter } from 'expo-router';
+import Icon from 'react-native-vector-icons/Ionicons';
+import styles from './StylesHistorialViajes';
+import userService from '@/services/userService';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 type Viaje = {
 	id: number;
 	paradero: string;
 	fecha: string;
+	subida?: string;
+	llegada?: string;
+	imagen?: string;
 };
 
-const viajesEjemplo: Viaje[] = [
-	{ id: 1, paradero: 'Paradero A', fecha: '2025-09-01' },
-	{ id: 2, paradero: 'Paradero B', fecha: '2025-09-10' },
-	{ id: 3, paradero: 'Paradero C', fecha: '2025-09-15' },
-];
+
+function formatearFecha(fecha: string) {
+	const meses = [
+		'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+		'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+	];
+	const d = new Date(fecha);
+	const dia = d.getDate();
+	const mes = meses[d.getMonth()];
+	const hora = d.getHours();
+	const min = d.getMinutes().toString().padStart(2, '0');
+	const ampm = hora >= 12 ? 'pm' : 'am';
+	const hora12 = hora > 12 ? hora - 12 : hora;
+	return `${dia} de ${mes} (${hora12}:${min} ${ampm})`;
+}
+
 
 const HistorialViajes = () => {
 	const [viajes, setViajes] = useState<Viaje[]>([]);
+	const [loading, setLoading] = useState(true);
+	const [error, setError] = useState<string | null>(null);
+	const router = useRouter();
 
-	// useEffect para simular fetch de datos
 	useEffect(() => {
-		// Simulación de consulta a la DB
-		console.log('Ejemplo de viajes:', viajesEjemplo);
-		// Puedes hacer otras pruebas aquí
-		viajesEjemplo.forEach((viaje, idx) => {
-			console.log(`Viaje ${idx + 1}:`, viaje);
-		});
-		setViajes(viajesEjemplo);
+		const fetchHistorial = async () => {
+			try {
+				setLoading(true);
+				setError(null);
+				// Obtener el userId del storage (ajusta si lo guardas diferente)
+				const userId = await AsyncStorage.getItem('userId');
+				if (!userId) {
+					setError('No se encontró el usuario.');
+					setLoading(false);
+					return;
+				}
+				const data = await userService.getUserHistorial(Number(userId));
+				setViajes(data);
+			} catch (err) {
+				setError('Error al cargar el historial.');
+			} finally {
+				setLoading(false);
+			}
+		};
+		fetchHistorial();
 	}, []);
 
 	return (
-		<View style={styles.container}>
-			<Text style={styles.titulo}>Historial de Viajes</Text>
-			<ScrollView horizontal>
-				<View style={styles.tabla}>
-					<View style={styles.filaHeader}>
-						<Text style={styles.celdaHeader}>N°</Text>
-						<Text style={styles.celdaHeader}>Paradero</Text>
-						<Text style={styles.celdaHeader}>Fecha</Text>
-						<Text style={styles.celdaHeader}>Info</Text>
-					</View>
-					{viajes.map((viaje, idx) => {
-						const filaEstilo = idx % 2 === 0 ? styles.filaBlanca : styles.filaGris;
-						return (
-							<View style={[styles.fila, filaEstilo]} key={viaje.id}>
-								<Text style={styles.celda}>{idx + 1}</Text>
-								<Text style={styles.celda}>{viaje.paradero}</Text>
-								<Text style={styles.celda}>{viaje.fecha}</Text>
-								<View style={{ flex: 1, alignItems: 'center' }}>
-									<Button title="Info" onPress={() => {}} color="#b34040ff" />
-								</View>
+		<View style={{ flex: 1, backgroundColor: '#fff' }}>
+			{/* Header */}
+			<View style={{ flexDirection: 'row', alignItems: 'center', padding: 16 }}>
+				<TouchableOpacity onPress={() => router.back()}>
+					<Icon name="chevron-back" size={28} color="#222" />
+				</TouchableOpacity>
+				<Text style={{ fontSize: 22, fontWeight: 'bold', marginLeft: 8 }}>
+					Viajes
+				</Text>
+			</View>
+			{/* Lista de viajes o loader/error */}
+			{loading ? (
+				<ActivityIndicator size="large" color="#B71C1C" style={{ marginTop: 32 }} />
+			) : error ? (
+				<Text style={{ color: 'red', textAlign: 'center', marginTop: 32 }}>{error}</Text>
+			) : (
+				<FlatList
+					data={viajes}
+					keyExtractor={(item) => item.id.toString()}
+					renderItem={({ item }) => (
+						<TouchableOpacity
+							style={estilos.item}
+							onPress={() => router.push({
+								pathname: '/(cliente)/Viaje/ParaderoDetalle',
+								params: {
+									paradero: item.paradero,
+									fecha: item.fecha,
+									subida: item.subida || '',
+									llegada: item.llegada || '',
+									imagen: item.imagen || '',
+								}
+							})}
+						>
+							<View>
+								<Text style={estilos.paradero}>{item.paradero}</Text>
+								<Text style={estilos.fecha}>{formatearFecha(item.fecha)}</Text>
 							</View>
-						);
-					})}
-				</View>
-			</ScrollView>
+							<Icon name="chevron-forward" size={22} color="#888" />
+						</TouchableOpacity>
+					)}
+					contentContainerStyle={{ paddingHorizontal: 16 }}
+				/>
+			)}
+			{/* Botón Volver */}
+			<View style={estilos.volverContainer}>
+				<TouchableOpacity
+					style={estilos.volverBtn}
+					onPress={() => router.back()}
+				>
+					<Text style={estilos.volverTxt}>Volver</Text>
+				</TouchableOpacity>
+			</View>
 		</View>
 	);
 };
+
+const estilos = StyleSheet.create({
+	item: {
+		flexDirection: 'row',
+		justifyContent: 'space-between',
+		alignItems: 'center',
+		paddingVertical: 16,
+		borderBottomWidth: 1,
+		borderBottomColor: '#eee',
+	},
+	paradero: {
+		fontSize: 16,
+		color: '#222',
+		fontWeight: '500',
+	},
+	fecha: {
+		fontSize: 14,
+		color: '#666',
+		marginTop: 2,
+	},
+	volverContainer: {
+		position: 'absolute',
+		bottom: 32,
+		right: 0,
+		left: 0,
+		alignItems: 'flex-end',
+		paddingHorizontal: 16,
+	},
+	volverBtn: {
+		backgroundColor: '#FF5252',
+		borderRadius: 10,
+		paddingVertical: 10,
+		paddingHorizontal: 32,
+	},
+	volverTxt: {
+		color: '#fff',
+		fontSize: 18,
+		fontWeight: 'bold',
+	},
+});
 
 export default HistorialViajes;

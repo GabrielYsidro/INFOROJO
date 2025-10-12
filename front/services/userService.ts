@@ -20,6 +20,17 @@ const getUsers = async (userId: number) =>{
     return res.json();
 }
 
+const getUserHistorial = async (userId: number) => {
+    const res = await fetch(`${API_URL}/usuario/${userId}/historial`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    });
+    return res.json();
+}
+
 export default {
     getUsers,
+    getUserHistorial,
 };
