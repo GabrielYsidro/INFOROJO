@@ -91,7 +91,7 @@ const MonitorearBuses: React.FC = () => {
               description={`Estado: ${c.estado}`}
             >
               <Image
-                source={require("@/assets/image/bus.png")}
+                source={require("@/assets/images/bus.png")}
                 style={{ width: 35, height: 35 }}
                 resizeMode="contain"
               />
