@@ -20,11 +20,15 @@ export default function DashboardScreen() {
   const router = useRouter();
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(false);
+  const [visible, setVisible] = useState(false);
+  const [selected, setSelected] = useState("Esta semana");
+
+  const opciones = ["Esta semana", "Este mes"];
 
 
   const fetchDashboardData = async () => {
     try {
-      const data = await getDashboard();
+      const data = await getDashboard(selected==="Este mes"?7:30);
       setDashboardData(data);
     } catch (error) {
       console.error("Error al obtener dashboard:", error);
@@ -44,9 +48,35 @@ export default function DashboardScreen() {
       </View>
 
       <View style={styles.row}>
-        {/*<TouchableOpacity style={styles.filterChip}>
-          <Text style={styles.filterText}>Este mes ▾</Text>
-        </TouchableOpacity>*/}
+        {/* Botón principal */}
+      <TouchableOpacity
+        style={styles.filterChip}
+        onPress={() => setVisible(!visible)}
+      >
+        <Text style={styles.filterText}>
+          {selected} ▾
+        </Text>
+      </TouchableOpacity>
+
+      {/* Dropdown */}
+      {visible && (
+        <View style={styles.dropdown}>
+          {opciones.map((opcion) => (
+            <TouchableOpacity
+              key={opcion}
+              style={styles.option}
+              onPress={() => {
+                setSelected(opcion);
+                
+                setVisible(false);
+                fetchDashboardData();
+              }}
+            >
+              <Text style={styles.optionText}>{opcion}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
 
 
         <TouchableOpacity
@@ -207,5 +237,22 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "600",
     fontSize: 14,
+  },
+  dropdown: {
+    marginTop: 6,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 8,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  option: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  optionText: {
+    fontSize: 14,
+    color: "#374151",
   },
 });

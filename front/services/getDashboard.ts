@@ -7,8 +7,8 @@ const isDev = process.env.NODE_ENV !== 'production';
 
 export const API_URL = isDev ? API_URL_DEV : API_URL_PROD;
 
-export const getDashboard = async () => {
-    const res = await fetch(`${API_URL}/dashboard`, {
+export const getDashboard = async (days_amount:number) => {
+    const res = await fetch(`${API_URL}/dashboard/${days_amount}`, {
         method: 'GET',
       });
     
