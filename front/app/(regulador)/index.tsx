@@ -43,11 +43,10 @@ export default function DashboardScreen() {
         <Text style={styles.headerTitle}>Dashboard</Text>
       </View>
 
-      {/* Filtro */}
       <View style={styles.row}>
-        <TouchableOpacity style={styles.filterChip}>
+        {/*<TouchableOpacity style={styles.filterChip}>
           <Text style={styles.filterText}>Este mes ▾</Text>
-        </TouchableOpacity>
+        </TouchableOpacity>*/}
 
 
         <TouchableOpacity
