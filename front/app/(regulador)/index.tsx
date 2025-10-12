@@ -1,16 +1,19 @@
 import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { LineChart } from "react-native-chart-kit";
 import Svg, { Circle, G } from "react-native-svg";
+import { useRouter } from "expo-router"; // 👈 para navegación
 
 const { width } = Dimensions.get("window");
 const CARD_GAP = 12;
-const CHART_WIDTH = width - 24; // padding horizontal 12 + 12
+const CHART_WIDTH = width - 24;
 
-const dataPoints = [10, 5, 1, 15, 6, 6, 3, 1]; // suma 47
+const dataPoints = [10, 5, 1, 15, 6, 6, 3, 1];
 const labels = ["Nov 23", "24", "25", "26", "27", "28", "29", "30"];
 const totalRetrasos = dataPoints.reduce((a, b) => a + b, 0);
 
 export default function DashboardScreen() {
+  const router = useRouter(); // 👈 hook para navegación
+
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -66,7 +69,7 @@ export default function DashboardScreen() {
             labelColor: (opacity = 1) => `rgba(107,114,128,${opacity})`,
             propsForBackgroundLines: { stroke: "#E5E7EB" },
             propsForLabels: { fontSize: 11 },
-            propsForDots: { r: "0" }, // ocultamos dots por defecto; pondremos solo el último
+            propsForDots: { r: "0" },
           }}
           bezier={false}
           formatXLabel={(v) => v}
@@ -80,18 +83,24 @@ export default function DashboardScreen() {
             return (
               <Svg>
                 <G>
-                  {/* Glow */}
                   <Circle cx={last.x} cy={last.y} r={10} fill="#EB5E55" opacity={0.15} />
                   <Circle cx={last.x} cy={last.y} r={6} fill="#EB5E55" opacity={0.25} />
-                  {/* Punto */}
                   <Circle cx={last.x} cy={last.y} r={4} fill="#EB5E55" />
                 </G>
               </Svg>
             );
           }}
-          style={{ marginLeft: -8 }} // pequeño ajuste para alinear con el padding del card
+          style={{ marginLeft: -8 }}
         />
       </View>
+
+      {/* 🔹 Botón de Monitorear */}
+      <TouchableOpacity
+        style={styles.monitorButton}
+        onPress={() => router.push("/(regulador)/MonitorearBuses/MonitorearBuses")} // 👈 Navegación al presionar
+      >
+        <Text style={styles.monitorButtonText}>Monitorear</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -104,7 +113,7 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
     paddingHorizontal: 16,
     paddingBottom: 10,
-    marginHorizontal: -12, // expandir al full-bleed
+    marginHorizontal: -12,
     marginBottom: 12,
   },
   headerTitle: { color: "#FFF", fontSize: 20, fontWeight: "700" },
@@ -136,4 +145,21 @@ const styles = StyleSheet.create({
 
   chartHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 },
   chartTotal: { fontSize: 24, fontWeight: "800", color: "#111827" },
+
+  // 👇 Nuevo estilo para el botón "Monitorear"
+  monitorButton: {
+    backgroundColor: "#EB5E55",
+    paddingVertical: 14,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 20,
+    marginBottom: 20,
+  },
+  monitorButtonText: {
+    color: "#FFF",
+    fontSize: 16,
+    fontWeight: "700",
+    textTransform: "uppercase",
+  },
 });
