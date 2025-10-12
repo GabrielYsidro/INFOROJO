@@ -1,19 +1,53 @@
 import React, { useState, useEffect, useRef } from "react";
-import { View, Text, TextInput, TouchableOpacity, Alert } from "react-native";
+import { View, Text, TouchableOpacity, Alert, AppState } from "react-native";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import * as Location from "expo-location";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import getUsers from "@/services/userService";
 import { styles } from "./StylesCompartirUbicacion";
 
 export default function CompartirUbicacion() {
-  const backendUrl = "http://10.0.2.2:8000"; // ⚠️ Cambia por tu URL del backend si no usas emulador
-  const [busId, setBusId] = useState("");
+  const backendUrl = "http://10.0.2.2:8000"; // Cambiar si usas dispositivo físico
+  const [busId, setBusId] = useState<number | null>(null);
   const [isSharing, setIsSharing] = useState(false);
   const [location, setLocation] = useState<any>(null);
   const watchId = useRef<Location.LocationSubscription | null>(null);
 
+  // Obtener el id_corredor_asignado del usuario logueado
+  useEffect(() => {
+    const fetchUsuario = async () => {
+      try {
+        const idStr = await AsyncStorage.getItem("userId");
+        if (!idStr) throw new Error("No se encontró el ID del usuario.");
+        const id_usuario = parseInt(idStr, 10);
+
+        const usuario = await getUsers.getUsers(id_usuario);
+        if (!usuario || !usuario.id_corredor_asignado) {
+          throw new Error("El usuario no tiene un corredor asignado.");
+        }
+
+        setBusId(usuario.id_corredor_asignado);
+      } catch (error: any) {
+        console.error("⚠️ Error al obtener corredor asignado:", error.message);
+        Alert.alert("Error", "No se pudo obtener el corredor asignado.");
+      }
+    };
+    fetchUsuario();
+  }, []);
+
+  // Evitar que se detenga al cambiar de pestaña
+  useEffect(() => {
+    const subscription = AppState.addEventListener("change", (state) => {
+      if (state === "active" && isSharing && !watchId.current) {
+        handleStartSharing();
+      }
+    });
+    return () => subscription.remove();
+  }, [isSharing]);
+
   const handleStartSharing = async () => {
-    if (!busId.trim()) {
-      Alert.alert("Error", "Por favor ingresa el ID del corredor antes de iniciar.");
+    if (!busId) {
+      Alert.alert("Error", "No se encontró el ID del corredor asignado.");
       return;
     }
 
@@ -25,18 +59,14 @@ export default function CompartirUbicacion() {
 
     setIsSharing(true);
 
-    // Inicia la transmisión de ubicación cada 1 minuto
     watchId.current = await Location.watchPositionAsync(
       {
         accuracy: Location.Accuracy.High,
-        timeInterval: 30000, // 1 minuto
+        timeInterval: 60000, // cada 1 minuto
         distanceInterval: 0,
       },
       async (pos) => {
-        if (!pos || !pos.coords) {
-          console.warn("⚠️ No se pudo obtener coordenadas válidas todavía.");
-          return;
-        }
+        if (!pos || !pos.coords) return;
 
         const { latitude, longitude } = pos.coords;
         setLocation(pos.coords);
@@ -50,15 +80,12 @@ export default function CompartirUbicacion() {
             body: JSON.stringify({
               ubicacion_lat: latitude,
               ubicacion_lng: longitude,
-              estado: "En ruta", // Puedes cambiar a "En paradero" según lógica
+              estado: "En ruta",
             }),
           });
 
-          if (!response.ok) {
-            throw new Error("Error al enviar ubicación");
-          }
-
-          console.log("✅ Ubicación enviada correctamente");
+          if (!response.ok) throw new Error("Error al enviar ubicación");
+          console.log("✅ Ubicación actualizada correctamente");
         } catch (error) {
           console.error("❌ Error al enviar ubicación:", error);
         }
@@ -72,7 +99,7 @@ export default function CompartirUbicacion() {
       watchId.current = null;
     }
     setIsSharing(false);
-    Alert.alert("Transmisión detenida", "Ya no se está compartiendo la ubicación.");
+    Alert.alert("Transmisión detenida", "La ubicación ya no se está compartiendo.");
   };
 
   useEffect(() => {
@@ -85,29 +112,25 @@ export default function CompartirUbicacion() {
 
   return (
     <View style={styles.container}>
-      {/* Entrada del ID del corredor */}
-      <View style={styles.inputContainer}>
-        <Text style={styles.label}>ID del Corredor:</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Ejemplo: 1, 2, 3..."
-          value={busId}
-          onChangeText={setBusId}
-          editable={!isSharing}
-          keyboardType="numeric"
-        />
-
-        <TouchableOpacity
-          style={[styles.button, isSharing && styles.buttonStop]}
-          onPress={isSharing ? handleStopSharing : handleStartSharing}
-        >
-          <Text style={styles.buttonText}>
-            {isSharing ? "Detener transmisión" : "Iniciar transmisión"}
-          </Text>
-        </TouchableOpacity>
+      {/* Mostrar el ID del bus automáticamente */}
+      <View style={styles.infoContainer}>
+        <Text style={styles.label}>
+          {busId ? `ID BUS: ${busId}` : "Cargando ID del corredor..."}
+        </Text>
       </View>
 
-      {/* Mapa con marcador */}
+      {/* Botón de transmisión */}
+      <TouchableOpacity
+        style={[styles.button, isSharing && styles.buttonStop]}
+        onPress={isSharing ? handleStopSharing : handleStartSharing}
+        disabled={!busId}
+      >
+        <Text style={styles.buttonText}>
+          {isSharing ? "Detener transmisión" : "Iniciar transmisión"}
+        </Text>
+      </TouchableOpacity>
+
+      {/* Mapa */}
       <View style={styles.mapContainer}>
         <MapView
           provider={PROVIDER_GOOGLE}

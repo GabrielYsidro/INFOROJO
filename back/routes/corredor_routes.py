@@ -55,7 +55,7 @@ def actualizar_ubicacion_corredor(
     if not corredor:
         raise HTTPException(status_code=404, detail="Corredor no encontrado")
 
-    corredor_service.update_ubicacion(
+    corredor_service.actualizar_ubicacion(
         id_corredor=id_corredor,
         ubicacion_lat=ubicacion_lat,
         ubicacion_lng=ubicacion_lng,
