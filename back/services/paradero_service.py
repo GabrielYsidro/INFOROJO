@@ -52,3 +52,46 @@ class Paradero_Service:
         except SQLAlchemyError as e:
             print("[DB ERROR] ParaderoService.get_paradero_by_id:", e)
             raise
+
+    def get_paraderos_by_ruta(self, id_ruta: int) -> list[Dict]:
+        """
+        Devuelve todos los paraderos asociados a la ruta `id_ruta` en una sola
+        consulta (evita N+1). Usa reflexión para encontrar la tabla puente y la
+        tabla de paraderos y devuelve una lista de dicts (mapeo de columnas).
+        """
+        # Buscar la tabla puente que relacione rutas y paraderos
+        ruta_par_table = self._reflect_table(("ruta_paradero", "ruta_paraderos", "public.ruta_paradero"))
+
+        ruta_id_col = self._choose_id_column(ruta_par_table, ("id_ruta", "ruta_id", "id"))
+        paradero_id_col = self._choose_id_column(ruta_par_table, ("id_paradero", "paradero_id", "id"))
+        if ruta_id_col is None or paradero_id_col is None:
+            raise RuntimeError(f"No se pudieron identificar columnas id en la tabla {ruta_par_table.name}")
+
+        # Obtener ids de paradero asociados a la ruta
+        stmt_ids = select(ruta_par_table.c[paradero_id_col.name]).where(ruta_par_table.c[ruta_id_col.name] == id_ruta)
+        ids = []
+        try:
+            with self.engine.connect() as conn:
+                res = conn.execute(stmt_ids)
+                ids = [r[paradero_id_col.name] for r in res.mappings() if r[paradero_id_col.name] is not None]
+        except SQLAlchemyError as e:
+            print("[DB ERROR] ParaderoService.get_paraderos_by_ruta (ids):", e)
+            raise
+
+        if not ids:
+            return []
+
+        # Ahora obtener todos los paraderos en una sola consulta
+        par_table = self._reflect_table(("paradero", "paraderos", "public.paradero"))
+        par_id_col = self._choose_id_column(par_table, ("id_paradero", "id"))
+        if par_id_col is None:
+            raise RuntimeError(f"No se encontró columna id en la tabla {par_table.name}")
+
+        stmt_pars = select(par_table).where(par_table.c[par_id_col.name].in_(ids))
+        try:
+            with self.engine.connect() as conn:
+                res2 = conn.execute(stmt_pars)
+                return [dict(r) for r in res2.mappings()]
+        except SQLAlchemyError as e:
+            print("[DB ERROR] ParaderoService.get_paraderos_by_ruta (paraderos):", e)
+            raise

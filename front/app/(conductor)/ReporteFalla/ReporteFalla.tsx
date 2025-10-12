@@ -2,13 +2,15 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router'; // <-- Importa el router
+import { useRouter } from 'expo-router';  
 import styles from '../../(conductor)/ReporteFalla/StylesReporteFalla';
+import RFallaModal from './RFallaModal';
 
 export default function ReporteFalla({ navigation }: any) {
   const [motivo, setMotivo] = useState('');
   const [paradero, setParadero] = useState('auto'); 
-  const router = useRouter(); // <-- Inicializa el router
+  const [modalOpen, setModalOpen] = useState(false);
+  const router = useRouter();
 
 
   const pickerTextColor = paradero === 'auto' ? '#A0A0A0' : '#222';
@@ -51,9 +53,18 @@ export default function ReporteFalla({ navigation }: any) {
           placeholderTextColor="#A0A0A0"
         />
       </View>
-      <TouchableOpacity style={styles.button}>
+      <TouchableOpacity style={styles.button} onPress={() => setModalOpen(true)}>
         <Text style={styles.buttonText}>Notificar</Text>
       </TouchableOpacity>
+
+      <RFallaModal
+        visible={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onSubmit={({ paradero: p, tipoFalla, requiereIntervencion, unidadAfectada, motivo: m }) => {
+          // por ahora solo loguear; en el futuro llamar al servicio correspondiente
+          console.log('Reporte falla enviado', { paradero: p, tipoFalla, requiereIntervencion, unidadAfectada, motivo: m });
+        }}
+      />
     </View>
   );
 }
