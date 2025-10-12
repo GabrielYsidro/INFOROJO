@@ -11,6 +11,11 @@ class Paradero(Base):
     coordenada_lat = Column(Float, nullable=True)
     coordenada_lng = Column(Float, nullable=True)
     colapso_actual = Column(Boolean, default=False)
+    rutas = relationship(
+        "Ruta",
+        secondary="public.ruta_paradero",
+        back_populates="paraderos"
+    )
 
     # Definicion de relaciones
     ruta_paraderos = relationship("RutaParadero", back_populates="paradero")
