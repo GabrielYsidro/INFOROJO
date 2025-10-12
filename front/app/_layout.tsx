@@ -8,6 +8,7 @@ import { API_URL } from '@/services/AuthService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import 'react-native-reanimated';
 import { ActivityIndicator, View } from 'react-native';
+import { getMe } from '@/services/AuthService';
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -33,25 +34,11 @@ export default function RootLayout() {
         return;
       }
 
-        // // Verificar token con el backend
-        // const res = await fetch(`${API_URL}/auth/me`, {
-        //   method: 'GET',
-        //   headers: {
-        //     'Authorization': `Bearer ${token}`,
-        //     'Content-Type': 'application/json',
-        //   },
-        // });
+        // Verificar token con el backend
+        const user = await getMe(token);
+        console.log('✅ Usuario autenticado:', user);
 
-        // if (!res.ok) {
-        //   await AsyncStorage.removeItem('token');
-        //   router.replace('/login');
-        //   return;
-        // }
-
-        // const data = await res.json();
-        // const role = data?.user?.role || data?.role;
-
-        const role : string = 'cliente'; // Temporalmente asignamos un rol fijo
+        const role : string = user.rol; // Asignamos el rol del usuario autenticado
 
         // Redirigir según rol
         switch (role) {
@@ -59,10 +46,10 @@ export default function RootLayout() {
             router.replace('/(cliente)');
             break;
           case 'conductor':
-            router.replace('/(conductor)/MenuPrincipal/ConductorMenuPrincipal');
+            router.replace('/(conductor)');
             break;
           case 'regulador':
-            router.replace('/(regulador)/MenuPrincipal/ReguladorMenuPrincipal');
+            router.replace('/(regulador)');
             break;
           default:
             router.replace('/login');
@@ -92,8 +79,8 @@ if (loading) {
       <Stack>
         <Stack.Screen name="login" options={{ headerShown: false }} />
         <Stack.Screen name="(cliente)" options={{ headerShown: false }} />
-        <Stack.Screen name="(conductor)/MenuPrincipal/ConductorMenuPrincipal.tsx" options={{ headerShown: false }} />
-        <Stack.Screen name="(regulador)/MenuPrincipal/ReguladorMenuPrincipal.tsx" options={{ headerShown: false }} />
+        <Stack.Screen name="(conductor)" options={{ headerShown: false }} />
+        <Stack.Screen name="(regulador)" options={{ headerShown: false }} />
         <Stack.Screen name="+not-found" />
       </Stack>
       <StatusBar style="auto" />

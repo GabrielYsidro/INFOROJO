@@ -1,9 +1,9 @@
-import { useRouter } from "expo-router";
-import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert } from "react-native";
-import { useState } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import styles from "./StylesLogin";
 import { login } from "@/services/AuthService";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useRouter } from "expo-router";
+import { useState } from "react";
+import { Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
+import styles from "./StylesLogin";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -31,13 +31,13 @@ export default function LoginScreen() {
       // Redirigir según rol
       switch (rol) {
         case "cliente":
-          router.replace("/(cliente)");
+            router.replace("/(cliente)");
           break;
         case "conductor":
-          router.replace("/(conductor)/MenuPrincipal/ConductorMenuPrincipal");
+          router.replace("/(conductor)");
           break;
         case "regulador":
-          router.replace("/(regulador)/MenuPrincipal/ReguladorMenuPrincipal");
+          router.replace("/(regulador)");
           break;
         default:
           router.replace("/login");
