@@ -23,7 +23,7 @@ export default {
       "edgeToEdgeEnabled": true,
       "config": {
         "googleMaps": {
-          "apiKey": process.env.GOOGLE_MAPS_API_KEY,
+          "apiKey": "AIzaSyB2XvzIiMG3RX1x-ZNC8MqWOSxoY9_ucE0",
         }
       },
       "permissions": [

@@ -102,10 +102,12 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginBottom: 16,
     borderWidth: 2,
+    flex: 1,
     borderColor: "#c62828",
   },
   map: {
-    ...StyleSheet.absoluteFillObject,
+    width: '100%',
+    height: '100%',
   },
   button: {
     //backgroundColor: '#ff4646ff',
