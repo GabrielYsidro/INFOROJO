@@ -5,6 +5,7 @@ from routes.ruta_routes import router as ruta_routes
 from routes.usuario_routes import router as usuario_routes
 from routes.auth_routes import router as auth_routes
 from routes.corredor_routes import router as corredor_routes
+from routes.reporte_routes import router as reporte_routes
 
 app = FastAPI(
     title="API de Inforrojo", 
@@ -34,3 +35,4 @@ app.include_router(ruta_routes)
 app.include_router(usuario_routes)
 app.include_router(auth_routes)
 app.include_router(corredor_routes)
+app.include_router(reporte_routes)
