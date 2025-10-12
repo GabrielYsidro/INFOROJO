@@ -31,7 +31,7 @@ export default function LoginScreen() {
       // Redirigir según rol
       switch (rol) {
         case "cliente":
-          router.replace("/(cliente)");
+            router.replace("/(cliente)");
           break;
         case "conductor":
           router.replace("/(conductor)");
@@ -41,6 +41,7 @@ export default function LoginScreen() {
           break;
         default:
           router.replace("/login");
+          //hola
       }
     } catch (err: any) {
       Alert.alert("Error de login", err.message || "Ocurrió un error");
