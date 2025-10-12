@@ -63,3 +63,26 @@ def actualizar_ubicacion_corredor(
     )
 
     return {"mensaje": "Ubicación y estado actualizados correctamente"}
+
+@router.get("/{id_corredor}/ubicacion")
+def obtener_ubicacion_corredor(id_corredor: int, db: Session = Depends(get_db)):
+    """
+    Retorna la ubicación actual (latitud, longitud, estado)
+    de un corredor por su ID.
+    """
+    corredor_service = CorredorService(db)
+    corredor = corredor_service.get_corredor_by_id(id_corredor)
+
+    if not corredor:
+        raise HTTPException(status_code=404, detail="Corredor no encontrado")
+
+    if corredor.ubicacion_lat is None or corredor.ubicacion_lng is None:
+        raise HTTPException(status_code=404, detail="Corredor sin ubicación registrada")
+
+    return {
+        "id_corredor": corredor.id_corredor,
+        "latitud": corredor.ubicacion_lat,
+        "longitud": corredor.ubicacion_lng,
+        "estado": corredor.estado
+    }
+

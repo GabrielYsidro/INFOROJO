@@ -62,7 +62,7 @@ export default function CompartirUbicacion() {
     watchId.current = await Location.watchPositionAsync(
       {
         accuracy: Location.Accuracy.High,
-        timeInterval: 60000, // cada 1 minuto
+        timeInterval: 5000, // cada 1 minuto
         distanceInterval: 0,
       },
       async (pos) => {
