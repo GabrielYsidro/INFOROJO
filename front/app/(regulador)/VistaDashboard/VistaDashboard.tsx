@@ -1,5 +1,4 @@
 import { getDashboard } from "@/services/getDashboard";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router"; // 👈 para navegación
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Dimensions, StyleSheet, Text, TouchableOpacity, View } from "react-native";
@@ -160,16 +159,6 @@ export default function DashboardScreen() {
         />
       </View>
 
-      {/* 🔹 Botón de Monitorear */}
-      <TouchableOpacity
-        style={styles.monitorButton}
-        onPress={async () => {
-          router.push("/(regulador)/MonitorearBuses/MonitorearBuses");
-          await AsyncStorage.clear();
-        }} // 👈 Navegación al presionar
-      >
-        <Text style={styles.monitorButtonText}>Monitorear</Text>
-      </TouchableOpacity>
     </View>
   );
 }

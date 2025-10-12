@@ -66,7 +66,7 @@ export default function ClienteMenuPrincipal() {
 
                 <TouchableOpacity
                     style={styles.navButton}
-                    onPress={() => router.push("/(cliente)/CuentaUsuario/CuentaUsuario")}
+                    onPress={() => router.push("/(regulador)/CuentaUsuario/CuentaRegulador")}
                 >
                     <Icon name="account-circle" size={28} color="#c62828" />
                     <Text style={styles.navButtonText}>Cuenta</Text>
