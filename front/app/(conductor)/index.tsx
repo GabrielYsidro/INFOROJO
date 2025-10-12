@@ -39,6 +39,15 @@ export default function ConductorMenuPrincipal() {
 
             {/* Bottom Navigation */}
             <View style={styles.bottomNav}>
+                <TouchableOpacity
+                        style={styles.navButton}
+                        onPress={() => router.push("/(conductor)/CompartirUbicacion/CompartirUbicacion")}
+                    >
+                        <Icon name="crosshairs-gps" size={28} color="#c62828" />
+                        <Text style={styles.navButtonText}>Compartir Ubicacion</Text>
+                </TouchableOpacity>
+
+
                 <TouchableOpacity style={styles.navButtonActive}>
                     <Icon name="home" size={28} color="#fff" />
                     <Text style={styles.navButtonTextActive}>Menu Principal</Text>
