@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { View, Text, FlatList, ActivityIndicator, Alert, Image } from "react-native";
+import React, { useEffect, useState } from "react";
+import { ActivityIndicator, Alert, FlatList, Image, Text, View } from "react-native";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import { styles } from "./StylesMonitorearBuses";
 
@@ -91,7 +91,7 @@ const MonitorearBuses: React.FC = () => {
               description={`Estado: ${c.estado}`}
             >
               <Image
-                source={require("@/assets/image/bus.png")}
+                source={require("@/assets/images/bus.png")}
                 style={{ width: 35, height: 35 }}
                 resizeMode="contain"
               />
