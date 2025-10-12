@@ -1,19 +1,45 @@
-import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { getDashboard } from "@/services/getDashboard";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useRouter } from "expo-router"; // 👈 para navegación
+import { useEffect, useState } from "react";
+import { ActivityIndicator, Dimensions, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { LineChart } from "react-native-chart-kit";
 import Svg, { Circle, G } from "react-native-svg";
-import { useRouter } from "expo-router"; // 👈 para navegación
-import AsyncStorage from "@react-native-async-storage/async-storage";
+
+interface DashboardData {
+  numero_fallas: number;
+  numero_desvios: number;
+  retrasos_dia_valor: number[];
+  retrasos_dia_fecha: string[];
+}
 
 const { width } = Dimensions.get("window");
 const CARD_GAP = 12;
 const CHART_WIDTH = width - 24;
 
-const dataPoints = [10, 5, 1, 15, 6, 6, 3, 1];
-const labels = ["Nov 23", "24", "25", "26", "27", "28", "29", "30"];
-const totalRetrasos = dataPoints.reduce((a, b) => a + b, 0);
-
 export default function DashboardScreen() {
-  const router = useRouter(); // 👈 hook para navegación
+  const router = useRouter();
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [visible, setVisible] = useState(false);
+  const [selected, setSelected] = useState("Esta semana");
+
+  const opciones = ["Esta semana", "Este mes"];
+
+
+  const fetchDashboardData = async () => {
+    try {
+      const data = await getDashboard(selected==="Este mes"?7:30);
+      setDashboardData(data);
+    } catch (error) {
+      console.error("Error al obtener dashboard:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
 
   return (
     <View style={styles.container}>
@@ -22,22 +48,61 @@ export default function DashboardScreen() {
         <Text style={styles.headerTitle}>Dashboard</Text>
       </View>
 
-      {/* Filtro */}
       <View style={styles.row}>
-        <TouchableOpacity style={styles.filterChip}>
-          <Text style={styles.filterText}>Este mes ▾</Text>
+        {/* Botón principal */}
+      <TouchableOpacity
+        style={styles.filterChip}
+        onPress={() => setVisible(!visible)}
+      >
+        <Text style={styles.filterText}>
+          {selected} ▾
+        </Text>
+      </TouchableOpacity>
+
+      {/* Dropdown */}
+      {visible && (
+        <View style={styles.dropdown}>
+          {opciones.map((opcion) => (
+            <TouchableOpacity
+              key={opcion}
+              style={styles.option}
+              onPress={() => {
+                setSelected(opcion);
+                
+                setVisible(false);
+                fetchDashboardData();
+              }}
+            >
+              <Text style={styles.optionText}>{opcion}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
+
+
+        <TouchableOpacity
+          style={styles.refreshButton}
+          onPress={fetchDashboardData}
+          disabled={loading}
+        >
+          {loading ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
+            <Text style={styles.refreshText}>Actualizar</Text>
+          )}
         </TouchableOpacity>
       </View>
+
 
       {/* Cards métricas */}
       <View style={[styles.row, { marginTop: 8 }]}>
         <View style={[styles.card, styles.cardHalf]}>
           <Text style={styles.cardTitle}>Fallas</Text>
-          <Text style={styles.cardNumber}>23</Text>
+          <Text style={styles.cardNumber}>{dashboardData?.numero_fallas}</Text>
         </View>
         <View style={[styles.card, styles.cardHalf]}>
           <Text style={styles.cardTitle}>Desvios</Text>
-          <Text style={styles.cardNumber}>14</Text>
+          <Text style={styles.cardNumber}>{dashboardData?.numero_desvios}</Text>
         </View>
       </View>
 
@@ -45,13 +110,13 @@ export default function DashboardScreen() {
       <View style={[styles.card, { marginTop: 12 }]}>
         <View style={styles.chartHeader}>
           <Text style={styles.cardTitle}>Retrasos</Text>
-          <Text style={styles.chartTotal}>{totalRetrasos}</Text>
+          <Text style={styles.chartTotal}>{dashboardData?.retrasos_dia_valor.reduce((a, b) => a + b, 0)}</Text>
         </View>
 
         <LineChart
           data={{
-            labels,
-            datasets: [{ data: dataPoints, color: () => "#EB5E55" }],
+            labels: dashboardData?dashboardData.retrasos_dia_fecha:["Error"],
+            datasets: [{ data: dashboardData?dashboardData.retrasos_dia_valor:[1,2,3,4,5], color: () => "#EB5E55" }],
           }}
           width={CHART_WIDTH}
           height={220}
@@ -165,5 +230,33 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "700",
     textTransform: "uppercase",
+  },
+  refreshButton: {
+    backgroundColor: "#EB5E55",
+    borderRadius: 20,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+  },
+  refreshText: {
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: 14,
+  },
+  dropdown: {
+    marginTop: 6,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 8,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  option: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  optionText: {
+    fontSize: 14,
+    color: "#374151",
   },
 });
