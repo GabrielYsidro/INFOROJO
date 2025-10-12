@@ -1,4 +1,3 @@
-import os
 from typing import Dict, Optional, Iterable
 
 from sqlalchemy import MetaData, Table, select, insert
@@ -107,6 +106,7 @@ class SupabaseRepo:
         except SQLAlchemyError as e:
             print("[DB ERROR] save_report:", e)
             raise
+    # (Métodos de almacenamiento/insert de foto removidos porque no se usa Supabase Storage en este proyecto)
 
     #def save_notification(self, note: Dict) -> Dict:
         #table = self._reflect_table(("notification", "notifications", "notificaciones"))
