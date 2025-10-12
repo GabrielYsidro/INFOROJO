@@ -1,6 +1,6 @@
 // components/MapSection.tsx
 import { useState } from "react";
-import { Dimensions, Platform, StyleSheet, Text, View } from "react-native";
+import { Dimensions, Image, Platform, StyleSheet, Text, View } from "react-native";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import AppModal from "./Modals/AppModal";
 import ModalBusInfo from "./Modals/ModalBusInfo";
@@ -37,9 +37,15 @@ export default function MapSection() {
   anchor={{ x: 0.5, y: 0.5 }} // Centers the marker
   centerOffset={{ x: 0, y: 0 }} // Adjust if needed
 >
-    <View style={styles.button}>
+    {/*<View style={styles.button}>
     <Text style={styles.buttonText}>🚌</Text>
-  </View>
+  </View>*/}
+  <View style={[ { justifyContent: "center", alignItems: "center" }]}>
+  <Image
+    source={require("../assets/images/bus.png")}
+    style={{ width: 45, height: 45, resizeMode: "contain" }}
+  />
+</View>
 
 </Marker>
           </MapView>
@@ -72,7 +78,7 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
   },
   button: {
-    backgroundColor: '#ff4646ff',
+    //backgroundColor: '#ff4646ff',
     padding: 12,
     borderRadius: 8,
     shadowOffset: { width: 0, height: 2 },
