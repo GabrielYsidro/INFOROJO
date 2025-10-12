@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import and_, or_
 from models.Ruta import Ruta
+from models.RutaParadero import RutaParadero
 from services.SistemaFiltros import SistemaFiltros
 from services.FiltroRuta import FiltroRuta
 from services.FiltroCercania import FiltroCercania
@@ -41,7 +42,7 @@ class RutaService:
             return paradero_svc.get_paraderos_by_ruta(ruta_id)
 
         # Obtener todas las rutas con paraderos cargados para evitar lazy loads
-        todas_rutas = self.db.query(Ruta).options(joinedload(Ruta.paraderos)).all()
+        todas_rutas = self.db.query(Ruta).options(joinedload(Ruta.ruta_paraderos).joinedload(RutaParadero.paradero)).all()
 
         sistema_filtros = SistemaFiltros()
         if ruta and ruta.strip():
