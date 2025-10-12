@@ -1,11 +1,10 @@
 import { getDashboard } from "@/services/getDashboard";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router"; // 👈 para navegación
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Dimensions, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { LineChart } from "react-native-chart-kit";
 import Svg, { Circle, G } from "react-native-svg";
-import { useRouter } from "expo-router"; // 👈 para navegación
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 interface DashboardData {
   numero_fallas: number;
