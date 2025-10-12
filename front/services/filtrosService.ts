@@ -34,7 +34,7 @@ export const aplicarFiltros = async (filtros: FiltrosData): Promise<RutaFiltrada
       }
     }
 
-    const url = `${API_URL_DEV}/ruta/filtrar?${params.toString()}`;
+  const url = `${API_URL}/ruta/filtrar?${params.toString()}`;
     
     const response = await fetch(url, {
       method: 'GET',
