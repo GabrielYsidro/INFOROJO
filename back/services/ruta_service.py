@@ -1,9 +1,9 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_
 from models.Ruta import Ruta
-from models.SistemaFiltros import SistemaFiltros
-from models.FiltroRuta import FiltroRuta
-from models.FiltroCercania import FiltroCercania
+from services.SistemaFiltros import SistemaFiltros
+from services.FiltroRuta import FiltroRuta
+from services.FiltroCercania import FiltroCercania
 from typing import Optional
 
 class RutaService:

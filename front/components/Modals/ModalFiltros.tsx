@@ -1,13 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState, useEffect } from 'react';
 import { Platform, Pressable, StyleSheet, Text, View, TextInput, Alert } from 'react-native';
-import { obtenerRutasDisponibles, RutaFiltrada } from '@/services/filtrosService';
-
-type FiltrosData = {
-  ruta: string;
-  distrito: string;
-  distancia: string;
-};
+import { obtenerRutasDisponibles, RutaFiltrada, FiltrosData } from '@/services/filtrosService';
 
 type Props = {
   filtros: FiltrosData;
@@ -47,7 +41,22 @@ export default function ModalFiltros({
   };
 
   const handleInputChange = (campo: keyof FiltrosData, valor: string) => {
+    // Si se escribe en 'ruta' y hay valor, limpiar distancia y bloquearla
     const nuevosFiltros = { ...filtrosLocales, [campo]: valor };
+
+    if (campo === 'ruta') {
+      if (valor && valor.trim()) {
+        nuevosFiltros.distancia = '';
+      }
+    }
+
+    // Si se escribe en 'distancia' y hay valor, limpiar ruta y bloquear selector
+    if (campo === 'distancia') {
+      if (valor && valor.trim()) {
+        nuevosFiltros.ruta = '';
+      }
+    }
+
     setFiltrosLocales(nuevosFiltros);
     onFiltrosChange(nuevosFiltros);
   };
@@ -64,26 +73,19 @@ export default function ModalFiltros({
 
   return (
     <View style={styles.card}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Filtrar</Text>
-        <Pressable onPress={onClose} hitSlop={10} style={styles.closeBtn}>
-          <Ionicons name="close" size={20} />
-        </Pressable>
-      </View>
-
       {/* Campo Ruta - Selector Desplegable */}
       <View style={styles.filterRow}>
         <Text style={styles.label}>Ruta</Text>
         <Pressable 
           style={styles.inputContainer}
           onPress={() => setShowRutaSelector(!showRutaSelector)}
-          disabled={loadingRutas}
+          disabled={loadingRutas || !!filtrosLocales.distancia}
         >
           <Text style={[
             styles.input,
             !filtrosLocales.ruta && styles.placeholder
           ]}>
-            {loadingRutas ? 'Cargando...' : filtrosLocales.ruta || 'Seleccionar ruta'}
+            {loadingRutas ? 'Cargando...' : filtrosLocales.ruta || (filtrosLocales.distancia ? 'Bloqueado por distancia' : 'Seleccionar ruta')}
           </Text>
           <Ionicons name="chevron-down" size={16} color="#9CA3AF" />
         </Pressable>
@@ -109,22 +111,7 @@ export default function ModalFiltros({
 
       <View style={styles.divider} />
 
-      {/* Campo Distrito */}
-      <View style={styles.filterRow}>
-        <Text style={styles.label}>Distrito</Text>
-        <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.input}
-            value={filtrosLocales.distrito}
-            onChangeText={(text) => handleInputChange('distrito', text)}
-            placeholder="Jesús María"
-            placeholderTextColor="#9CA3AF"
-          />
-          <Ionicons name="chevron-down" size={16} color="#9CA3AF" />
-        </View>
-      </View>
-
-      <View style={styles.divider} />
+      {/* Campo Distrito eliminado */}
 
       {/* Campo Distancia */}
       <View style={styles.filterRow}>
@@ -134,9 +121,10 @@ export default function ModalFiltros({
             style={styles.input}
             value={filtrosLocales.distancia}
             onChangeText={(text) => handleInputChange('distancia', text)}
-            placeholder="28"
+            placeholder={filtrosLocales.ruta ? 'Bloqueado por ruta' : '28'}
             placeholderTextColor="#9CA3AF"
             keyboardType="numeric"
+            editable={!filtrosLocales.ruta}
           />
           <Ionicons name="chevron-down" size={16} color="#9CA3AF" />
         </View>
