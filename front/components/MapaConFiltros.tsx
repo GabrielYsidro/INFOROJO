@@ -54,14 +54,21 @@ export default function MapaConFiltros() {
 
       {/* Mostrar rutas filtradas */}
       {rutasFiltradas.length > 0 && (
-        <View style={styles.resultadosContainer}>
-          <Text style={styles.resultadosTitle}>Rutas encontradas:</Text>
-          {rutasFiltradas.map((ruta) => (
-            <Text key={ruta.id_ruta} style={styles.rutaItem}>
-              • {ruta.nombre}
-            </Text>
-          ))}
-        </View>
+          <View style={styles.resultadosContainer}>
+            <Text style={styles.resultadosTitle}>Rutas encontradas:</Text>
+            {rutasFiltradas.map((ruta) => (
+              <View key={ruta.id_ruta} style={styles.rutaBlock}>
+                <Text style={styles.rutaItem}>• {ruta.nombre} {ruta.paraderos ? `(${ruta.paraderos.length} paraderos)` : ''}</Text>
+                {ruta.paraderos && ruta.paraderos.length > 0 && (
+                  <View style={styles.paraderosList}>
+                    {ruta.paraderos.map((p) => (
+                      <Text key={p.id_paradero} style={styles.paraderoItem}>- {p.nombre ?? 'Paradero sin nombre'}</Text>
+                    ))}
+                  </View>
+                )}
+              </View>
+            ))}
+          </View>
       )}
 
       {/* Modal de filtros */}
@@ -121,6 +128,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#6B7280',
     marginBottom: 8,
+  },
+  rutaBlock: {
+    marginBottom: 6,
+  },
+  paraderosList: {
+    marginLeft: 12,
+    marginTop: 4,
+  },
+  paraderoItem: {
+    fontSize: 14,
+    color: '#9CA3AF',
+    marginBottom: 4,
   },
 });
 

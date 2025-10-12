@@ -1,10 +1,13 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import and_, or_
 from models.Ruta import Ruta
 from services.SistemaFiltros import SistemaFiltros
 from services.FiltroRuta import FiltroRuta
 from services.FiltroCercania import FiltroCercania
-from typing import Optional
+from services.paradero_service import Paradero_Service
+from config.db import engine as shared_engine
+from typing import Optional, List, Dict
+
 
 class RutaService:
     def __init__(self, db: Session):
@@ -17,60 +20,74 @@ class RutaService:
         self.db.refresh(nueva_ruta)
         return nueva_ruta
 
-    def get_rutas(self) -> list[Ruta]:
-        return self.db.query(Ruta).all()
+    def get_rutas(self) -> List[Dict]:
+        rutas = self.db.query(Ruta).all()
+        return [{'id_ruta': r.id_ruta, 'nombre': r.nombre} for r in rutas]
 
-    def filtrar_rutas(self, ruta: Optional[str] = None, distrito: Optional[str] = None, distancia: Optional[float] = None) -> list[Ruta]:
+    def filtrar_rutas(self, ruta: Optional[str] = None, ruta_id: Optional[int] = None, distrito: Optional[str] = None, distancia: Optional[float] = None) -> List[Dict]:
         """
-        Filtra rutas según los criterios proporcionados usando el patrón Strategy.
-        
-        Ahora soporta múltiples filtros que se pueden combinar:
-        - Filtro por nombre de ruta (búsqueda parcial)
-        - Filtro por cercanía usando coordenadas de paraderos
-        - Filtro por distrito (pendiente de implementar)
-        
-        Args:
-            ruta: Nombre de ruta a filtrar
-            distrito: Distrito a filtrar (no implementado aún)
-            distancia: Distancia máxima en km (requiere ubicación del usuario)
-            
-        Returns:
-            Lista de rutas que cumplen con los criterios de filtrado
+        Filtra rutas usando el patrón Strategy y adjunta paraderos.
+
+        Comportamiento:
+        - Si se pasa `ruta_id` (int) -> devuelve directamente la lista de paraderos
+          asociados a esa ruta (lista de dicts).
+        - En caso contrario, aplica los filtros sobre rutas y devuelve una lista
+          de dicts {id_ruta, nombre, paraderos: [...]}
         """
-        # Obtener todas las rutas con sus relaciones
-        todas_rutas = self.db.query(Ruta).all()
-        
-        # Crear sistema de filtros
+        paradero_svc = Paradero_Service(shared_engine)
+
+        # Si se pidió por id explícito, devolver sólo los paraderos
+        if ruta_id is not None:
+            return paradero_svc.get_paraderos_by_ruta(ruta_id)
+
+        # Obtener todas las rutas con paraderos cargados para evitar lazy loads
+        todas_rutas = self.db.query(Ruta).options(joinedload(Ruta.paraderos)).all()
+
         sistema_filtros = SistemaFiltros()
-        
-        # Agregar estrategia de filtro por nombre de ruta
         if ruta and ruta.strip():
             sistema_filtros.agregar_estrategia(FiltroRuta(ruta))
-        
-        # Agregar estrategia de filtro por cercanía
+
         if distancia and distancia > 0:
             ubicacion_usuario = self._obtener_ubicacion_usuario()
             if ubicacion_usuario:
                 sistema_filtros.agregar_estrategia(FiltroCercania(distancia, ubicacion_usuario))
-        
-        # TODO: Implementar FiltroDistrito cuando sea necesario
-        if distrito and distrito.strip():
-            # sistema_filtros.agregar_estrategia(FiltroDistrito(distrito))
+
+        # TODO: filtro por distrito si se implementa
+        rutas_filtradas = sistema_filtros.aplicar_filtros(todas_rutas)
+
+        resultado: List[Dict] = []
+        for ruta_obj in rutas_filtradas:
+            # Intentar obtener paraderos vía servicio (más consistente)
+            try:
+                paraderos = paradero_svc.get_paraderos_by_ruta(getattr(ruta_obj, 'id_ruta', None))
+            except Exception:
+                # Fallback: serializar desde la relación cargada
+                paraderos = []
+                if hasattr(ruta_obj, 'paraderos') and ruta_obj.paraderos:
+                    for p in ruta_obj.paraderos:
+                        paraderos.append({
+                            'id_paradero': getattr(p, 'id_paradero', None),
+                            'nombre': getattr(p, 'nombre', None),
+                            'coordenada_lat': getattr(p, 'coordenada_lat', None),
+                            'coordenada_lng': getattr(p, 'coordenada_lng', None),
+                            'colapso_actual': getattr(p, 'colapso_actual', None),
+                        })
+
+            resultado.append({
+                'id_ruta': getattr(ruta_obj, 'id_ruta', None),
+                'nombre': getattr(ruta_obj, 'nombre', None),
+                'paraderos': paraderos
+            })
+
+        # Log de depuración: mostrar el payload que se devolverá
+        try:
+            print('[DEBUG] Rutas filtradas payload:', resultado)
+        except Exception:
             pass
-        
-        # Aplicar todos los filtros configurados
-        return sistema_filtros.aplicar_filtros(todas_rutas)
-    
+
+        return resultado
+
     def _obtener_ubicacion_usuario(self) -> Optional[tuple]:
-        """
-        Obtiene la ubicación actual del usuario.
-        
-        TODO: Implementar lógica para obtener ubicación real del usuario
-        Por ahora devuelve una ubicación de ejemplo en Lima.
-        
-        Returns:
-            Tuple con (latitud, longitud) o None si no se puede obtener
-        """
-        # Ubicación de ejemplo en Lima, Perú
-        # TODO: Integrar con sistema de geolocalización real
-        return (-12.0464, -77.0428)  # Lima, Perú
+        """Ubicación de ejemplo (placeholder)."""
+        return (-12.0464, -77.0428)
+

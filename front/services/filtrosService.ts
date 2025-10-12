@@ -11,9 +11,19 @@ export interface FiltrosData {
   distancia: string;
 }
 
+export interface Paradero {
+  id_paradero: number;
+  nombre?: string;
+  coordenada_lat?: number;
+  coordenada_lng?: number;
+  colapso_actual?: boolean;
+}
+
 export interface RutaFiltrada {
   id_ruta: number;
   nombre: string;
+  // lista opcional de paraderos asociada a la ruta (puede venir vacía o ausente)
+  paraderos?: Paradero[];
 }
 
 export const aplicarFiltros = async (filtros: FiltrosData): Promise<RutaFiltrada[]> => {
