@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from services.usuario_service import UsuarioService
 from config.db import get_db
@@ -43,3 +43,16 @@ def obtener_usuario_por_id(user_id: int, db: Session = Depends(get_db)):
     if usuario is None:
         return {"error": "Usuario no encontrado"}
     return usuario
+
+@router.get("/{user_id}/ubicacion")
+def obtener_ubicacion_usuario(user_id: int, db: Session = Depends(get_db)):
+    usuario_service = UsuarioService(db)
+    usuario = usuario_service.get_ubicacion_usuario(user_id)
+    if not usuario or usuario.ubicacion_actual_lat is None or usuario.ubicacion_actual_lng is None:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado o sin ubicación registrada")
+    
+    return {
+        "id_usuario": usuario.id_usuario,
+        "latitud": usuario.ubicacion_actual_lat,
+        "longitud": usuario.ubicacion_actual_lng
+    }

@@ -4,7 +4,7 @@ import AppModal from '@/components/Modals/AppModal';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import styles from './StylesReporteDesvio';
-import SelectParaderoModal from './SelectParaderoModal';
+import SelectRutaModal from './SelectRutaModal';
 
 type Props = {
   visible: boolean;
@@ -20,13 +20,11 @@ export default function EnviarReporteDesvio({ visible, onClose, onSubmit }: Prop
   const [pickerTarget, setPickerTarget] = useState<'desde' | 'hasta' | null>(null);
 
   // ejemplo de paraderos; reemplázalo por datos reales cuando estén disponibles
-  const paraderos = [
-    'San Isidro',
-    'Jesus María',
-    'Miraflores',
-    'La Molina',
-    'Callao',
-    'Ate',
+  const rutas = [
+    '201',
+    '204',
+    '206',
+    '209'
   ];
 
   function handleSend() {
@@ -92,10 +90,10 @@ export default function EnviarReporteDesvio({ visible, onClose, onSubmit }: Prop
           </TouchableOpacity>
         </View>
       </ThemedView>
-      <SelectParaderoModal
+      <SelectRutaModal
         visible={pickerOpen}
         title={pickerTarget === 'desde' ? 'Desde' : 'Hasta'}
-        items={paraderos}
+        items={rutas}
         onClose={() => setPickerOpen(false)}
         onSelect={(value) => {
           if (pickerTarget === 'desde') setDesde(value);
