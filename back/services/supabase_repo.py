@@ -106,22 +106,3 @@ class SupabaseRepo:
         except SQLAlchemyError as e:
             print("[DB ERROR] save_report:", e)
             raise
-    # (Métodos de almacenamiento/insert de foto removidos porque no se usa Supabase Storage en este proyecto)
-
-    #def save_notification(self, note: Dict) -> Dict:
-        #table = self._reflect_table(("notification", "notifications", "notificaciones"))
-        #cols = set(table.columns.keys())
-        #allowed = {k: v for k, v in note.items() if k in cols}
-        #if not allowed:
-        #    raise RuntimeError(f"Ninguna key de la nota coincide con columnas de {table.name}. Columnas disponibles: {list(cols)}")
-        #try:
-         #   with self.engine.begin() as conn:
-         #       stmt = insert(table).values(**allowed).returning(*table.c)
-         #       res = conn.execute(stmt)
-         #       row = res.mappings().first()
-          #      if row is None:
-          #          raise Exception("Fallo al insertar notificación")
-          #      return dict(row)
-        #except SQLAlchemyError as e:
-         #   print("[DB ERROR] save_notification:", e)
-         #   raise

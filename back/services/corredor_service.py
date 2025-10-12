@@ -28,7 +28,7 @@ class CorredorService:
        return self.db.query(Corredor).filter(Corredor.id_corredor == id_corredor).first()
 
 
-   def update_ubicacion(self, id_corredor: int, ubicacion_lat: float, ubicacion_lng: float, estado: str):
+   def actualizar_ubicacion(self, id_corredor: int, ubicacion_lat: float, ubicacion_lng: float, estado: str):
         corredor = self.db.query(Corredor).filter(Corredor.id_corredor == id_corredor).first()
         if corredor:
             corredor.ubicacion_lat = ubicacion_lat

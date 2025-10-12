@@ -21,10 +21,13 @@ export default function EnviarReporteDesvio({ visible, onClose, onSubmit }: Prop
 
   // ejemplo de paraderos; reemplázalo por datos reales cuando estén disponibles
   const rutas = [
-    '201',
-    '204',
-    '206',
-    '209'
+    'Jesus María',
+    'Via Expresa',
+    'Arriola',
+    'La Cultura',
+    'San Luis',
+    'Ulima',
+    'Camacho'
   ];
 
   function handleSend() {

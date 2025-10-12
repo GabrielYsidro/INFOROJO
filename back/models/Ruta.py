@@ -1,6 +1,8 @@
 from sqlalchemy import Column, Integer, String
 from config.db import Base
 from sqlalchemy.orm import relationship
+from sqlalchemy.ext.associationproxy import association_proxy
+
 
 class Ruta(Base):
     __tablename__ = "ruta"
@@ -9,8 +11,7 @@ class Ruta(Base):
 
     id_ruta = Column(Integer, primary_key=True, index=True, autoincrement=True)
     nombre = Column(String(255), nullable=False)
-    
-    
     # Definicion de relaciones  
     ruta_paraderos = relationship("RutaParadero", back_populates="ruta")
+    paraderos = association_proxy("ruta_paraderos", "paradero")
     reportes_afectados = relationship("Reporte", back_populates="ruta_afectada")

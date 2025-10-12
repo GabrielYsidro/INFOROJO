@@ -1,11 +1,11 @@
 from typing import Dict
-from .reporte_domain import ReporteDesvio
+from .reporte_Desvio import Reporte_Desvio
 
 class CreadorReportes:
     @staticmethod
     def crear(tipo: str, payload: Dict):
         if tipo == "desvio":
-            return ReporteDesvio(
+            return Reporte_Desvio(
                 id_reporte=str(payload["id_reporte"]),
                 conductor_id=int(payload["conductor_id"]),
                 ruta_id=int(payload["ruta_id"]),
