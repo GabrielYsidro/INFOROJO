@@ -48,12 +48,12 @@ export default function HomeScreen() {
     </ThemedView>
     <ThemedView style={styles.stepContainer}>
       <ThemedText type="subtitle">Ir a Cliente</ThemedText>
-      {/*<Link href="/(cliente)/MenuPrincipal/ClienteMenuPrincipal">
+      <Link href="/(cliente)">
         <ThemedText type="defaultSemiBold" style={{ color: 'blue' }}>
           Ir al menú principal del cliente
         </ThemedText>
-      </Link>*/}
-    </ThemedView>
+      </Link>
+    </ThemedView>*/}
     <ThemedView style={styles.stepContainer}>
       <ThemedText type="subtitle">Ver forms de alerta de conductor</ThemedText>
       <Link href="/(conductor)/EnviarReporteDesvio/EnviarReporteDesvio">

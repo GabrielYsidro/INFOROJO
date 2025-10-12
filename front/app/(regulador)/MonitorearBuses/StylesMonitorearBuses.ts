@@ -46,4 +46,20 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
+
+  monitorButton: {
+    backgroundColor: "#EB5E55",
+    paddingVertical: 14,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 20,
+    marginBottom: 20,
+  },
+  monitorButtonText: {
+    color: "#FFF",
+    fontSize: 16,
+    fontWeight: "700",
+    textTransform: "uppercase",
+  },
 });
