@@ -12,7 +12,6 @@ class Paradero(Base):
     coordenada_lng = Column(Float, nullable=True)
     colapso_actual = Column(Boolean, default=False)
 
-
     # Definicion de relaciones
     ruta_paraderos = relationship("RutaParadero", back_populates="paradero")
     reportes_inicial = relationship("Reporte", back_populates="paradero_inicial", foreign_keys="Reporte.id_paradero_inicial")

@@ -2,6 +2,7 @@ import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from "react-nati
 import { LineChart } from "react-native-chart-kit";
 import Svg, { Circle, G } from "react-native-svg";
 import { useRouter } from "expo-router"; // 👈 para navegación
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const { width } = Dimensions.get("window");
 const CARD_GAP = 12;
@@ -97,7 +98,10 @@ export default function DashboardScreen() {
       {/* 🔹 Botón de Monitorear */}
       <TouchableOpacity
         style={styles.monitorButton}
-        onPress={() => router.push("/(regulador)/MonitorearBuses/MonitorearBuses")} // 👈 Navegación al presionar
+        onPress={async () => {
+          router.push("/(regulador)/MonitorearBuses/MonitorearBuses");
+          await AsyncStorage.clear();
+        }} // 👈 Navegación al presionar
       >
         <Text style={styles.monitorButtonText}>Monitorear</Text>
       </TouchableOpacity>

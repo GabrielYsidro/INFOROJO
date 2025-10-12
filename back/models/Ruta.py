@@ -10,7 +10,6 @@ class Ruta(Base):
     id_ruta = Column(Integer, primary_key=True, index=True, autoincrement=True)
     nombre = Column(String(255), nullable=False)
     
-    
     # Definicion de relaciones  
     ruta_paraderos = relationship("RutaParadero", back_populates="ruta")
     reportes_afectados = relationship("Reporte", back_populates="ruta_afectada")
