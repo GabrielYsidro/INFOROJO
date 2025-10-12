@@ -1,7 +1,7 @@
 import { getDashboard } from "@/services/getDashboard";
 import { useRouter } from "expo-router"; // 👈 para navegación
 import { useEffect, useState } from "react";
-import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Dimensions, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { LineChart } from "react-native-chart-kit";
 import Svg, { Circle, G } from "react-native-svg";
 
@@ -19,19 +19,22 @@ const CHART_WIDTH = width - 24;
 export default function DashboardScreen() {
   const router = useRouter();
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  const [loading, setLoading] = useState(false);
+
+
+  const fetchDashboardData = async () => {
+    try {
+      const data = await getDashboard();
+      setDashboardData(data);
+    } catch (error) {
+      console.error("Error al obtener dashboard:", error);
+    }
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const data = await getDashboard();
-        setDashboardData(data);
-      } catch (error) {
-        console.error("Error al obtener dashboard:", error);
-      }
-    };
-
-    fetchData();
+    fetchDashboardData();
   }, []);
+
 
   return (
     <View style={styles.container}>
@@ -45,7 +48,21 @@ export default function DashboardScreen() {
         <TouchableOpacity style={styles.filterChip}>
           <Text style={styles.filterText}>Este mes ▾</Text>
         </TouchableOpacity>
+
+
+        <TouchableOpacity
+          style={styles.refreshButton}
+          onPress={fetchDashboardData}
+          disabled={loading}
+        >
+          {loading ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
+            <Text style={styles.refreshText}>Actualizar</Text>
+          )}
+        </TouchableOpacity>
       </View>
+
 
       {/* Cards métricas */}
       <View style={[styles.row, { marginTop: 8 }]}>
@@ -180,5 +197,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "700",
     textTransform: "uppercase",
+  },
+  refreshButton: {
+    backgroundColor: "#EB5E55",
+    borderRadius: 20,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+  },
+  refreshText: {
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: 14,
   },
 });
