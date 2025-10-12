@@ -53,7 +53,7 @@ export default function HomeScreen() {
           Ir al menú principal del cliente
         </ThemedText>
       </Link>
-    </ThemedView>
+    </ThemedView>*/}
     <ThemedView style={styles.stepContainer}>
       <ThemedText type="subtitle">Ver forms de alerta de conductor</ThemedText>
       <Link href="/(conductor)/EnviarReporteDesvio/EnviarReporteDesvio">

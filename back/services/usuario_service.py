@@ -47,3 +47,12 @@ class UsuarioService:
         Retorna un usuario por su ID, o None si no existe
         """
         return self.db.query(UsuarioBase).filter(UsuarioBase.id_usuario == user_id).first()
+    
+
+    # UBICACION MATIAS prueba
+    def get_ubicacion_usuario(self, user_id: int) -> UsuarioBase | None:
+        """
+        Retorna el usuario con su ubicación actual, o None si no existe
+        """
+        return self.db.query(UsuarioBase).filter(UsuarioBase.id_usuario == user_id).first()
+
