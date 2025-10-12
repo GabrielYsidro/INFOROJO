@@ -1,15 +1,45 @@
 // components/MapSection.tsx
-import { useState } from "react";
-import { Dimensions, Image, Platform, StyleSheet, Text, View } from "react-native";
+import React, { useState, useEffect}from "react";
+import { Dimensions, Image, Platform, StyleSheet, Text, View, Alert } from "react-native";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import AppModal from "./Modals/AppModal";
 import ModalBusInfo from "./Modals/ModalBusInfo";
+import * as Location from 'expo-location';
 
 const { height } = Dimensions.get("window");
 const MAP_HEIGHT = height * 0.6;
 
 export default function MapSection() {
   const [open, setOpen] = useState(false);
+  const [initialRegion, setInitialRegion] = useState({
+    latitude: -12.0464,
+    longitude: -77.0428,
+    latitudeDelta: 0.05,
+    longitudeDelta: 0.05,
+  });
+
+  useEffect(() => {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert(
+          'Permiso de ubicación denegado',
+          'Esta aplicación necesita acceso a tu ubicación para funcionar correctamente.'
+        );
+        return;
+      }
+
+      let location = await Location.getCurrentPositionAsync({});
+      setInitialRegion({
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+        latitudeDelta: 0.05,
+        longitudeDelta: 0.05,
+      });
+    })();
+  }, []);
+
+
   return (
     <View style={styles.mapContainer}>
       {Platform.OS !== "web" ? (
