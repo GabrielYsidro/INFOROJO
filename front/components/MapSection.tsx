@@ -1,6 +1,6 @@
 // components/MapSection.tsx
 import { useState } from "react";
-import { Dimensions, Platform, StyleSheet, Text, View } from "react-native";
+import { Dimensions, Image, Platform, StyleSheet, Text, View } from "react-native";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import AppModal from "./Modals/AppModal";
 import ModalBusInfo from "./Modals/ModalBusInfo";
@@ -10,10 +10,6 @@ const MAP_HEIGHT = height * 0.6;
 
 export default function MapSection() {
   const [open, setOpen] = useState(false);
-  const buttonCoordinate = {
-    latitude: -12.0464,
-    longitude: -77.0428,
-  };
   return (
     <View style={styles.mapContainer}>
       {Platform.OS !== "web" ? (
@@ -73,11 +69,9 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
   },
   button: {
-    backgroundColor: '#007AFF',
+    //backgroundColor: '#ff4646ff',
     padding: 12,
     borderRadius: 8,
-    elevation: 3,
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
