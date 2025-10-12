@@ -12,7 +12,11 @@
       "distribution": "internal"
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      "env" : {
+        "API_URL_PROD": "https://backend-inforojo-ckh4hedjhqdtdfaq.eastus-01.azurewebsites.net",
+        "GOOGLE_MAPS_API_KEY": "AIzaSyC4uv9G8rdh45hA6m9lwPXabFzLtVnk6Lw"
+      }
     }
   },
   "submit": {

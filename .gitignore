@@ -4,5 +4,6 @@
 /back/.env
 /front/.env
 /back/venv
+/front/secrets.json
 __pycache__/
 *.py[cod]
