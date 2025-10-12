@@ -4,5 +4,8 @@
 /back/.env
 /front/.env
 /back/venv
+/front/secrets.json
+/front/.expo
+/front/eas.json
 __pycache__/
-*.py[cod]
+*.py[cod]$

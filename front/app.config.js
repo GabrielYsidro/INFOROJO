@@ -1,5 +1,8 @@
-{
-  "expo": {
+// app.config.js
+import 'dotenv/config'; // Necesario si usas un archivo .env local
+
+export default {
+  expo: {
     "name": "InfoRojoApp",
     "slug": "InfoRojoApp",
     "version": "1.0.0",
@@ -12,12 +15,21 @@
       "supportsTablet": true
     },
     "android": {
-      "package" : "com.grupo5.inforojoapp",
+      "package": "com.grupo5.inforojoapp",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyB2XvzIiMG3RX1x-ZNC8MqWOSxoY9_ucE0",
+        }
+      },
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -48,4 +60,4 @@
       }
     }
   }
-}
+};
