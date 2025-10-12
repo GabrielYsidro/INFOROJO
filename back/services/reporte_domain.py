@@ -61,5 +61,5 @@ class ReporteDesvio(Reporte):
             "creado_en": saved.get("creado_en") or record["creado_en"],
         }
         # Si save_notification falla, que el repo lance excepción y lo maneja el service si se desea
-        repo.save_notification(notification)
+        #repo.save_notification(notification)
         return saved

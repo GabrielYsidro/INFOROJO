@@ -1,7 +1,19 @@
 import { StyleSheet } from 'react-native';
 
 export default StyleSheet.create({
+  // estilo cuando se usa como pantalla completa
   container: { flex: 1, backgroundColor: '#fff', paddingHorizontal: 0 },
+  // estilo para el contenido del modal centrado (similar a StylesReporteDesvio.container)
+  containerModal: {
+    width: '100%',
+    maxWidth: 360,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 18,
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
