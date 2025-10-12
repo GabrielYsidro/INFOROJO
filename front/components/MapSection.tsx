@@ -23,22 +23,31 @@ export default function MapSection() {
             latitudeDelta: 0.05,
             longitudeDelta: 0.05,
           }}
-          >
-            {/* Marker es para elementos en el mapa*/}
-              <Marker 
-            coordinate={buttonCoordinate}
-            onPress={() => {
-              console.log('Marker pressed');
-              setOpen(true);
-            }}
-            tracksViewChanges={false} // Improves performance
-            anchor={{ x: 0.5, y: 0.5 }} // Centers the marker
-            centerOffset={{ x: 0, y: 0 }} // Adjust if needed
-          >
-            <View style={styles.button}>
-              <Text style={styles.buttonText}>🚌</Text>
-            </View>
-          </Marker>
+           >
+                {/* Marker es para elementos en el mapa*/}
+          <Marker 
+        coordinate={{
+          latitude: -12.0464,
+          longitude: -77.0428,
+        }}
+        onPress={() => {
+          console.log('Marker pressed');
+          setOpen(true);
+        }}
+        anchor={{ x: 0.5, y: 0.5 }} // Centers the marker
+        centerOffset={{ x: 0, y: 0 }} // Adjust if needed
+      >
+          {/*<View style={styles.button}>
+          <Text style={styles.buttonText}>🚌</Text>
+        </View>*/}
+        <View style={[ { justifyContent: "center", alignItems: "center" }]}>
+        <Image
+          source={require("../assets/images/bus.png")}
+          style={{ width: 45, height: 45, resizeMode: "contain" }}
+        />
+      </View>
+
+      </Marker>
           </MapView>
           {/* Si quieren colocar un elemento fijado lo ponen acá abajo */}
           <AppModal visible={open} onClose={() => setOpen(false)}>

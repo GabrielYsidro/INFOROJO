@@ -42,9 +42,7 @@ export default function ClienteMenuPrincipal() {
                     <Icon name="filter-variant" size={20} color="#fff" />
                     <Text style={styles.topButtonText}>Filtros</Text>
                 </TouchableOpacity>
-                <TouchableOpacity 
-                style={styles.topButton}
-                onPress={() => router.push("/(cliente)/HistorialViajes/HistorialViajes")}>
+                <TouchableOpacity style={styles.topButton}>
                     <Icon name="bus" size={20} color="#fff" />
                     <Text style={styles.topButtonText}>Viajes</Text>
                 </TouchableOpacity>
@@ -55,7 +53,12 @@ export default function ClienteMenuPrincipal() {
 
             {/* Bottom Navigation */}
             <View style={styles.bottomNav}>
-                <TouchableOpacity style={styles.navButtonActive}>
+
+                <TouchableOpacity style={styles.navButtonActive}
+                    onPress={async () => {
+                        await AsyncStorage.clear();
+                        console.log("AsyncStorage limpiado");
+                    }}>
                     <Icon name="home" size={28} color="#fff" />
                     <Text style={styles.navButtonTextActive}>Menu Principal</Text>
                 </TouchableOpacity>
