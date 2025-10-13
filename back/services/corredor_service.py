@@ -22,7 +22,8 @@ class CorredorService:
 
 
    def get_corredores(self):
-       return self.db.query(Corredor).all()
+    return self.db.query(Corredor).filter(Corredor.estado.isnot(None)).all()
+
 
 
   
