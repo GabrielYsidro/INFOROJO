@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 from models.Corredor import Corredor
-
+from models.Paradero import Paradero
+from math import radians, sin, cos, sqrt, atan2
 
 class CorredorService:
    def __init__(self, db: Session):
@@ -35,11 +36,46 @@ class CorredorService:
         if not corredor:
             return None
 
-        # Mock data
-        numero_mock = 11
-        nombre_paradero_mock = "Paradero San Luis"
+        # Obtener todos los paraderos
+        paraderos = self.db.query(Paradero).all()
 
-        # Retorna un dict enriquecido
+        # Si no hay paraderos en BD, devolver mock
+        if not paraderos:
+            return {
+                "id_corredor": corredor.id_corredor,
+                "capacidad_max": corredor.capacidad_max,
+                "ubicacion_lat": corredor.ubicacion_lat,
+                "ubicacion_lng": corredor.ubicacion_lng,
+                "estado": corredor.estado,
+                "numero_pasajeros": 11,
+                "nombre_paradero": "Paradero San Luis",
+            }
+
+        # Función Haversine para calcular distancia entre dos coordenadas (km)
+        def haversine(lat1, lon1, lat2, lon2):
+            R = 6371  # Radio de la Tierra en km
+            dlat = radians(lat2 - lat1)
+            dlon = radians(lon2 - lon1)
+            a = sin(dlat / 2)**2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon / 2)**2
+            c = 2 * atan2(sqrt(a), sqrt(1 - a))
+            return R * c
+
+        # Buscar el paradero más cercano
+        paradero_cercano = min(
+            paraderos,
+            key=lambda p: haversine(
+                corredor.ubicacion_lat,
+                corredor.ubicacion_lng,
+                p.coordenada_lat,
+                p.coordenada_lng,
+            )
+            if p.coordenada_lat and p.coordenada_lng else float("inf"),
+        )
+
+        # Mock de número de pasajeros
+        numero_mock = 11
+
+        # Retorna información enriquecida
         return {
             "id_corredor": corredor.id_corredor,
             "capacidad_max": corredor.capacidad_max,
@@ -47,7 +83,7 @@ class CorredorService:
             "ubicacion_lng": corredor.ubicacion_lng,
             "estado": corredor.estado,
             "numero_pasajeros": numero_mock,
-            "nombre_paradero": nombre_paradero_mock,
+            "nombre_paradero": paradero_cercano.nombre,
         }
 
 
