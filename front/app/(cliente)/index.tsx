@@ -42,7 +42,10 @@ export default function ClienteMenuPrincipal() {
                     <Icon name="filter-variant" size={20} color="#fff" />
                     <Text style={styles.topButtonText}>Filtros</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.topButton}>
+                <TouchableOpacity 
+                    style={styles.topButton}
+                    onPress={() => router.push('/(cliente)/HistorialViajes/HistorialViajes')}
+                >
                     <Icon name="bus" size={20} color="#fff" />
                     <Text style={styles.topButtonText}>Viajes</Text>
                 </TouchableOpacity>
