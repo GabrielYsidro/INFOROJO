@@ -52,11 +52,12 @@ def obtener_historial_usuario(user_id: int, db: Session = Depends(get_db)):
         return {"error": "Usuario no encontrado"}
     # Retornar historial de uso (viajes)
     historial = usuario.historial_uso
-    # Formatear respuesta para solo los datos relevantes
+    # Formatear respuesta para datos relevantes, incluyendo paradero de bajada
     return [
         {
             "id": h.id_historial,
-            "paradero": h.paradero_sube.nombre if h.paradero_sube else None,
+            "paradero_sube": h.paradero_sube.nombre if h.paradero_sube else None,
+            "paradero_baja": h.paradero_baja.nombre if h.paradero_baja else None,
             "fecha": h.fecha_hora
         }
         for h in historial

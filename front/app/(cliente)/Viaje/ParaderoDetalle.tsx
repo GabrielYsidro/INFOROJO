@@ -6,40 +6,37 @@ import styles from './StylesParaderoDetalle';
 
 const ParaderoDetalle = () => {
   const router = useRouter();
-  const { paradero, fecha, subida, llegada, imagen } = useLocalSearchParams();
+  const { paradero_sube, paradero_baja, fecha, imagen } = useLocalSearchParams();
 
   return (
     <View style={{ flex: 1, backgroundColor: '#fff' }}>
-      {/* Header */}
-      <View style={detalleStyles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Text style={detalleStyles.backArrow}>{'<'}</Text>
-        </TouchableOpacity>
-        <Text style={detalleStyles.headerTitle}>Viaje</Text>
-        <View style={{ width: 32 }} />
+      {/* Imagen */}
+      <View style={detalleStyles.imageContainer}>
+        <Image
+          source={imagen ? { uri: String(imagen) } : require('@/assets/images/adaptive-icon.png')}
+          style={detalleStyles.image}
+        />
       </View>
-
-      {/* Imagen omitida por requerimiento */}
-      {/* Info principal */}
+      {/* Título y fecha */}
       <View style={{ alignItems: 'center', marginTop: 16 }}>
-        <Text style={detalleStyles.paradero}>{paradero}</Text>
+        <Text style={detalleStyles.paradero}>{paradero_sube || 'Paradero'}</Text>
         <Text style={detalleStyles.fecha}>{formatearFecha(String(fecha))}</Text>
       </View>
       {/* Subida/Llegada */}
-      <View style={detalleStyles.infoRow}>
-        <View style={detalleStyles.infoCol}>
-          <Text style={detalleStyles.label}>Subida</Text>
-          <Text style={detalleStyles.value}>{subida}</Text>
+      <View style={detalleStyles.infoRowStyled}>
+        <View style={detalleStyles.infoColStyled}>
+          <Text style={detalleStyles.labelStyled}>Subida</Text>
+          <Text style={detalleStyles.valueStyled}>{paradero_sube || 'Sin dato'}</Text>
         </View>
-        <View style={detalleStyles.infoCol}>
-          <Text style={detalleStyles.label}>Llegada</Text>
-          <Text style={detalleStyles.value}>{llegada}</Text>
+        <View style={detalleStyles.infoColStyled}>
+          <Text style={detalleStyles.labelStyled}>Llegada</Text>
+          <Text style={detalleStyles.valueStyled}>{paradero_baja || 'Sin dato'}</Text>
         </View>
       </View>
       {/* Botón Calificar */}
-      <View style={{ alignItems: 'center', marginTop: 32 }}>
-        <TouchableOpacity style={detalleStyles.btnCalificar}>
-          <Text style={detalleStyles.btnText}>Calificar Paradero</Text>
+      <View style={detalleStyles.bottomButtonContainer}>
+        <TouchableOpacity style={detalleStyles.btnCalificarStyled}>
+          <Text style={detalleStyles.btnTextStyled}>Calificar Paradero</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -47,37 +44,19 @@ const ParaderoDetalle = () => {
 };
 
 function formatearFecha(fecha: string) {
+  if (!fecha) return '';
+  const d = new Date(fecha);
+  if (isNaN(d.getTime())) return fecha;
   const meses = [
     'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
     'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
   ];
-  const d = new Date(fecha);
   const dia = d.getDate();
   const mes = meses[d.getMonth()];
   return `${dia} de ${mes}`;
 }
 
 const detalleStyles = StyleSheet.create({
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FF5252',
-    paddingTop: 40,
-    paddingBottom: 16,
-    paddingHorizontal: 16,
-    justifyContent: 'space-between',
-  },
-  backArrow: {
-    fontSize: 28,
-    color: '#fff',
-    width: 32,
-    textAlign: 'left',
-  },
-  headerTitle: {
-    fontSize: 20,
-    color: '#fff',
-    fontWeight: 'bold',
-  },
   imageContainer: {
     alignItems: 'center',
     marginTop: 16,
@@ -87,48 +66,70 @@ const detalleStyles = StyleSheet.create({
     height: 180,
     borderRadius: 16,
     resizeMode: 'cover',
+    marginBottom: 16,
   },
   paradero: {
     fontSize: 28,
     fontWeight: 'bold',
     color: '#222',
     marginTop: 8,
+    textAlign: 'left',
+    width: '90%',
   },
   fecha: {
     fontSize: 18,
     color: '#888',
     marginTop: 2,
+    textAlign: 'left',
+    width: '90%',
   },
-  infoRow: {
+  infoRowStyled: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 24,
-    paddingHorizontal: 32,
+    paddingHorizontal: 16,
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+    paddingBottom: 12,
   },
-  infoCol: {
+  infoColStyled: {
     flex: 1,
-    alignItems: 'center',
+    alignItems: 'flex-start',
+    paddingHorizontal: 8,
   },
-  label: {
-    fontSize: 16,
+  labelStyled: {
+    fontSize: 15,
     color: '#888',
-    marginBottom: 4,
+    marginBottom: 2,
     fontWeight: 'bold',
   },
-  value: {
+  valueStyled: {
     fontSize: 16,
     color: '#222',
+    marginBottom: 2,
   },
-  btnCalificar: {
+  bottomButtonContainer: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    padding: 16,
+    backgroundColor: '#fff',
+  },
+  btnCalificarStyled: {
     backgroundColor: '#FF5252',
     borderRadius: 10,
     paddingVertical: 14,
     paddingHorizontal: 48,
+    alignSelf: 'center',
+    width: '100%',
   },
-  btnText: {
+  btnTextStyled: {
     color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
+    textAlign: 'center',
   },
 });
 

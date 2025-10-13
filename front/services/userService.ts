@@ -20,14 +20,21 @@ const getUsers = async (userId: number) =>{
     return res.json();
 }
 
+
+let historialCache: { [key: number]: any } = {};
 const getUserHistorial = async (userId: number) => {
+    if (historialCache[userId]) {
+        return historialCache[userId];
+    }
     const res = await fetch(`${API_URL}/usuario/${userId}/historial`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
         },
     });
-    return res.json();
+    const data = await res.json();
+    historialCache[userId] = data;
+    return data;
 }
 
 export default {
