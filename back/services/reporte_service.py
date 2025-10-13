@@ -130,3 +130,34 @@ class ReporteService:
         # persistir
         saved = self.save_report(record)
         return saved
+    
+    def crear_reporte_retraso(self, payload: Dict) -> Dict:
+        """
+        Crea un reporte de tipo 'retraso' (alerta por tráfico).
+        """
+        if self.reporte_factory:
+            reporte_obj = self.reporte_factory.crear("retraso", payload)
+            record = getattr(reporte_obj, "to_dict", lambda: None)()
+            if record is None:
+                # fallback: generar directamente desde objeto
+                record = {
+                    "id_reporte": reporte_obj.id_reporte,
+                    "id_tipo_reporte": payload.get("id_tipo_reporte"),
+                    "id_emisor": payload.get("id_emisor"),
+                    "id_ruta_afectada": reporte_obj.ruta_id,
+                    "id_paradero_inicial": reporte_obj.paradero_inicial_id,
+                    "id_paradero_final": reporte_obj.paradero_final_id,
+                    "tiempo_retraso_min": reporte_obj.tiempo_retraso_min,
+                    "descripcion": reporte_obj.descripcion,
+                    "mensaje": reporte_obj.generar_mensaje(),
+                }
+        else:
+            record = dict(payload)
+            record.setdefault(
+                "mensaje",
+                f"Retraso en ruta {payload.get('ruta_id')} de paradero {payload.get('paradero_inicial_id')} "
+                f"a {payload.get('paradero_final_id')} ({payload.get('tiempo_retraso_min')} min)",
+            )
+
+        saved = self.save_report(record)
+        return saved
