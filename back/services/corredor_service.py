@@ -24,8 +24,31 @@ class CorredorService:
        return self.db.query(Corredor).all()
 
 
+  
    def get_corredor_by_id(self, id_corredor: int):
-       return self.db.query(Corredor).filter(Corredor.id_corredor == id_corredor).first()
+        corredor = (
+            self.db.query(Corredor)
+            .filter(Corredor.id_corredor == id_corredor)
+            .first()
+        )
+
+        if not corredor:
+            return None
+
+        # Mock data
+        numero_mock = 11
+        nombre_paradero_mock = "Paradero San Luis"
+
+        # Retorna un dict enriquecido
+        return {
+            "id_corredor": corredor.id_corredor,
+            "capacidad_max": corredor.capacidad_max,
+            "ubicacion_lat": corredor.ubicacion_lat,
+            "ubicacion_lng": corredor.ubicacion_lng,
+            "estado": corredor.estado,
+            "numero_pasajeros": numero_mock,
+            "nombre_paradero": nombre_paradero_mock,
+        }
 
 
    def actualizar_ubicacion(self, id_corredor: int, ubicacion_lat: float, ubicacion_lng: float, estado: str):
