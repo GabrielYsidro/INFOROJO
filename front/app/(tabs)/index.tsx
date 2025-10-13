@@ -1,13 +1,12 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
-import { useState } from 'react';
-import { Link } from "expo-router";
 import { HelloWave } from '@/components/HelloWave';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-import {Button} from 'react-native';
-import AppModal from '../../components/Modals/AppModal';  
+import { Image } from 'expo-image';
+import { Link } from "expo-router";
+import { useState } from 'react';
+import { Button, Platform, StyleSheet } from 'react-native';
+import AppModal from '../../components/Modals/AppModal';
 import ModalBusInfo from '../../components/Modals/ModalBusInfo';
 
 export default function HomeScreen() {
@@ -49,7 +48,7 @@ export default function HomeScreen() {
     </ThemedView>
     <ThemedView style={styles.stepContainer}>
       <ThemedText type="subtitle">Ir a Cliente</ThemedText>
-      <Link href="/(cliente)/MenuPrincipal/ClienteMenuPrincipal">
+      <Link href="/(cliente)">
         <ThemedText type="defaultSemiBold" style={{ color: 'blue' }}>
           Ir al menú principal del cliente
         </ThemedText>
@@ -65,7 +64,7 @@ export default function HomeScreen() {
     </ThemedView>
       <Button title='Show Modal' onPress={ () => setOpen(true)}/>
       <AppModal visible={open} onClose={() => setOpen(false)}>
-        <ModalBusInfo onClose={() => setOpen(false)} />
+        <ModalBusInfo bus_id={1} onClose={() => setOpen(false)} />
       </AppModal>
     </ParallaxScrollView>
   );

@@ -5,32 +5,52 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import styles from './StylesReporteDesvio';
 import SelectParaderoModal from './SelectParaderoModal';
+import SelectRutaModal from './SelectRutaModal';
 
 type Props = {
   visible: boolean;
   onClose: () => void;
-  onSubmit?: (data: { desde: string; hasta: string; motivo: string }) => void;
+  onSubmit?: (data: { desde: string; hasta: string; ruta: string; motivo: string }) => void;
 };
 
 export default function EnviarReporteDesvio({ visible, onClose, onSubmit }: Props) {
   const [desde, setDesde] = useState('San Isidro');
   const [hasta, setHasta] = useState('Jesus María');
+  const [ruta, setRuta] = useState('201');
   const [motivo, setMotivo] = useState('');
   const [pickerOpen, setPickerOpen] = useState(false);
-  const [pickerTarget, setPickerTarget] = useState<'desde' | 'hasta' | null>(null);
+  const [pickerTarget, setPickerTarget] = useState<'desde' | 'hasta' | 'ruta' | null>(null);
 
   // ejemplo de paraderos; reemplázalo por datos reales cuando estén disponibles
   const paraderos = [
-    'San Isidro',
     'Jesus María',
-    'Miraflores',
-    'La Molina',
-    'Callao',
-    'Ate',
+    'Via Expresa',
+    'Arriola',
+    'La Cultura',
+    'San Luis',
+    'Ulima',
+    'Camacho'
   ];
 
+  const rutas = [
+    '201',
+    '204',
+    '206',
+    '209'
+  ];
+
+  function openPicker(target: 'desde' | 'hasta' | 'ruta') {
+    setPickerTarget(target);
+    setPickerOpen(true);
+  }
+
+  function closePicker() {
+    setPickerOpen(false);
+    setPickerTarget(null);
+  }
+
   function handleSend() {
-    onSubmit?.({ desde, hasta, motivo });
+    onSubmit?.({ desde, hasta, ruta, motivo });
     onClose();
   }
 
@@ -48,10 +68,7 @@ export default function EnviarReporteDesvio({ visible, onClose, onSubmit }: Prop
           <TouchableOpacity
             style={styles.picker}
             activeOpacity={0.8}
-            onPress={() => {
-              setPickerTarget('desde');
-              setPickerOpen(true);
-            }}
+            onPress={() => openPicker('desde')}
           >
             <ThemedText>{desde}</ThemedText>
           </TouchableOpacity>
@@ -62,12 +79,20 @@ export default function EnviarReporteDesvio({ visible, onClose, onSubmit }: Prop
           <TouchableOpacity
             style={styles.picker}
             activeOpacity={0.8}
-            onPress={() => {
-              setPickerTarget('hasta');
-              setPickerOpen(true);
-            }}
+            onPress={() => openPicker('hasta')}
           >
             <ThemedText>{hasta}</ThemedText>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.fieldRow}>
+          <ThemedText type="defaultSemiBold">Ruta</ThemedText>
+          <TouchableOpacity
+            style={styles.picker}
+            activeOpacity={0.8}
+            onPress={() => openPicker('ruta')}
+          >
+            <ThemedText>{ruta}</ThemedText>
           </TouchableOpacity>
         </View>
 
@@ -92,14 +117,28 @@ export default function EnviarReporteDesvio({ visible, onClose, onSubmit }: Prop
           </TouchableOpacity>
         </View>
       </ThemedView>
+
+      {/* Mostrar solo el modal correspondiente */}
       <SelectParaderoModal
-        visible={pickerOpen}
+        visible={pickerOpen && (pickerTarget === 'desde' || pickerTarget === 'hasta')}
         title={pickerTarget === 'desde' ? 'Desde' : 'Hasta'}
         items={paraderos}
-        onClose={() => setPickerOpen(false)}
-        onSelect={(value) => {
+        onClose={closePicker}
+        onSelect={(value: string) => {
           if (pickerTarget === 'desde') setDesde(value);
           if (pickerTarget === 'hasta') setHasta(value);
+          closePicker();
+        }}
+      />
+
+      <SelectRutaModal
+        visible={pickerOpen && pickerTarget === 'ruta'}
+        title="Ruta"
+        items={rutas}
+        onClose={closePicker}
+        onSelect={(value: string) => {
+          setRuta(value);
+          closePicker();
         }}
       />
     </AppModal>
