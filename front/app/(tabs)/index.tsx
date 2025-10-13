@@ -64,7 +64,7 @@ export default function HomeScreen() {
     </ThemedView>
       <Button title='Show Modal' onPress={ () => setOpen(true)}/>
       <AppModal visible={open} onClose={() => setOpen(false)}>
-        <ModalBusInfo onClose={() => setOpen(false)} />
+        <ModalBusInfo bus_id={1} onClose={() => setOpen(false)} />
       </AppModal>
     </ParallaxScrollView>
   );
