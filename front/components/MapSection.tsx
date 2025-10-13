@@ -1,10 +1,10 @@
 // components/MapSection.tsx
-import React, { useState, useEffect}from "react";
-import { Dimensions, Image, Platform, StyleSheet, Text, View, Alert } from "react-native";
+import * as Location from 'expo-location';
+import { useEffect, useState } from "react";
+import { Alert, Dimensions, Image, Platform, StyleSheet, Text, View } from "react-native";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import AppModal from "./Modals/AppModal";
 import ModalBusInfo from "./Modals/ModalBusInfo";
-import * as Location from 'expo-location';
 
 const { height } = Dimensions.get("window");
 const MAP_HEIGHT = height * 0.6;
@@ -81,7 +81,7 @@ export default function MapSection() {
           </MapView>
           {/* Si quieren colocar un elemento fijado lo ponen acá abajo */}
           <AppModal visible={open} onClose={() => setOpen(false)}>
-                    <ModalBusInfo onClose={() => setOpen(false)} />
+                    <ModalBusInfo bus_id={1} onClose={() => setOpen(false)} />
                   </AppModal>
         </>
         
