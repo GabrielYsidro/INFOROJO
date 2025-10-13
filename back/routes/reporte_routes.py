@@ -125,3 +125,51 @@ def crear_reporte_desvio(payload: Dict = Body(...), conductor_header_id: Optiona
         print("[ERROR] crear_reporte_desvio exception:", str(e))
         traceback.print_exc()
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+    
+@router.post("/retraso")
+def crear_reporte_retraso(payload: Dict = Body(...), conductor_header_id: Optional[int] = Depends(get_user_id_from_headers)):
+    """
+    Crea un reporte de tipo 'retraso' (alerta por tráfico).
+    """
+    conductor_id = payload.get("conductor_id") or conductor_header_id
+    if conductor_id is None:
+        raise HTTPException(status_code=401, detail="Usuario no autenticado")
+
+    def parse_required_int(key: str) -> int:
+        if key not in payload or payload[key] is None:
+            raise HTTPException(status_code=400, detail=f"Falta campo requerido: {key}")
+        try:
+            return int(payload[key])
+        except (ValueError, TypeError):
+            raise HTTPException(status_code=400, detail=f"Campo {key} debe ser numérico")
+
+    ruta_id = parse_required_int("ruta_id")
+    paradero_inicial = parse_required_int("paradero_inicial_id")
+    paradero_final = parse_required_int("paradero_final_id")
+    tiempo_retraso_min = parse_required_int("tiempo_retraso_min")
+    tipo = 2  # ⚠️ ID del tipo_reporte "Retraso" en tu tabla tipo_reporte
+
+    mapped_payload = {
+        "id_emisor": int(conductor_id),
+        "id_tipo_reporte": tipo,
+        "id_ruta_afectada": ruta_id,
+        "id_paradero_inicial": paradero_inicial,
+        "id_paradero_final": paradero_final,
+        "tiempo_retraso_min": tiempo_retraso_min,
+        "descripcion": payload.get("descripcion", ""),
+        "mensaje": payload.get("mensaje"),
+        "conductor_id": int(conductor_id),
+        "ruta_id": ruta_id,
+        "paradero_inicial_id": paradero_inicial,
+        "paradero_final_id": paradero_final,
+        "tiempo_retraso_min": tiempo_retraso_min,
+    }
+
+    print("[DEBUG] /reports/retraso mapped_payload:", mapped_payload)
+
+    try:
+        saved = service.crear_reporte_retraso(mapped_payload)
+        return {"ok": True, "reporte": saved}
+    except Exception as e:
+        print("[ERROR] crear_reporte_retraso exception:", e)
+        raise HTTPException(status_code=500, detail=str(e))

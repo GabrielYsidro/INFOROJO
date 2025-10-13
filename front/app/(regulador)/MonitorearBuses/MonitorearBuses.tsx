@@ -2,8 +2,7 @@ import React, { useEffect, useState } from "react";
 import { ActivityIndicator, Alert, FlatList, Image, Text, View } from "react-native";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import { styles } from "./StylesMonitorearBuses";
-
-const API_URL = "http://10.0.2.2:8000/corredor"; // <--- Ajusta esto
+import corredorService from "@/services/corredorService"; // 👈 importamos el servicio
 
 interface Corredor {
   id_corredor: number;
@@ -23,37 +22,31 @@ const MonitorearBuses: React.FC = () => {
     longitudeDelta: 0.2,
   });
 
-  // Función para obtener corredores
+  // 🔹 Función para obtener corredores desde el servicio
   const fetchCorredores = async () => {
     try {
-      const response = await fetch(API_URL);
-      if (!response.ok) throw new Error("Error al obtener corredores");
-      const data = await response.json();
+      setLoading(true);
+      const data = await corredorService.getAllBuses(); // ✅ Usamos el servicio
 
-      // Filtramos corredores con estado no nulo
-      const corredoresValidos = data.filter(
-        (c: Corredor) => c.estado !== null && c.estado !== ""
-      );
+      setCorredores(data);
 
-      setCorredores(corredoresValidos);
-
-      if (corredoresValidos.length > 0) {
+      if (data.length > 0) {
         setRegion({
-          latitude: corredoresValidos[0].ubicacion_lat,
-          longitude: corredoresValidos[0].ubicacion_lng,
+          latitude: data[0].ubicacion_lat,
+          longitude: data[0].ubicacion_lng,
           latitudeDelta: 0.3,
           longitudeDelta: 0.3,
         });
       }
-    } catch (error) {
-      console.error(error);
+    } catch (error: any) {
+      console.error("❌ Error al obtener corredores:", error.message);
       Alert.alert("Error", "No se pudo obtener la información de los corredores");
     } finally {
       setLoading(false);
     }
   };
 
-  // Actualizar cada 5 segundos
+  // 🔄 Actualizar cada 5 segundos
   useEffect(() => {
     fetchCorredores();
 
@@ -77,7 +70,7 @@ const MonitorearBuses: React.FC = () => {
     <View style={styles.container}>
       <Text style={styles.title}>Monitorear Buses</Text>
 
-      {/* Mapa */}
+      {/* 🗺️ Mapa */}
       <View style={styles.mapContainer}>
         <MapView provider={PROVIDER_GOOGLE} style={styles.map} region={region}>
           {corredores.map((c) => (
@@ -100,11 +93,10 @@ const MonitorearBuses: React.FC = () => {
         </MapView>
       </View>
 
-      {/* Tabla con encabezados */}
+      {/* 🧾 Tabla */}
       <View style={styles.tableContainer}>
         <Text style={styles.tableTitle}>Lista de Corredores</Text>
 
-        {/* Encabezados */}
         <View style={styles.tableHeader}>
           <Text style={[styles.headerText, { flex: 1 }]}>ID</Text>
           <Text style={[styles.headerText, { flex: 2 }]}>Capacidad</Text>
