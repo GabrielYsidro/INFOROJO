@@ -1,6 +1,43 @@
 import { StyleSheet } from 'react-native';
 
 const styles = StyleSheet.create({
+	item: {
+		flexDirection: 'row',
+		justifyContent: 'space-between',
+		alignItems: 'center',
+		paddingVertical: 16,
+		borderBottomWidth: 1,
+		borderBottomColor: '#eee',
+	},
+	paradero: {
+		fontSize: 16,
+		color: '#222',
+		fontWeight: '500',
+	},
+	fecha: {
+		fontSize: 14,
+		color: '#666',
+		marginTop: 2,
+	},
+	volverContainer: {
+		position: 'absolute',
+		bottom: 32,
+		right: 0,
+		left: 0,
+		alignItems: 'flex-end',
+		paddingHorizontal: 16,
+	},
+	volverBtn: {
+		backgroundColor: '#FF5252',
+		borderRadius: 10,
+		paddingVertical: 10,
+		paddingHorizontal: 32,
+	},
+	volverTxt: {
+		color: '#fff',
+		fontSize: 18,
+		fontWeight: 'bold',
+	},
 	container: {
 		flex: 1,
 		backgroundColor: '#fff',

@@ -22,14 +22,21 @@ export default function ConductorMenuPrincipal() {
       <View style={styles.topButtonsContainer}>
         <TouchableOpacity
           style={styles.topButton}
+        >
+          <Icon name="check-circle-outline" size={20} color="#fff" />
+          <Text style={styles.topButtonText}>Llegada</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.topButton}
           onPress={() =>
             handleNavigate(
               "/(conductor)/EnviarReporteTrafico/EnviarReporteTrafico"
             )
           }
         >
-          <Icon name="check-circle-outline" size={20} color="#fff" />
-          <Text style={styles.topButtonText}>Llegada</Text>
+          <Icon name="alert-circle-outline" size={20} color="#fff" />
+          <Text style={styles.topButtonText}>Trafico</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.topButton}

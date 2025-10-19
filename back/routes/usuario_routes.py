@@ -44,6 +44,24 @@ def obtener_usuario_por_id(user_id: int, db: Session = Depends(get_db)):
         return {"error": "Usuario no encontrado"}
     return usuario
 
+# Endpoint para obtener historial de viajes de un usuario
+@router.get("/{user_id}/historial")
+def obtener_historial_usuario(user_id: int, db: Session = Depends(get_db)):
+    usuario = UsuarioService(db).get_usuario_by_id(user_id)
+    if usuario is None:
+        return {"error": "Usuario no encontrado"}
+    # Retornar historial de uso (viajes)
+    historial = usuario.historial_uso
+    # Formatear respuesta para datos relevantes, incluyendo paradero de bajada
+    return [
+        {
+            "id": h.id_historial,
+            "paradero_sube": h.paradero_sube.nombre if h.paradero_sube else None,
+            "paradero_baja": h.paradero_baja.nombre if h.paradero_baja else None,
+            "fecha": h.fecha_hora
+        }
+        for h in historial
+    ]
 @router.get("/{user_id}/ubicacion")
 def obtener_ubicacion_usuario(user_id: int, db: Session = Depends(get_db)):
     usuario_service = UsuarioService(db)

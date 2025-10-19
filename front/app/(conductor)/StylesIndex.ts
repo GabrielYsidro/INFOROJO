@@ -18,9 +18,9 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: '#c62828',
-        paddingVertical: 10,
-        paddingHorizontal: 24,
-        borderRadius: 18,
+        paddingVertical: 11,
+        paddingHorizontal: 12,
+        borderRadius: 16,
         elevation: 3,
         shadowColor: '#c62828',
         shadowOffset: { width: 0, height: 2 },
@@ -76,6 +76,28 @@ const styles = StyleSheet.create({
         marginTop: 4,
         fontWeight: 'bold',
     },
+    toggleContainer: {
+    alignItems: "center",
+    paddingVertical: 14,
+  },
+  toggleButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#c62828",
+    paddingVertical: 12,
+    paddingHorizontal: 22,
+    borderRadius: 25,
+    elevation: 4,
+  },
+  toggleActive: {
+    backgroundColor: "#757575",
+  },
+  toggleText: {
+    color: "#fff",
+    fontWeight: "700",
+    fontSize: 16,
+    marginLeft: 8,
+  },
 });
 
 export default styles;

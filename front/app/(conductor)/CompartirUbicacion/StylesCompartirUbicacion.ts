@@ -13,6 +13,13 @@ export const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#ddd",
   },
+   infoContainer: {
+    alignItems: "center",
+    marginBottom: 12,
+    paddingVertical: 10,
+    backgroundColor: "#f8f9fa",
+    borderRadius: 10,
+  },
   label: {
     fontSize: 16,
     fontWeight: "600",

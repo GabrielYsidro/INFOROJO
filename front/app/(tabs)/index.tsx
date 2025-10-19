@@ -53,7 +53,7 @@ export default function HomeScreen() {
           Ir al menú principal del cliente
         </ThemedText>
       </Link>
-    </ThemedView>*/
+    </ThemedView>
     <ThemedView style={styles.stepContainer}>
       <ThemedText type="subtitle">Ver forms de alerta de conductor</ThemedText>
       <Link href="/(conductor)/EnviarReporteDesvio/EnviarReporteDesvio">
@@ -64,7 +64,7 @@ export default function HomeScreen() {
     </ThemedView>
       <Button title='Show Modal' onPress={ () => setOpen(true)}/>
       <AppModal visible={open} onClose={() => setOpen(false)}>
-        <ModalBusInfo onClose={() => setOpen(false)} />
+        <ModalBusInfo bus_id={1} onClose={() => setOpen(false)} />
       </AppModal>
     </ParallaxScrollView>
   );
