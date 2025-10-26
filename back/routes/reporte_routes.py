@@ -173,3 +173,36 @@ def crear_reporte_retraso(payload: Dict = Body(...), conductor_header_id: Option
     except Exception as e:
         print("[ERROR] crear_reporte_retraso exception:", e)
         raise HTTPException(status_code=500, detail=str(e))
+@router.post("/falla")
+def crear_reporte_falla(payload: Dict = Body(...), conductor_header_id: Optional[int] = Depends(get_user_id_from_headers)):
+
+    id_emisor = payload.get("id_emisor") or conductor_header_id
+    if id_emisor is None:
+        raise HTTPException(status_code=401, detail="Usuario no autenticado")
+
+    def parse_required_int(key: str) -> int:
+        if key not in payload or payload[key] is None:
+            raise HTTPException(status_code=400, detail=f"Falta campo requerido: {key}")
+        try:
+            return int(payload[key])
+        except (ValueError, TypeError):
+            raise HTTPException(status_code=400, detail=f"Campo {key} debe ser numérico")
+
+    id_corredor = parse_required_int("id_corredor_afectado")
+
+    mapped_payload = {
+        "id_emisor": int(id_emisor),
+        "id_tipo_reporte": 3,  # 3 = FALLA
+        "id_corredor_afectado": id_corredor,
+        "es_critica": payload.get("es_critica", False),
+        "motivo": payload.get("motivo", "")
+    }
+
+    print("[DEBUG] /reports/falla mapped_payload:", mapped_payload)
+
+    try:
+        saved = service.crear_reporte_falla(mapped_payload)
+        return {"ok": True, "reporte": saved}
+    except Exception as e:
+        print("[ERROR] crear_reporte_falla exception:", e)
+        raise HTTPException(status_code=500, detail=str(e))

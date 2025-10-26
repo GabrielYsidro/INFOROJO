@@ -161,3 +161,40 @@ class ReporteService:
 
         saved = self.save_report(record)
         return saved
+
+    def crear_reporte_falla(self, payload: Dict) -> Dict:
+        """
+        Crea un reporte de tipo 'falla' (vehículo o infraestructura).
+        """
+        if self.reporte_factory:
+            # Crear objeto a través de Factory
+            reporte_obj = self.reporte_factory.crear("falla", payload)
+            
+            # Obtener payload traducido para DB (si existe el método)
+            record = getattr(reporte_obj, "to_dict", lambda: None)()
+            if record is None:
+                # fallback: mapear manualmente
+                record = {
+                    "id_emisor": reporte_obj.id_emisor,
+                    "id_tipo_reporte": payload.get("id_tipo_reporte", 3),  # Aseguramos tipo 3 = falla
+                    "id_corredor_afectado": reporte_obj.id_corredor_afectado,
+                    "es_critica": reporte_obj.es_critica,
+                    "descripcion": reporte_obj.motivo,
+                    "mensaje": reporte_obj.generar_mensaje(),
+                }
+        else:
+            # Sin factory → usamos payload directo
+            record = dict(payload)
+            record.setdefault("id_tipo_reporte", 3)
+            record.setdefault("mensaje", f"Falla en corredor {payload.get('id_corredor_afectado')}")
+
+        # Idempotencia (opcional si usas uuid cliente luego)
+        id_cliente = payload.get("id_reporte")
+        if id_cliente:
+            existing = self.find_report_by_id_reporte(str(id_cliente))
+            if existing:
+                return existing
+
+        # Guardar en DB
+        saved = self.save_report(record)
+        return saved
