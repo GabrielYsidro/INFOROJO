@@ -12,6 +12,7 @@ class Paradero(Base):
     coordenada_lat = Column(Float, nullable=True)
     coordenada_lng = Column(Float, nullable=True)
     colapso_actual = Column(Boolean, default=False)
+    imagen_url = Column(Text, nullable=True)
     # Definicion de relaciones
     ruta_paraderos = relationship("RutaParadero", back_populates="paradero")
     rutas = association_proxy("ruta_paraderos", "ruta")
