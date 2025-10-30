@@ -20,3 +20,4 @@ class Paradero(Base):
     reportes_final = relationship("Reporte", back_populates="paradero_final", foreign_keys="Reporte.id_paradero_final")
     historial_sube = relationship("HistorialUso", back_populates="paradero_sube", foreign_keys="HistorialUso.id_paradero_sube")
     historial_baja = relationship("HistorialUso", back_populates="paradero_baja", foreign_keys="HistorialUso.id_paradero_baja")
+    comentario_usuario_paraderos = relationship("ComentarioUsuarioParadero", back_populates="paradero")
