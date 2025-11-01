@@ -5,6 +5,9 @@ import { Alert, Dimensions, Image, Platform, StyleSheet, Text, View } from "reac
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import AppModal from "./Modals/AppModal";
 import ModalBusInfo from "./Modals/ModalBusInfo";
+import ParaderoMarker from './ParaderoMarker';
+import ModalParaderoInfo from './Modals/ModalParaderoInfo';
+import paraderoService, { Paradero } from '@/services/paraderoService';
 
 const { height } = Dimensions.get("window");
 const MAP_HEIGHT = height * 0.6;
@@ -17,6 +20,9 @@ export default function MapSection() {
     latitudeDelta: 0.05,
     longitudeDelta: 0.05,
   });
+  const [paraderos, setParaderos] = useState<Paradero[]>([]);
+  const [selectedParadero, setSelectedParadero] = useState<Paradero | null>(null);
+  const [isParaderoModalVisible, setIsParaderoModalVisible] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -39,52 +45,70 @@ export default function MapSection() {
     })();
   }, []);
 
+  useEffect(() => {
+    const fetchParaderos = async () => {
+      try {
+        const data = await paraderoService.getAllParaderos();
+        setParaderos(data);
+      } catch (error) {
+        console.error("Error fetching paraderos:", error);
+      }
+    };
+    fetchParaderos();
+  }, []);
+
+  const handleParaderoPress = (paradero: Paradero) => {
+    setSelectedParadero(paradero);
+    setIsParaderoModalVisible(true);
+  };
 
   return (
     <View style={styles.mapContainer}>
       {Platform.OS !== "web" ? (
         <>
-        <MapView
-          provider={PROVIDER_GOOGLE}
-          style={styles.map}
-          initialRegion={{
-            latitude: -12.0464,
-            longitude: -77.0428,
-            latitudeDelta: 0.05,
-            longitudeDelta: 0.05,
-          }}
-           >
-                {/* Marker es para elementos en el mapa*/}
-          <Marker 
-        coordinate={{
-          latitude: -12.0464,
-          longitude: -77.0428,
-        }}
-        onPress={() => {
-          console.log('Marker pressed');
-          setOpen(true);
-        }}
-        anchor={{ x: 0.5, y: 0.5 }} // Centers the marker
-        centerOffset={{ x: 0, y: 0 }} // Adjust if needed
-      >
-          {/*<View style={styles.button}>
-          <Text style={styles.buttonText}>🚌</Text>
-        </View>*/}
-        <View style={[ { justifyContent: "center", alignItems: "center" }]}>
-        <Image
-          source={require("../assets/images/bus.png")}
-          style={{ width: 45, height: 45, resizeMode: "contain" }}
-        />
-      </View>
-
-      </Marker>
+          <MapView
+            provider={PROVIDER_GOOGLE}
+            style={styles.map}
+            initialRegion={initialRegion}
+          >
+            {/* Marker es para elementos en el mapa*/}
+            <Marker
+              coordinate={{
+                latitude: -12.0464,
+                longitude: -77.0428,
+              }}
+              onPress={() => {
+                console.log('Marker pressed');
+                setOpen(true);
+              }}
+              anchor={{ x: 0.5, y: 0.5 }} // Centers the marker
+              centerOffset={{ x: 0, y: 0 }} // Adjust if needed
+            >
+              <View style={[{ justifyContent: "center", alignItems: "center" }]}>
+                <Image
+                  source={require("../assets/images/bus.png")}
+                  style={{ width: 45, height: 45, resizeMode: "contain" }}
+                />
+              </View>
+            </Marker>
+            {paraderos.map(paradero => (
+              <ParaderoMarker
+                key={paradero.id_paradero}
+                paradero={paradero}
+                onPress={() => handleParaderoPress(paradero)}
+              />
+            ))}
           </MapView>
           {/* Si quieren colocar un elemento fijado lo ponen acá abajo */}
           <AppModal visible={open} onClose={() => setOpen(false)}>
-                    <ModalBusInfo bus_id={1} onClose={() => setOpen(false)} />
-                  </AppModal>
+            <ModalBusInfo bus_id={1} onClose={() => setOpen(false)} />
+          </AppModal>
+          {selectedParadero && (
+            <AppModal visible={isParaderoModalVisible} onClose={() => setIsParaderoModalVisible(false)}>
+              <ModalParaderoInfo paradero={selectedParadero} onClose={() => setIsParaderoModalVisible(false)} />
+            </AppModal>
+          )}
         </>
-        
       ) : (
         <View style={[styles.map, { justifyContent: "center", alignItems: "center" }]}>
           <Text>Mapa no disponible en web</Text>
