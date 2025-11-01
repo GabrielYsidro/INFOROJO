@@ -1,7 +1,7 @@
 # routes/ruta_routes.py
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
-from services.ruta_service import RutaService
+from services.DiagramaClases.ruta_service import RutaService
 from config.db import get_db
 from typing import Optional
 
