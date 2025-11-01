@@ -14,3 +14,8 @@ def obtener_corredor(id_paradero: int, db: Session = Depends(get_db)):
    if not corredor:
        raise HTTPException(status_code=404, detail="Corredor no encontrado")
    return corredor
+
+@router.get("/{id_paradero}")
+def obtener_comentarios_paradero(id_paradero: int, db: Session = Depends(get_db)):
+    comentarios = ComentarioParaderoService(db).obtener_comentarios(id_paradero)
+    return comentarios
