@@ -1,28 +1,41 @@
 // components/MapSection.tsx
 import * as Location from 'expo-location';
 import { useEffect, useState } from "react";
-import { Alert, Dimensions, Image, Platform, StyleSheet, Text, View } from "react-native";
-import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
+import { Alert, Dimensions, Platform, StyleSheet, Text, View } from "react-native";
+import MapView, { PROVIDER_GOOGLE } from "react-native-maps";
 import AppModal from "./Modals/AppModal";
 import ModalBusInfo from "./Modals/ModalBusInfo";
 import ParaderoMarker from './ParaderoMarker';
+import BusMarker from './BusMarker';
 import ModalParaderoInfo from './Modals/ModalParaderoInfo';
 import paraderoService, { Paradero } from '@/services/paraderoService';
+import corredorService from '@/services/corredorService';
 
 const { height } = Dimensions.get("window");
 const MAP_HEIGHT = height * 0.6;
 
+interface Corredor {
+  id_corredor: number;
+  ubicacion_lat: number;
+  ubicacion_lng: number;
+  estado: string;
+}
+
 export default function MapSection() {
-  const [open, setOpen] = useState(false);
   const [initialRegion, setInitialRegion] = useState({
     latitude: -12.0464,
     longitude: -77.0428,
     latitudeDelta: 0.05,
     longitudeDelta: 0.05,
   });
+
   const [paraderos, setParaderos] = useState<Paradero[]>([]);
   const [selectedParadero, setSelectedParadero] = useState<Paradero | null>(null);
   const [isParaderoModalVisible, setIsParaderoModalVisible] = useState(false);
+
+  const [buses, setBuses] = useState<Corredor[]>([]);
+  const [selectedBus, setSelectedBus] = useState<Corredor | null>(null);
+  const [isBusModalVisible, setIsBusModalVisible] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -57,9 +70,30 @@ export default function MapSection() {
     fetchParaderos();
   }, []);
 
+  useEffect(() => {
+    const fetchBuses = async () => {
+      try {
+        const data = await corredorService.getAllBuses();
+        setBuses(data);
+      } catch (error) {
+        console.error("Error fetching buses:", error);
+      }
+    };
+
+    fetchBuses();
+    const interval = setInterval(fetchBuses, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   const handleParaderoPress = (paradero: Paradero) => {
     setSelectedParadero(paradero);
     setIsParaderoModalVisible(true);
+  };
+
+  const handleBusPress = (bus: Corredor) => {
+    setSelectedBus(bus);
+    setIsBusModalVisible(true);
   };
 
   return (
@@ -71,26 +105,16 @@ export default function MapSection() {
             style={styles.map}
             initialRegion={initialRegion}
           >
-            {/* Marker es para elementos en el mapa*/}
-            <Marker
-              coordinate={{
-                latitude: -12.0464,
-                longitude: -77.0428,
-              }}
-              onPress={() => {
-                console.log('Marker pressed');
-                setOpen(true);
-              }}
-              anchor={{ x: 0.5, y: 0.5 }} // Centers the marker
-              centerOffset={{ x: 0, y: 0 }} // Adjust if needed
-            >
-              <View style={[{ justifyContent: "center", alignItems: "center" }]}>
-                <Image
-                  source={require("../assets/images/bus.png")}
-                  style={{ width: 45, height: 45, resizeMode: "contain" }}
-                />
-              </View>
-            </Marker>
+            {buses.map(bus => (
+              <BusMarker
+                key={bus.id_corredor}
+                coordinate={{
+                  latitude: bus.ubicacion_lat,
+                  longitude: bus.ubicacion_lng,
+                }}
+                onPress={() => handleBusPress(bus)}
+              />
+            ))}
             {paraderos.map(paradero => (
               <ParaderoMarker
                 key={paradero.id_paradero}
@@ -99,10 +123,13 @@ export default function MapSection() {
               />
             ))}
           </MapView>
-          {/* Si quieren colocar un elemento fijado lo ponen acá abajo */}
-          <AppModal visible={open} onClose={() => setOpen(false)}>
-            <ModalBusInfo bus_id={1} onClose={() => setOpen(false)} />
-          </AppModal>
+
+          {selectedBus && (
+            <AppModal visible={isBusModalVisible} onClose={() => setIsBusModalVisible(false)}>
+              <ModalBusInfo bus_id={selectedBus.id_corredor} onClose={() => setIsBusModalVisible(false)} />
+            </AppModal>
+          )}
+
           {selectedParadero && (
             <AppModal visible={isParaderoModalVisible} onClose={() => setIsParaderoModalVisible(false)}>
               <ModalParaderoInfo paradero={selectedParadero} onClose={() => setIsParaderoModalVisible(false)} />
