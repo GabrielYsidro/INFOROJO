@@ -58,7 +58,8 @@ def obtener_historial_usuario(user_id: int, db: Session = Depends(get_db)):
             "id": h.id_historial,
             "paradero_sube": h.paradero_sube.nombre if h.paradero_sube else None,
             "paradero_baja": h.paradero_baja.nombre if h.paradero_baja else None,
-            "fecha": h.fecha_hora
+            "fecha_hora_subida": h.fecha_hora_subida,
+            "fecha_hora_bajada": h.fecha_hora_bajada
         }
         for h in historial
     ]

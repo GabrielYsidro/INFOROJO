@@ -1,5 +1,5 @@
-from services.reporte_service import ReporteService
-from services.paradero_service import Paradero_Service
+from services.DiagramaClases.reporte_service import ReporteService
+from services.DiagramaClases.paradero_service import Paradero_Service
 from fastapi import APIRouter, HTTPException, status, Body, Depends, Request, Header
 import traceback
 from typing import Optional, Dict

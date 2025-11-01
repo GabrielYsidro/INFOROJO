@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 
 type Props = {
-  bus_id: Number;
+  bus_id: number;
   onClose?: () => void;
 };
 
