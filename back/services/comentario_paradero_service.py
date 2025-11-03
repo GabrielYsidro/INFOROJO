@@ -13,7 +13,16 @@ class ComentarioParaderoService:
         self.auth = AuthService()
     
     def obtener_comentarios(self, id_paradero:int):
-        return self.db.query(ComentarioUsuarioParadero).filter(ComentarioUsuarioParadero.id_paradero==id_paradero).all()
+        comentarios = self.db.query(ComentarioUsuarioParadero).filter(ComentarioUsuarioParadero.id_paradero==id_paradero).all()
+        usuarios = self.db.query(UsuarioBase).all();
+        comentarios_mapped = list(map(lambda c: {
+            "id_comentario": c.id_comentario,
+            "id_usuario": c.id_usuario,
+            "nomre_usuario": next((u.nombre for u in usuarios if u.id_usuario == c.id_usuario), "Desconocido"),
+            "comentario": c.comentario,
+            "created_at": c.created_at
+        },comentarios))
+        return comentarios_mapped
     
     def obtener_paradero_perfil(self, id_paradero:int):
         paradero = self.db.query(Paradero).filter(Paradero.id_paradero==id_paradero).first()
