@@ -24,12 +24,6 @@ class ComentarioParaderoService:
         }
 
     def comentarParadero(self, token: str, id_paradero: int, comentario: str):
-        """Valida el token, crea y persiste un comentario para el paradero.
-
-        token: puede venir con o sin el prefijo 'Bearer '
-        Retorna el objeto ComentarioUsuarioParadero creado.
-        Lanza HTTPException en caso de token inválido, usuario/paradero no existente o datos faltantes.
-        """
         if not token:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token requerido")
 

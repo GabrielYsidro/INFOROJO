@@ -27,6 +27,5 @@ def comentar_paradero(
     comentario: str = Body(..., embed=True, description="Texto del comentario"),
     db: Session = Depends(get_db)
 ):
-    """Crea un comentario. El token debe enviarse en el header Authorization: Bearer <token>."""
     nuevo_comentario = ComentarioParaderoService(db).comentarParadero(authorization, id_paradero, comentario)
     return nuevo_comentario
