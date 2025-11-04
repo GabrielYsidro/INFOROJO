@@ -31,8 +31,8 @@ class ComentarioParaderoService:
             "paradero": paradero,
             "comentarios": comentarios
         }
-
-    def comentarParadero(self, token: str, id_paradero: int, comentario: str):
+    
+    def leerToken(self, token: str):
         if not token:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token requerido")
 
@@ -46,6 +46,10 @@ class ComentarioParaderoService:
         except HTTPException:
             # re-lanzar la excepción para que FastAPI la maneje
             raise
+        return payload
+
+    def comentarParadero(self, token: str, id_paradero: int, comentario: str):
+        payload = self.leerToken(token)
 
         user_id = payload.get("id")
         if user_id is None:
@@ -80,3 +84,54 @@ class ComentarioParaderoService:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error al guardar comentario: {e}")
 
         return nuevo
+    
+    def editar_comentario(self, token: str, id_comentario: int, nuevo_texto: str):
+        payload = self.leerToken(token)
+
+        user_id = payload.get("id")
+        if user_id is None:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token inválido: sin id de usuario")
+
+        comentario = self.db.query(ComentarioUsuarioParadero).filter(ComentarioUsuarioParadero.id_comentario == id_comentario).first()
+        if comentario is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Comentario no encontrado")
+
+        if comentario.id_usuario != user_id:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="No autorizado para editar este comentario")
+
+        if not nuevo_texto or not isinstance(nuevo_texto, str) or nuevo_texto.strip() == "":
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Nuevo texto de comentario vacío o inválido")
+
+        comentario.comentario = nuevo_texto.strip()
+        try:
+            self.db.commit()
+            self.db.refresh(comentario)
+        except Exception as e:
+            self.db.rollback()
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error al actualizar comentario: {e}")
+
+        return comentario
+    
+    def eliminar_comentario(self, token: str, id_comentario: int):
+        payload = self.leerToken(token)
+
+        user_id = payload.get("id")
+        if user_id is None:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token inválido: sin id de usuario")
+
+        comentario = self.db.query(ComentarioUsuarioParadero).filter(ComentarioUsuarioParadero.id_comentario == id_comentario).first()
+        if comentario is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Comentario no encontrado")
+
+        if comentario.id_usuario != user_id:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="No autorizado para eliminar este comentario")
+
+        self.db.delete(comentario)
+        try:
+            self.db.commit()
+        except Exception as e:
+            self.db.rollback()
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error al eliminar comentario: {e}")
+
+        return {"detail": "Comentario eliminado exitosamente"}
+            
