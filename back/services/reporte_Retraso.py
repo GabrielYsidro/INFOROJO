@@ -1,5 +1,5 @@
 from typing import Dict, Optional, Any
-from .reporte_Interface import ReporteInterface
+from .DiagramaClases.reporte_Interface import ReporteInterface
 
 
 class Reporte_Retraso(ReporteInterface):

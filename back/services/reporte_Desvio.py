@@ -1,5 +1,5 @@
 from typing import Dict
-from .reporte_Interface import ReporteInterface
+from .DiagramaClases.reporte_Interface import ReporteInterface
 from typing import Optional, Dict, Any
 
 

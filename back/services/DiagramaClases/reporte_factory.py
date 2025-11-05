@@ -1,6 +1,6 @@
 from typing import Dict
-from .reporte_Desvio import Reporte_Desvio
-from .reporte_Retraso import Reporte_Retraso
+from ..reporte_Desvio import Reporte_Desvio
+from ..reporte_Retraso import Reporte_Retraso
 
 class CreadorReportes:
     @staticmethod
