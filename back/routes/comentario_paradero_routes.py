@@ -29,3 +29,20 @@ def comentar_paradero(
 ):
     nuevo_comentario = ComentarioParaderoService(db).comentarParadero(authorization, id_paradero, comentario)
     return nuevo_comentario
+
+@router.put("/editar_comentario")
+def editar_comentario(
+    authorization: str = Header(..., description="Authorization header. Use 'Bearer <token>'"),
+    id_comentario: int = Body(..., embed=True, description="ID del comentario a editar"),
+    nuevo_texto: str = Body(..., embed=True, description="Nuevo texto del comentario"),
+    db: Session = Depends(get_db)):
+    comentario_editado = ComentarioParaderoService(db).editar_comentario(authorization, id_comentario, nuevo_texto)
+    return comentario_editado
+
+@router.delete("/eliminar_comentario")
+def eliminar_comentario(
+    authorization: str = Header(..., description="Authorization header. Use 'Bearer <token>'"),
+    id_comentario: int = Body(..., embed=True, description="ID del comentario a eliminar"),
+    db: Session = Depends(get_db)):
+    resultado = ComentarioParaderoService(db).eliminar_comentario(authorization, id_comentario)
+    return resultado
