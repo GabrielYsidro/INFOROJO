@@ -12,14 +12,14 @@
       "distribution": "internal",
       "env": {
         "API_URL_DEV": "http://10.0.2.2:8000",
-        "API_URL_PROD": "https://backend-inforojo-ckh4hedjhqdtdfaq.eastus-01.azurewebsites.net"
+        "API_URL_PROD": "https://backendinforojo-bxf5gbhvawb3dggb.eastus-01.azurewebsites.net"
       }
     },
     "production": {
       "autoIncrement": true,
       "env": {
         "API_URL_DEV": "http://10.0.2.2:8000",
-        "API_URL_PROD": "https://backend-inforojo-ckh4hedjhqdtdfaq.eastus-01.azurewebsites.net"
+        "API_URL_PROD": "https://backendinforojo-bxf5gbhvawb3dggb.eastus-01.azurewebsites.net"
       }
     }
   },
