@@ -9,3 +9,4 @@
 /front/eas.json
 __pycache__/
 *.py[cod]$
+google-services.json
