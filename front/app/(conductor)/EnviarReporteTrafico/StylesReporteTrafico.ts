@@ -2,52 +2,58 @@ import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
   container: {
-    flex: 1,
     backgroundColor: "#fff",
+    borderRadius: 16,
     padding: 20,
+    width: "90%",
+    maxWidth: 420,
+    alignSelf: "center",
+  },
+  headerRow: {
+    alignItems: "center",
+    marginBottom: 15,
   },
   title: {
-    fontSize: 22,
-    fontWeight: "bold",
-    color: "#c62828",
-    textAlign: "center",
-    marginBottom: 25,
-    marginTop: 10,
-  },
-  label: {
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: "600",
-    color: "#333",
-    marginBottom: 6,
-    marginTop: 10,
+    color: "#111827",
+  },
+  fieldRow: {
+    marginBottom: 15,
   },
   input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
+    backgroundColor: "#F3F4F6",
     borderRadius: 10,
-    padding: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
     fontSize: 15,
-    backgroundColor: "#f9f9f9",
+    color: "#111827",
+    marginTop: 6,
+  },
+  textarea: {
+    minHeight: 70,
     textAlignVertical: "top",
   },
-  button: {
-    backgroundColor: "#c62828",
-    borderRadius: 10,
-    paddingVertical: 14,
-    marginTop: 25,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 3,
+  actionsRow: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    gap: 10,
   },
-  buttonDisabled: {
-    backgroundColor: "#9e9e9e",
+  button: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+  },
+  buttonCancel: {
+    backgroundColor: "#E5E7EB",
+  },
+  buttonSend: {
+    backgroundColor: "#FF6B6B",
   },
   buttonText: {
-    color: "#fff",
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: "600",
+    textAlign: "center",
+    color: "#111827",
   },
 });
