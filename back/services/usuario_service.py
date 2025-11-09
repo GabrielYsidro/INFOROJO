@@ -55,4 +55,76 @@ class UsuarioService:
         Retorna el usuario con su ubicación actual, o None si no existe
         """
         return self.db.query(UsuarioBase).filter(UsuarioBase.id_usuario == user_id).first()
+    
+    def actualizar_tiempos_viaje(self, user_id: int, historial_id: int, fecha_subida: str = None, fecha_bajada: str = None):
+        """
+        Actualiza los tiempos de subida y bajada de un viaje específico
+        """
+        from models.HistorialUso import HistorialUso
+        from datetime import datetime
+        
+        # Buscar el historial específico del usuario
+        historial = self.db.query(HistorialUso).filter(
+            HistorialUso.id_historial == historial_id,
+            HistorialUso.id_usuario == user_id
+        ).first()
+        
+        if not historial:
+            return {"error": "Historial no encontrado"}
+        
+        # Actualizar las fechas si se proporcionan
+        if fecha_subida:
+            try:
+                historial.fecha_hora_subida = datetime.fromisoformat(fecha_subida.replace('Z', '+00:00'))
+            except ValueError:
+                return {"error": "Formato de fecha de subida inválido"}
+        
+        if fecha_bajada:
+            try:
+                historial.fecha_hora_bajada = datetime.fromisoformat(fecha_bajada.replace('Z', '+00:00'))
+            except ValueError:
+                return {"error": "Formato de fecha de bajada inválido"}
+        
+        self.db.commit()
+        self.db.refresh(historial)
+        
+        return {
+            "message": "Tiempos actualizados correctamente",
+            "historial_id": historial_id,
+            "fecha_subida": historial.fecha_hora_subida,
+            "fecha_bajada": historial.fecha_hora_bajada
+        }
+    
+    def get_historial_limitado(self, user_id: int, limite: int = 30):
+        """
+        Obtiene el historial de un usuario limitado a los N registros más recientes
+        y elimina automáticamente registros antiguos si superan el límite
+        """
+        from models.HistorialUso import HistorialUso
+        from sqlalchemy import desc
+        
+        # Obtener todos los registros del usuario ordenados por fecha (más reciente primero)
+        historial_completo = self.db.query(HistorialUso).filter(
+            HistorialUso.id_usuario == user_id
+        ).order_by(desc(HistorialUso.fecha_hora)).all()
+        
+        # Si hay más registros que el límite, eliminar los más antiguos
+        if len(historial_completo) > limite:
+            # Mantener solo los primeros 'limite' registros (más recientes)
+            registros_a_mantener = historial_completo[:limite]
+            registros_a_eliminar = historial_completo[limite:]
+            
+            # Eliminar registros antiguos
+            for registro in registros_a_eliminar:
+                self.db.delete(registro)
+            
+            self.db.commit()
+            
+            # Retornar solo los registros mantenidos
+            return registros_a_mantener
+        
+        # Si no supera el límite, retornar todos
+        return historial_completo
+    
+
 
