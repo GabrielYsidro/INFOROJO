@@ -16,6 +16,7 @@ export default {
     },
     "android": {
       "package": "com.grupo5.inforojoapp",
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -37,6 +38,7 @@ export default {
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
+      "expo-firebase-core",
       "expo-router",
       [
         "expo-splash-screen",
