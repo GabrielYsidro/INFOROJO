@@ -10,3 +10,5 @@
 __pycache__/
 *.py[cod]$
 google-services.json
+/back/AZURE_DEPLOYMENT_GUIDE.md
+AZURE_DEPLOYMENT_GUIDE.md
