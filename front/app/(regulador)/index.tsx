@@ -47,6 +47,13 @@ export default function ClienteMenuPrincipal() {
                     <Icon name="monitor" size={20} color="#fff" />
                     <Text style={styles.topButtonText}>Monitoreo</Text>
                 </TouchableOpacity>
+                <TouchableOpacity 
+                    style={styles.topButton}
+                    onPress={() => router.push("/(regulador)/AlertasMasivas/AlertasMasivas")}
+                >
+                    <Icon name="alert-circle" size={20} color="#fff" />
+                    <Text style={styles.topButtonText}>Alertas Masivas</Text>
+                </TouchableOpacity>
             </View>
 
             {/* Map Section */}
