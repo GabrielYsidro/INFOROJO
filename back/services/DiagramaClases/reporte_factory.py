@@ -3,8 +3,7 @@ from ..reporte_Desvio import Reporte_Desvio
 from ..reporte_Retraso import Reporte_Retraso
 
 class CreadorReportes:
-    @staticmethod
-    def crear(tipo: str, payload: Dict):
+    def crear(self, tipo: str, payload: Dict):
         if tipo == "desvio":
             return Reporte_Desvio(
                 id_reporte=str(payload["id_reporte"]),
