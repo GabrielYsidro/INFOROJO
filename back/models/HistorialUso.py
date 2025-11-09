@@ -14,6 +14,8 @@ class HistorialUso(Base):
     fecha_hora_bajada = Column(TIMESTAMP(timezone=True), nullable=True)  # Nueva columna
     id_paradero_sube = Column(Integer, ForeignKey("public.paradero.id_paradero"), nullable=True)
     id_paradero_baja = Column(Integer, ForeignKey("public.paradero.id_paradero"), nullable=True)
+    fecha_hora_subida = Column(TIMESTAMP(timezone=True), nullable=True)
+    fecha_hora_bajada = Column(TIMESTAMP(timezone=True), nullable=True)
 
 
     # Definicion de relaciones

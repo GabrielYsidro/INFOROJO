@@ -2,6 +2,8 @@ from typing import Optional, Iterable, Dict
 from sqlalchemy import MetaData, Table, select
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import SQLAlchemyError
+from models.Paradero import Paradero
+from sqlalchemy.orm import Session
 
 from config.db import engine as shared_engine
 
@@ -11,10 +13,11 @@ class Paradero_Service:
     (Separa la responsabilidad del repo concreto.)
     """
 
-    def __init__(self, engine: Engine = None):
+    def __init__(self, engine: Engine = None, db= Session):
         self.engine: Engine = engine or shared_engine
         if self.engine is None:
             raise RuntimeError("No hay engine de DB disponible en ParaderoService.")
+        self.db = db
 
     def _reflect_table(self, candidates: Iterable[str]) -> Table:
         meta = MetaData()
@@ -37,6 +40,9 @@ class Paradero_Service:
         if pkcols:
             return pkcols[0]
         return None
+    
+    def get_paraderos(self) -> list[Dict]:
+        return self.db.query(Paradero).all()
 
     def get_paradero_by_id(self, id_paradero: int) -> Optional[Dict]:
         table = self._reflect_table(("paradero", "paraderos"))
