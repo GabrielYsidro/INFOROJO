@@ -2,11 +2,20 @@
 import React from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import historialService from '@/services/historialService';
 import styles from './StylesParaderoDetalle';
 
 const ParaderoDetalle = () => {
   const router = useRouter();
-  const { paradero_sube, paradero_baja, fecha, imagen } = useLocalSearchParams();
+  const { 
+    paradero_sube, 
+    paradero_baja, 
+    fecha, 
+    fecha_subida, 
+    fecha_bajada, 
+    tiempo_recorrido_minutos, 
+    imagen 
+  } = useLocalSearchParams();
 
   return (
     <View style={{ flex: 1, backgroundColor: '#fff' }}>
@@ -22,15 +31,39 @@ const ParaderoDetalle = () => {
         <Text style={detalleStyles.paradero}>{paradero_sube || 'Paradero'}</Text>
         <Text style={detalleStyles.fecha}>{formatearFecha(String(fecha))}</Text>
       </View>
-      {/* Subida/Llegada */}
-      <View style={detalleStyles.infoRowStyled}>
-        <View style={detalleStyles.infoColStyled}>
-          <Text style={detalleStyles.labelStyled}>Subida</Text>
-          <Text style={detalleStyles.valueStyled}>{paradero_sube || 'Sin dato'}</Text>
+      {/* Información del viaje */}
+      <View style={detalleStyles.infoContainer}>
+        {/* Subida/Llegada */}
+        <View style={detalleStyles.infoRowStyled}>
+          <View style={detalleStyles.infoColStyled}>
+            <Text style={detalleStyles.labelStyled}>Subida</Text>
+            <Text style={detalleStyles.valueStyled}>{paradero_sube || 'Sin dato'}</Text>
+            {fecha_subida && (
+              <Text style={detalleStyles.timeStyled}>
+                {historialService.formatearFecha(String(fecha_subida))}
+              </Text>
+            )}
+          </View>
+          <View style={detalleStyles.infoColStyled}>
+            <Text style={detalleStyles.labelStyled}>Llegada</Text>
+            <Text style={detalleStyles.valueStyled}>{paradero_baja || 'Sin dato'}</Text>
+            {fecha_bajada && (
+              <Text style={detalleStyles.timeStyled}>
+                {historialService.formatearFecha(String(fecha_bajada))}
+              </Text>
+            )}
+          </View>
         </View>
-        <View style={detalleStyles.infoColStyled}>
-          <Text style={detalleStyles.labelStyled}>Llegada</Text>
-          <Text style={detalleStyles.valueStyled}>{paradero_baja || 'Sin dato'}</Text>
+        
+        {/* Tiempo de recorrido */}
+        <View style={detalleStyles.tiempoRecorridoContainer}>
+          <Text style={detalleStyles.labelStyled}>Tiempo de Recorrido</Text>
+          <Text style={detalleStyles.tiempoRecorridoValue}>
+            {tiempo_recorrido_minutos 
+              ? historialService.formatearTiempoRecorrido(Number(tiempo_recorrido_minutos))
+              : 'No disponible'
+            }
+          </Text>
         </View>
       </View>
       {/* Botón Calificar */}
@@ -83,15 +116,18 @@ const detalleStyles = StyleSheet.create({
     textAlign: 'left',
     width: '90%',
   },
-  infoRowStyled: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  infoContainer: {
     marginTop: 24,
     paddingHorizontal: 16,
     backgroundColor: '#fff',
+  },
+  infoRowStyled: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
-    paddingBottom: 12,
+    paddingBottom: 16,
+    marginBottom: 16,
   },
   infoColStyled: {
     flex: 1,
@@ -101,13 +137,34 @@ const detalleStyles = StyleSheet.create({
   labelStyled: {
     fontSize: 15,
     color: '#888',
-    marginBottom: 2,
+    marginBottom: 4,
     fontWeight: 'bold',
   },
   valueStyled: {
     fontSize: 16,
     color: '#222',
-    marginBottom: 2,
+    marginBottom: 4,
+    fontWeight: '600',
+  },
+  timeStyled: {
+    fontSize: 13,
+    color: '#666',
+    fontStyle: 'italic',
+  },
+  tiempoRecorridoContainer: {
+    backgroundColor: '#f8f9fa',
+    borderRadius: 12,
+    padding: 16,
+    alignItems: 'center',
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+  },
+  tiempoRecorridoValue: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#FF5252',
+    marginTop: 4,
   },
   bottomButtonContainer: {
     position: 'absolute',
