@@ -6,6 +6,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import styles from "./StylesIndex";
 import EnviarReporteDesvio, { DesvioData } from "./EnviarReporteDesvio/EnviarReporteDesvio";
 import RFallaModal from "./ReporteFalla/RFallaModal";
+import EnviarReporteTrafico from "./EnviarReporteTrafico/EnviarReporteTrafico";
+
 import MapSection from "@/components/MapSection";
 import { enviarDesvio } from "@/services/ReporteService"; // Importamos el servicio de reporte
 
@@ -13,6 +15,8 @@ export default function ConductorMenuPrincipal() {
   const router = useRouter();
   const [openDesvio, setOpenDesvio] = useState(false);
   const [openFalla, setOpenFalla] = useState(false);
+  const [openTrafico, setOpenTrafico] = useState(false);
+
 
   const handleNavigate = (path: any) => {
     router.push(path);
@@ -67,15 +71,12 @@ export default function ConductorMenuPrincipal() {
 
         <TouchableOpacity
           style={styles.topButton}
-          onPress={() =>
-            handleNavigate(
-              "/(conductor)/EnviarReporteTrafico/EnviarReporteTrafico"
-            )
-          }
+          onPress={() => setOpenTrafico(true)}
         >
           <Icon name="alert-circle-outline" size={20} color="#fff" />
-          <Text style={styles.topButtonText}>Trafico</Text>
+          <Text style={styles.topButtonText}>Tráfico</Text>
         </TouchableOpacity>
+
         <TouchableOpacity
           style={styles.topButton}
           onPress={() => setOpenDesvio(true)}
@@ -120,6 +121,12 @@ export default function ConductorMenuPrincipal() {
           });
         }}
       />
+
+      <EnviarReporteTrafico
+        visible={openTrafico}
+        onClose={() => setOpenTrafico(false)}
+      />
+
 
       {/* Map Section */}
       <MapSection />

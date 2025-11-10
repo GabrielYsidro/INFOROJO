@@ -1,8 +1,6 @@
 
-import React from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import historialService from '@/services/historialService';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import styles from './StylesParaderoDetalle';
 
 const ParaderoDetalle = () => {
@@ -31,40 +29,37 @@ const ParaderoDetalle = () => {
         <Text style={detalleStyles.paradero}>{paradero_sube || 'Paradero'}</Text>
         <Text style={detalleStyles.fecha}>{formatearFecha(String(fecha))}</Text>
       </View>
-      {/* Información del viaje */}
-      <View style={detalleStyles.infoContainer}>
-        {/* Subida/Llegada */}
-        <View style={detalleStyles.infoRowStyled}>
-          <View style={detalleStyles.infoColStyled}>
-            <Text style={detalleStyles.labelStyled}>Subida</Text>
-            <Text style={detalleStyles.valueStyled}>{paradero_sube || 'Sin dato'}</Text>
-            {fecha_subida && (
-              <Text style={detalleStyles.timeStyled}>
-                {historialService.formatearFecha(String(fecha_subida))}
-              </Text>
-            )}
-          </View>
-          <View style={detalleStyles.infoColStyled}>
-            <Text style={detalleStyles.labelStyled}>Llegada</Text>
-            <Text style={detalleStyles.valueStyled}>{paradero_baja || 'Sin dato'}</Text>
-            {fecha_bajada && (
-              <Text style={detalleStyles.timeStyled}>
-                {historialService.formatearFecha(String(fecha_bajada))}
-              </Text>
-            )}
-          </View>
-        </View>
-        
-        {/* Tiempo de recorrido */}
-        <View style={detalleStyles.tiempoRecorridoContainer}>
-          <Text style={detalleStyles.labelStyled}>Tiempo de Recorrido</Text>
-          <Text style={detalleStyles.tiempoRecorridoValue}>
-            {tiempo_recorrido_minutos 
-              ? historialService.formatearTiempoRecorrido(Number(tiempo_recorrido_minutos))
-              : 'No disponible'
-            }
-          </Text>
-        </View>
+      {/* Subida/Llegada */}
+      <View style={detalleStyles.infoRowStyled}>
+        {/* Botón Subida */}
+  <View style={detalleStyles.infoColStyled}>
+    <Text style={detalleStyles.labelStyled}>Subida</Text>
+    <TouchableOpacity
+      onPress={() => router.push({
+								pathname: '/(cliente)/Paradero/ParaderoComentarios',
+							})}
+      style={styles.buttonStyled}
+    >
+      <Text style={styles.valueStyled}>
+        {paradero_sube || 'Sin dato'}
+      </Text>
+    </TouchableOpacity>
+  </View>
+
+  {/* Botón Llegada */}
+  <View style={detalleStyles.infoColStyled}>
+    <Text style={detalleStyles.labelStyled}>Llegada</Text>
+    <TouchableOpacity
+      onPress={() => router.push({
+								pathname: '/(cliente)/Paradero/ParaderoComentarios',
+							})}
+      style={styles.buttonStyled}
+    >
+      <Text style={styles.valueStyled}>
+        {paradero_baja || 'Sin dato'}
+      </Text>
+    </TouchableOpacity>
+  </View>
       </View>
       {/* Botón Calificar */}
       <View style={detalleStyles.bottomButtonContainer}>
