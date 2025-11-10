@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Dimensions, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Dimensions, Platform, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useRouter } from 'expo-router';
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -8,6 +8,7 @@ import MapSection from '@/components/MapSection';
 import AppModal from '@/components/Modals/AppModal';
 import ModalFiltros from '@/components/Modals/ModalFiltros';
 import { FiltrosData, aplicarFiltros } from '@/services/filtrosService';
+import FeedbackModal from './Feedback/Feedback';
 
 export default function ClienteMenuPrincipal() {
     const router = useRouter();
@@ -20,6 +21,9 @@ export default function ClienteMenuPrincipal() {
         distancia: ''
     });
 
+    // Estado para el modal de feedback
+    const [showFeedback, setShowFeedback] = useState(false);
+
     // Función para manejar la aplicación de filtros
     const handleAplicarFiltros = async () => {
         try {
@@ -31,6 +35,7 @@ export default function ClienteMenuPrincipal() {
             console.error('Error al aplicar filtros:', error);
         }
     };
+
     return (
         <View style={styles.container}>
             {/* Top Buttons */}
@@ -42,12 +47,22 @@ export default function ClienteMenuPrincipal() {
                     <Icon name="filter-variant" size={20} color="#fff" />
                     <Text style={styles.topButtonText}>Filtros</Text>
                 </TouchableOpacity>
+
                 <TouchableOpacity 
                     style={styles.topButton}
                     onPress={() => router.push('/(cliente)/HistorialViajes/HistorialViajes')}
                 >
                     <Icon name="bus" size={20} color="#fff" />
                     <Text style={styles.topButtonText}>Viajes</Text>
+                </TouchableOpacity>
+
+                {/* Nuevo botón para abrir Feedback */}
+                <TouchableOpacity
+                    style={styles.topButton}
+                    onPress={() => setShowFeedback(true)}
+                >
+                    <Icon name="message-text" size={20} color="#fff" />
+                    <Text style={styles.topButtonText}>Feedback</Text>
                 </TouchableOpacity>
             </View>
 
@@ -87,6 +102,16 @@ export default function ClienteMenuPrincipal() {
                     onClose={() => setShowFiltros(false)}
                 />
             </AppModal>
+
+            {/* Modal de Feedback */}
+            <FeedbackModal
+                visible={showFeedback}
+                onClose={() => setShowFeedback(false)}
+                onSent={() => {
+                    setShowFeedback(false);
+                    Alert.alert('Gracias', 'Tu feedback fue enviado.');
+                }}
+            />
         </View>
     );
 }

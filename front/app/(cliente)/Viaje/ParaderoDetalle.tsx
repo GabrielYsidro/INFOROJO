@@ -5,7 +5,15 @@ import styles from './StylesParaderoDetalle';
 
 const ParaderoDetalle = () => {
   const router = useRouter();
-  const { paradero_sube, paradero_baja, fecha, imagen } = useLocalSearchParams();
+  const { 
+    paradero_sube, 
+    paradero_baja, 
+    fecha, 
+    fecha_subida, 
+    fecha_bajada, 
+    tiempo_recorrido_minutos, 
+    imagen 
+  } = useLocalSearchParams();
 
   return (
     <View style={{ flex: 1, backgroundColor: '#fff' }}>
@@ -103,15 +111,18 @@ const detalleStyles = StyleSheet.create({
     textAlign: 'left',
     width: '90%',
   },
-  infoRowStyled: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  infoContainer: {
     marginTop: 24,
     paddingHorizontal: 16,
     backgroundColor: '#fff',
+  },
+  infoRowStyled: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
-    paddingBottom: 12,
+    paddingBottom: 16,
+    marginBottom: 16,
   },
   infoColStyled: {
     flex: 1,
@@ -121,13 +132,34 @@ const detalleStyles = StyleSheet.create({
   labelStyled: {
     fontSize: 15,
     color: '#888',
-    marginBottom: 2,
+    marginBottom: 4,
     fontWeight: 'bold',
   },
   valueStyled: {
     fontSize: 16,
     color: '#222',
-    marginBottom: 2,
+    marginBottom: 4,
+    fontWeight: '600',
+  },
+  timeStyled: {
+    fontSize: 13,
+    color: '#666',
+    fontStyle: 'italic',
+  },
+  tiempoRecorridoContainer: {
+    backgroundColor: '#f8f9fa',
+    borderRadius: 12,
+    padding: 16,
+    alignItems: 'center',
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+  },
+  tiempoRecorridoValue: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#FF5252',
+    marginTop: 4,
   },
   bottomButtonContainer: {
     position: 'absolute',

@@ -91,16 +91,15 @@ def crear_reporte_desvio(payload: Dict = Body(...), conductor_header_id: Optiona
 
     # mapear a los campos que necesita el servicio / DB
     mapped_payload = {
-        "id_emisor": id_emisor,                       # id_conductor
-        "id_tipo_reporte": tipo,                      # tipo
-        "id_corredor_afectado": ruta_id,              # ruta_id
-        "id_paradero_inicial": paradero_inicial,      # paradero_afectado_id
-        "id_paradero_final": paradero_final,          # paradero_alterna_id (opcional)
+        "id_emisor": id_emisor,
+        "id_tipo_reporte": tipo,
+        "id_ruta_afectada": ruta_id,  # Corregido
+        "id_paradero_inicial": paradero_inicial,
+        "id_paradero_final": paradero_final,
         "descripcion": payload.get("descripcion"),
-        "mensaje": payload.get("mensaje"),
-        # claves antiguas que espera reporte_service (compatibilidad)
+        # Claves para la factory y la idempotencia
+        "id_reporte": payload.get("id_reporte"),
         "conductor_id": id_emisor,
-        "tipo": tipo,
         "ruta_id": ruta_id,
         "paradero_afectado_id": paradero_inicial,
         "paradero_alterna_id": paradero_final,
