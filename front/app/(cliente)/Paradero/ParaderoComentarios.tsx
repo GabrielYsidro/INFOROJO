@@ -29,19 +29,19 @@ const comments : Comment[] = [
     id: '1',
     name: 'Cristina',
     time: '2d',
-    text: 'Q buen servizcio',
+    text: 'Estuve esperando 30 minutos y el bus nunca llegó.',
   },
   {
     id: '2',
     name: 'Jose',
-    time: '2d',
-    text: 'Liked your comment',
+    time: '1d',
+    text: 'La semana pasada el bus llegó puntual y el conductor fue muy amable.',
   },
   {
     id: '3',
-    name: 'emberecho',
+    name: 'Aldo',
     time: '2d',
-    text: 'Liked your comment',
+    text: 'El paradero estaba muy sucio y desordenado.',
   },
 ];
 
@@ -70,7 +70,7 @@ const ParaderoCommentsScreen = () => {
           <Ionicons name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
 
-        <Text style={styles.headerTitle}>Paradero B</Text>
+        <Text style={styles.headerTitle}>Salaverry</Text>
 
         <TouchableOpacity>
           <MaterialIcons name="more-vert" size={24} color="#fff" />
@@ -87,7 +87,7 @@ const ParaderoCommentsScreen = () => {
           <Image
             style={styles.mainImage}
             source={{
-              uri: 'https://images.pexels.com/photos/460672/pexels-photo-460672.jpeg?auto=compress&cs=tinysrgb&w=800',
+              uri: 'https://lamula.pe/media/uploads/t/7dcbc7e8e50864b1253331e1c7b72dd0.jpg',
             }}
           />
 
