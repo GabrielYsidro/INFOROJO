@@ -32,27 +32,49 @@ export const getBusInfo = async (corredor_id: number) => {
  * 🔹 Obtiene la lista completa de corredores activos.
  */
 export const getAllBuses = async () => {
-  console.log(`📡 Solicitando lista de corredores desde: ${API_URL}/corredor`);
+  console.log(`📡 [START] Solicitando lista de corredores desde: ${API_URL}/corredor`);
+  const startTime = Date.now();
 
-  const res = await fetch(`${API_URL}/corredor`, {
-    method: "GET",
-  });
+  try {
+    console.log(`📡 [FETCH] Iniciando fetch...`);
+    
+    const res = await fetch(`${API_URL}/corredor`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
 
-  if (!res.ok) {
-    const errorData = await res.json().catch(() => ({}));
-    console.error("❌ Error al obtener corredores:", errorData);
-    throw new Error(errorData.detail || "No se pudo obtener la lista de corredores");
+    const elapsed = Date.now() - startTime;
+    console.log(`📡 [RESPONSE] Recibida en ${elapsed}ms, status: ${res.status}`);
+
+    if (!res.ok) {
+      console.error(`❌ [ERROR_HTTP] Status ${res.status}`);
+      const errorData = await res.json().catch(() => ({}));
+      console.error("❌ Error al obtener corredores:", errorData);
+      throw new Error(errorData.detail || "No se pudo obtener la lista de corredores");
+    }
+
+    const data = await res.json();
+
+    // Filtra corredores con estado válido
+    const corredoresValidos = data.filter(
+      (c: any) => c.estado !== null && c.estado !== ""
+    );
+
+    const totalElapsed = Date.now() - startTime;
+    console.log(`✅ [SUCCESS] Se obtuvieron ${corredoresValidos.length} corredores en ${totalElapsed}ms`);
+    return corredoresValidos;
+    
+  } catch (error: any) {
+    const elapsed = Date.now() - startTime;
+    console.error(`❌ [CATCH] Error después de ${elapsed}ms:`, {
+      message: error.message,
+      name: error.name,
+      code: error.code,
+    });
+    throw error;
   }
-
-  const data = await res.json();
-
-  // Filtra corredores con estado válido
-  const corredoresValidos = data.filter(
-    (c: any) => c.estado !== null && c.estado !== ""
-  );
-
-  console.log(`✅ Se obtuvieron ${corredoresValidos.length} corredores activos`);
-  return corredoresValidos;
 };
 
 /**

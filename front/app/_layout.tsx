@@ -9,6 +9,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import 'react-native-reanimated';
 import { ActivityIndicator, View } from 'react-native';
 import { getMe } from '@/services/AuthService';
+import registerForPushNotificationsAsync from '@/services/notificationService';
+import * as Notifications from 'expo-notifications';
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -19,6 +21,27 @@ export default function RootLayout() {
   });
 
   const [loading, setLoading] = useState(true);
+
+  // ✅ REGISTRAR NOTIFICACIONES PUSH AL INICIAR LA APP
+  useEffect(() => {
+    const setupNotifications = async () => {
+      const token = await registerForPushNotificationsAsync();
+      if (token) {
+        console.log('🔔 Token registrado para notificaciones:', token);
+        // Aquí puedes enviar el token al backend si lo necesitas
+      }
+    };
+
+    setupNotifications();
+
+    // Opcional: Listener para cuando el usuario toca la notificación
+    const subscription = Notifications.addNotificationResponseReceivedListener(response => {
+      console.log('📲 Notificación tocada:', response.notification.request.content.data);
+      // Aquí puedes navegar a una pantalla específica si lo necesitas
+    });
+
+    return () => subscription.remove();
+  }, []);
 
   useEffect(() => {
     const checkAuth = async () => {
