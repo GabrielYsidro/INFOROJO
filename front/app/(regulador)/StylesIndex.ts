@@ -10,16 +10,23 @@ const styles = StyleSheet.create({
     },
     topButtonsContainer: {
         flexDirection: 'row',
+        flexWrap: 'wrap', // Allow buttons to wrap to the next line
         justifyContent: 'space-around',
         marginTop: 32,
         marginBottom: 12,
+        paddingHorizontal: 5, // Add some horizontal padding to the container
     },
     topButton: {
+        flex: 1, // Make buttons take equal space
+        minWidth: '45%', // Ensure buttons don't get too small
+        marginHorizontal: 5, // Add some margin between buttons
+        marginBottom: 10, // Add some bottom margin for wrapping
         flexDirection: 'row',
         alignItems: 'center',
+        justifyContent: 'center', // Center content within the button
         backgroundColor: '#c62828',
-        paddingVertical: 10,
-        paddingHorizontal: 24,
+        paddingVertical: 8, // Reduced padding
+        paddingHorizontal: 12, // Reduced padding
         borderRadius: 18,
         elevation: 3,
         shadowColor: '#c62828',
@@ -30,8 +37,9 @@ const styles = StyleSheet.create({
     topButtonText: {
         color: '#fff',
         fontWeight: 'bold',
-        marginLeft: 8,
-        fontSize: 16,
+        marginLeft: 6, // Slightly reduced margin
+        fontSize: 14, // Reduced font size
+        textAlign: 'center',
     },
     mapContainer: {
         height: MAP_HEIGHT,

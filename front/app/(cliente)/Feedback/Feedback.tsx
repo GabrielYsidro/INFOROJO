@@ -14,12 +14,10 @@ type Props = {
 };
 
 export default function FeedbackModal({ visible, onClose, onSent }: Props) {
-  const [asunto, setAsunto] = useState("");
   const [mensaje, setMensaje] = useState("");
   const [loading, setLoading] = useState(false);
 
   const reset = () => {
-    setAsunto("");
     setMensaje("");
     setLoading(false);
   };
@@ -49,7 +47,6 @@ export default function FeedbackModal({ visible, onClose, onSent }: Props) {
     try {
       await sendFeedback(
         {
-          asunto: asunto?.trim() || null,
           mensaje: mensaje.trim(),
           origen: "app_cliente",
         },

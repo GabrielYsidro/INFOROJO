@@ -19,3 +19,27 @@ export async function sendFeedback(body: Record<string, any>, options?: { xUserI
   if (!res.ok) throw { status: res.status, body: data };
   return data;
 }
+
+export async function getFeedback(options?: { token?: string }) {
+  const url = `${API_URL}/feedback`;
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (options?.token) {
+    headers["Authorization"] = `Bearer ${options.token}`;
+  }
+
+  const res = await fetch(url, {
+    method: "GET",
+    headers,
+  });
+
+  const text = await res.text();
+  let data: any;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    data = text;
+  }
+
+  if (!res.ok) throw { status: res.status, body: data };
+  return data;
+}

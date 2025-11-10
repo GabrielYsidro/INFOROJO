@@ -31,6 +31,13 @@ export default function ReguladorLayout() {
           title: "Monitoreo de Buses"
         }} 
       />
+      <Stack.Screen 
+        name="VerFeedback/VerFeedback" 
+        options={{ 
+          headerShown: false,
+          title: "Feedback de Usuarios"
+        }} 
+      />
     </Stack>
   );
 }

@@ -37,6 +37,13 @@ export default function ClienteMenuPrincipal() {
             <View style={styles.topButtonsContainer}>
                 <TouchableOpacity 
                     style={styles.topButton}
+                    onPress={() => router.push("/(regulador)/VerFeedback/VerFeedback")}
+                >
+                    <Icon name="comment-text-outline" size={20} color="#fff" />
+                    <Text style={styles.topButtonText}>Ver Feedback</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                    style={styles.topButton}
                     onPress={() => router.push("/(regulador)/VistaDashboard/VistaDashboard")}
                 >
                     <Icon name="table" size={20} color="#fff" />
@@ -54,6 +61,7 @@ export default function ClienteMenuPrincipal() {
                     <Icon name="alert-circle" size={20} color="#fff" />
                     <Text style={styles.topButtonText}>Alertas Masivas</Text>
                 </TouchableOpacity>
+                
             </View>
 
             {/* Map Section */}
