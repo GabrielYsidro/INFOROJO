@@ -1,1 +1,0 @@
-#Code for mapa interractivo_service.py

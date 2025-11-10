@@ -1,26 +1,49 @@
+import { getBusInfo } from '@/services/corredorService';
 import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 
 type Props = {
-  title?: string;
-  stop?: string;
-  capacity?: number | string;
-  max?: number | string;
+  bus_id: number;
   onClose?: () => void;
 };
 
 export default function ModalBusInfo({
-  title = 'Bus',
-  stop = 'Paradero B',
-  capacity = 11,
-  max = 20,
+  bus_id=1,
   onClose,
 }: Props) {
+  const [busData, setBusData] = useState<{
+    nombre_paradero: string;
+    numero_pasajeros: number;
+    capacidad_max: number;
+  }>({
+    nombre_paradero: 'Paradero Central',
+    numero_pasajeros: 8,
+    capacidad_max: 20,
+  });
+
+  useEffect(() => {
+    const fetchBusInfo = async () => {
+      try {
+        const data = await getBusInfo(bus_id);
+        if (data) {
+          setBusData({
+            nombre_paradero: data.nombre_paradero ?? 'Desconocido',
+            numero_pasajeros: data.numero_pasajeros ?? 0,
+            capacidad_max: data.capacidad_max ?? 0,
+          });
+        }
+      } catch (error) {
+        console.error('Error al obtener info del bus:', error);
+      }
+    };
+
+    fetchBusInfo();
+  }, [bus_id]);
   return (
     <View style={styles.card}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>{title}</Text>
+        <Text style={styles.headerTitle}>Corredor</Text>
         <Pressable onPress={onClose} hitSlop={10} style={styles.closeBtn}>
           <Ionicons name="close" size={20} />
         </Pressable>
@@ -28,14 +51,14 @@ export default function ModalBusInfo({
 
       <View style={styles.row}>
         <Text style={styles.label}>Prox. Parada</Text>
-        <Text style={styles.value}>{String(stop)}</Text>
+        <Text style={styles.value}>{busData.nombre_paradero}</Text>
       </View>
 
       <View style={styles.divider} />
 
       <View style={styles.row}>
         <Text style={styles.label}>Capacidad</Text>
-        <Text style={styles.value}>{String(capacity)}/{String(max)}</Text>
+        <Text style={styles.value}>{String(busData.numero_pasajeros)}/{String(busData.capacidad_max)}</Text>
       </View>
 
       <View style={styles.footer}>

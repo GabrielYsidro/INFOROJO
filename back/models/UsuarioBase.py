@@ -25,5 +25,6 @@ class UsuarioBase(Base):
     feedbacks = relationship("Feedback", back_populates="usuario")
     reportes_emitidos = relationship("Reporte", back_populates="emisor")
     historial_uso = relationship("HistorialUso", back_populates="usuario")
+    comentario_usuario_paraderos = relationship("ComentarioUsuarioParadero", back_populates="usuario")
     
     

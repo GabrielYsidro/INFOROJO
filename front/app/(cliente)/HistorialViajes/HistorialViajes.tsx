@@ -1,62 +1,124 @@
+
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Button } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
+import { useRouter } from 'expo-router';
+import Icon from 'react-native-vector-icons/Ionicons';
 import styles from './StylesHistorialViajes';
+import historialService, { HistorialViaje } from '@/services/historialService';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Simulación de datos (luego se reemplaza por fetch a la DB)
-type Viaje = {
-	id: number;
-	paradero: string;
-	fecha: string;
-};
-
-const viajesEjemplo: Viaje[] = [
-	{ id: 1, paradero: 'Paradero A', fecha: '2025-09-01' },
-	{ id: 2, paradero: 'Paradero B', fecha: '2025-09-10' },
-	{ id: 3, paradero: 'Paradero C', fecha: '2025-09-15' },
-];
 
 const HistorialViajes = () => {
-	const [viajes, setViajes] = useState<Viaje[]>([]);
+	const [viajes, setViajes] = useState<HistorialViaje[]>([]);
+	const [loading, setLoading] = useState(true);
+	const [error, setError] = useState<string | null>(null);
+	const router = useRouter();
 
-	// useEffect para simular fetch de datos
 	useEffect(() => {
-		// Simulación de consulta a la DB
-		console.log('Ejemplo de viajes:', viajesEjemplo);
-		// Puedes hacer otras pruebas aquí
-		viajesEjemplo.forEach((viaje, idx) => {
-			console.log(`Viaje ${idx + 1}:`, viaje);
-		});
-		setViajes(viajesEjemplo);
+		const fetchHistorial = async () => {
+			try {
+				setLoading(true);
+				setError(null);
+				const userId = await AsyncStorage.getItem('userId');
+				if (!userId) {
+					setError('No se encontró el usuario.');
+					setLoading(false);
+					return;
+				}
+				const data = await historialService.getUserHistorial(Number(userId));
+				setViajes(data);
+			} catch (err) {
+				setError('Error al cargar el historial.');
+			} finally {
+				setLoading(false);
+			}
+		};
+		fetchHistorial();
 	}, []);
 
+	// Función removida ya que ahora usamos el servicio
+
 	return (
-		<View style={styles.container}>
-			<Text style={styles.titulo}>Historial de Viajes</Text>
-			<ScrollView horizontal>
-				<View style={styles.tabla}>
-					<View style={styles.filaHeader}>
-						<Text style={styles.celdaHeader}>N°</Text>
-						<Text style={styles.celdaHeader}>Paradero</Text>
-						<Text style={styles.celdaHeader}>Fecha</Text>
-						<Text style={styles.celdaHeader}>Info</Text>
-					</View>
-					{viajes.map((viaje, idx) => {
-						const filaEstilo = idx % 2 === 0 ? styles.filaBlanca : styles.filaGris;
-						return (
-							<View style={[styles.fila, filaEstilo]} key={viaje.id}>
-								<Text style={styles.celda}>{idx + 1}</Text>
-								<Text style={styles.celda}>{viaje.paradero}</Text>
-								<Text style={styles.celda}>{viaje.fecha}</Text>
-								<View style={{ flex: 1, alignItems: 'center' }}>
-									<Button title="Info" onPress={() => {}} color="#b34040ff" />
-								</View>
-							</View>
-						);
-					})}
+		<View style={{ flex: 1, backgroundColor: '#fff' }}>
+			{/* Header */}
+			<View style={{ flexDirection: 'row', alignItems: 'center', padding: 16 }}>
+				<TouchableOpacity onPress={() => router.back()}>
+					<Icon name="chevron-back" size={28} color="#222" />
+				</TouchableOpacity>
+				<Text style={{ fontSize: 22, fontWeight: 'bold', marginLeft: 8 }}>
+					Viajes
+				</Text>
+			</View>
+			
+			{/* Información sobre límite de viajes */}
+			{!loading && !error && viajes.length > 0 && (
+				<View style={{ 
+					backgroundColor: '#f8f9fa', 
+					margin: 16, 
+					padding: 12, 
+					borderRadius: 8,
+					borderLeftWidth: 4,
+					borderLeftColor: '#FF5252'
+				}}>
+					<Text style={{ fontSize: 14, color: '#666', textAlign: 'center' }}>
+						📋 Mostrando {viajes.length} de máximo 30 viajes más recientes
+					</Text>
+					<Text style={{ fontSize: 12, color: '#888', textAlign: 'center', marginTop: 4 }}>
+						Los viajes más antiguos se eliminan automáticamente
+					</Text>
 				</View>
-			</ScrollView>
+			)}
+			{/* Lista de viajes o loader/error */}
+			{loading ? (
+				<ActivityIndicator size="large" color="#B71C1C" style={{ marginTop: 32 }} />
+			) : error ? (
+				<Text style={{ color: 'red', textAlign: 'center', marginTop: 32 }}>{error}</Text>
+			) : viajes.length === 0 ? (
+				<Text style={{ color: '#888', textAlign: 'center', marginTop: 32 }}>
+					No hay viajes registrados.
+				</Text>
+			) : (
+				<FlatList
+					data={viajes}
+					keyExtractor={(item) => item.id.toString()}
+					renderItem={({ item }) => (
+						<TouchableOpacity
+							style={styles.item}
+							onPress={() => router.push({
+								pathname: '/(cliente)/Viaje/ParaderoDetalle',
+								params: {
+									paradero_sube: item.paradero_sube || '',
+									paradero_baja: item.paradero_baja || '',
+									fecha: item.fecha,
+									fecha_subida: item.fecha_subida || '',
+									fecha_bajada: item.fecha_bajada || '',
+									tiempo_recorrido_minutos: item.tiempo_recorrido_minutos?.toString() || '',
+									imagen: item.imagen || ''
+								}
+							})}
+						>
+							<View>
+								<Text style={styles.paradero}>
+									{`🔼 ${item.paradero_sube || 'Sin dato'}  🔽 ${item.paradero_baja || 'Sin dato'}`}
+								</Text>
+								<Text style={styles.fecha}>{historialService.formatearFecha(item.fecha)}</Text>
+							</View>
+							<Icon name="chevron-forward" size={22} color="#888" />
+						</TouchableOpacity>
+					)}
+					contentContainerStyle={{ paddingHorizontal: 16 }}
+				/>
+			)}
+			{/* Botón Volver */}
+			<View style={styles.volverContainer}>
+				<TouchableOpacity
+					style={styles.volverBtn}
+					onPress={() => router.back()}
+				>
+					<Text style={styles.volverTxt}>Volver</Text>
+				</TouchableOpacity>
+			</View>
 		</View>
 	);
 };
-
 export default HistorialViajes;

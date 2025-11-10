@@ -16,10 +16,12 @@ export default {
     },
     "android": {
       "package": "com.grupo5.inforojoapp",
+      "googleServicesFile": process.env.GOOGLE_SERVICES_JSON || "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
+      "useNextNotificationsApi": true,
       "edgeToEdgeEnabled": true,
       "config": {
         "googleMaps": {
@@ -38,6 +40,7 @@ export default {
     },
     "plugins": [
       "expo-router",
+      "expo-notifications",
       [
         "expo-splash-screen",
         {
@@ -53,7 +56,7 @@ export default {
     },
     "extra": {
       "API_URL_DEV": "http://10.0.2.2:8000",
-      "API_URL_PROD": "https://backend-inforojo-ckh4hedjhqdtdfaq.eastus-01.azurewebsites.net",
+      "API_URL_PROD": "https://backendinforojo-bxf5gbhvawb3dggb.eastus-01.azurewebsites.net",
       "router": {},
       "eas": {
         "projectId": "af721a0f-209b-44b6-a917-c7f28766ffac"

@@ -9,9 +9,13 @@ class HistorialUso(Base):
     id_historial = Column(Integer, primary_key=True, autoincrement=True)
     id_usuario = Column(Integer, ForeignKey("public.usuario_base.id_usuario"), nullable=True)
     id_corredor = Column(Integer, ForeignKey("public.corredor.id_corredor"), nullable=True)
-    fecha_hora = Column(TIMESTAMP(timezone=True), nullable=True)
+    fecha_hora = Column(TIMESTAMP(timezone=True), nullable=True)  # Mantenemos por compatibilidad
+    fecha_hora_subida = Column(TIMESTAMP(timezone=True), nullable=True)  # Nueva columna
+    fecha_hora_bajada = Column(TIMESTAMP(timezone=True), nullable=True)  # Nueva columna
     id_paradero_sube = Column(Integer, ForeignKey("public.paradero.id_paradero"), nullable=True)
     id_paradero_baja = Column(Integer, ForeignKey("public.paradero.id_paradero"), nullable=True)
+    fecha_hora_subida = Column(TIMESTAMP(timezone=True), nullable=True)
+    fecha_hora_bajada = Column(TIMESTAMP(timezone=True), nullable=True)
 
 
     # Definicion de relaciones

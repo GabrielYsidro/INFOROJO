@@ -1,5 +1,6 @@
 from sqlalchemy import Column, Integer, Float, Boolean, Text
 from sqlalchemy.orm import relationship
+from sqlalchemy.ext.associationproxy import association_proxy
 from config.db import Base
 
 class Paradero(Base):
@@ -11,11 +12,12 @@ class Paradero(Base):
     coordenada_lat = Column(Float, nullable=True)
     coordenada_lng = Column(Float, nullable=True)
     colapso_actual = Column(Boolean, default=False)
-
-
+    imagen_url = Column(Text, nullable=True)
     # Definicion de relaciones
     ruta_paraderos = relationship("RutaParadero", back_populates="paradero")
+    rutas = association_proxy("ruta_paraderos", "ruta")
     reportes_inicial = relationship("Reporte", back_populates="paradero_inicial", foreign_keys="Reporte.id_paradero_inicial")
     reportes_final = relationship("Reporte", back_populates="paradero_final", foreign_keys="Reporte.id_paradero_final")
     historial_sube = relationship("HistorialUso", back_populates="paradero_sube", foreign_keys="HistorialUso.id_paradero_sube")
     historial_baja = relationship("HistorialUso", back_populates="paradero_baja", foreign_keys="HistorialUso.id_paradero_baja")
+    comentario_usuario_paraderos = relationship("ComentarioUsuarioParadero", back_populates="paradero")

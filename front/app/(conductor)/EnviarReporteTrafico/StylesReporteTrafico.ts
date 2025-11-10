@@ -1,38 +1,59 @@
 import { StyleSheet } from "react-native";
 
-export default StyleSheet.create({
+export const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    padding: 20,
     backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 20,
+    width: "90%",
+    maxWidth: 420,
+    alignSelf: "center",
+  },
+  headerRow: {
+    alignItems: "center",
+    marginBottom: 15,
   },
   title: {
     fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 20,
+    fontWeight: "600",
+    color: "#111827",
   },
-  label: {
-    fontSize: 16,
-    marginBottom: 8,
+  fieldRow: {
+    marginBottom: 15,
   },
   input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 20,
-    minHeight: 80,
-    textAlignVertical: "top", // alinea el texto arriba
+    backgroundColor: "#F3F4F6",
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 15,
+    color: "#111827",
+    marginTop: 6,
+  },
+  textarea: {
+    minHeight: 70,
+    textAlignVertical: "top",
+  },
+  actionsRow: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    gap: 10,
   },
   button: {
-    backgroundColor: "#FF5A5F",
-    padding: 15,
-    borderRadius: 8,
-    alignItems: "center",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+  },
+  buttonCancel: {
+    backgroundColor: "#E5E7EB",
+  },
+  buttonSend: {
+    backgroundColor: "#FF6B6B",
   },
   buttonText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 16,
+    fontSize: 15,
+    fontWeight: "600",
+    textAlign: "center",
+    color: "#111827",
   },
 });
