@@ -102,29 +102,39 @@ class UsuarioService:
         """
         from models.HistorialUso import HistorialUso
         from sqlalchemy import desc
+        from sqlalchemy.orm import joinedload
         
-        # Obtener todos los registros del usuario ordenados por fecha (más reciente primero)
-        historial_completo = self.db.query(HistorialUso).filter(
-            HistorialUso.id_usuario == user_id
-        ).order_by(desc(HistorialUso.fecha_hora)).all()
-        
-        # Si hay más registros que el límite, eliminar los más antiguos
-        if len(historial_completo) > limite:
-            # Mantener solo los primeros 'limite' registros (más recientes)
-            registros_a_mantener = historial_completo[:limite]
-            registros_a_eliminar = historial_completo[limite:]
+        try:
+            # Obtener todos los registros del usuario ordenados por fecha (más reciente primero)
+            # Usando joinedload para cargar las relaciones de paraderos de manera eficiente
+            historial_completo = self.db.query(HistorialUso).options(
+                joinedload(HistorialUso.paradero_sube),
+                joinedload(HistorialUso.paradero_baja)
+            ).filter(
+                HistorialUso.id_usuario == user_id
+            ).order_by(desc(HistorialUso.fecha_hora_subida)).all()
             
-            # Eliminar registros antiguos
-            for registro in registros_a_eliminar:
-                self.db.delete(registro)
+            # Si hay más registros que el límite, eliminar los más antiguos
+            if len(historial_completo) > limite:
+                # Mantener solo los primeros 'limite' registros (más recientes)
+                registros_a_mantener = historial_completo[:limite]
+                registros_a_eliminar = historial_completo[limite:]
+                
+                # Eliminar registros antiguos
+                for registro in registros_a_eliminar:
+                    self.db.delete(registro)
+                
+                self.db.commit()
+                
+                # Retornar solo los registros mantenidos
+                return registros_a_mantener
             
-            self.db.commit()
+            # Si no supera el límite, retornar todos
+            return historial_completo
             
-            # Retornar solo los registros mantenidos
-            return registros_a_mantener
-        
-        # Si no supera el límite, retornar todos
-        return historial_completo
+        except Exception as e:
+            print(f"Error en get_historial_limitado: {str(e)}")
+            return []
     
 
 
