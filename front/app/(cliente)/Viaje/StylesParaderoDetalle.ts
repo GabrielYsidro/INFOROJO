@@ -12,6 +12,18 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#333",
     },
+    buttonStyled: {
+    backgroundColor: '#EB5E55', // color de fondo
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    marginTop: 4,
+    alignItems: 'center',
+    },
+    valueStyled: {
+    color: 'white',
+    fontWeight: 'bold',
+    },
 });
 
 export default styles;

@@ -4,20 +4,12 @@ import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator }
 import { useRouter } from 'expo-router';
 import Icon from 'react-native-vector-icons/Ionicons';
 import styles from './StylesHistorialViajes';
-import userService from '@/services/userService';
+import historialService, { HistorialViaje } from '@/services/historialService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-type Viaje = {
-	id: number;
-	paradero_sube: string;
-	paradero_baja: string;
-	fecha: string;
-	imagen?: string;
-};
 
 
 const HistorialViajes = () => {
-	const [viajes, setViajes] = useState<Viaje[]>([]);
+	const [viajes, setViajes] = useState<HistorialViaje[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 	const router = useRouter();
@@ -27,14 +19,14 @@ const HistorialViajes = () => {
 			try {
 				setLoading(true);
 				setError(null);
-			const userId = await AsyncStorage.getItem('userId');
+				const userId = await AsyncStorage.getItem('userId');
 				if (!userId) {
 					setError('No se encontró el usuario.');
 					setLoading(false);
 					return;
 				}
-			const data = await userService.getUserHistorial(Number(userId));
-			setViajes(data);
+				const data = await historialService.getUserHistorial(Number(userId));
+				setViajes(data);
 			} catch (err) {
 				setError('Error al cargar el historial.');
 			} finally {
@@ -44,18 +36,7 @@ const HistorialViajes = () => {
 		fetchHistorial();
 	}, []);
 
-	function formatearFecha(fecha: string): React.ReactNode {
-		const date = new Date(fecha);
-		if (isNaN(date.getTime())) return fecha;
-		const opciones: Intl.DateTimeFormatOptions = {
-			day: '2-digit',
-			month: '2-digit',
-			year: 'numeric',
-			hour: '2-digit',
-			minute: '2-digit',
-		};
-		return date.toLocaleString('es-PE', opciones);
-	}
+	// Función removida ya que ahora usamos el servicio
 
 	return (
 		<View style={{ flex: 1, backgroundColor: '#fff' }}>
@@ -68,6 +49,25 @@ const HistorialViajes = () => {
 					Viajes
 				</Text>
 			</View>
+			
+			{/* Información sobre límite de viajes */}
+			{!loading && !error && viajes.length > 0 && (
+				<View style={{ 
+					backgroundColor: '#f8f9fa', 
+					margin: 16, 
+					padding: 12, 
+					borderRadius: 8,
+					borderLeftWidth: 4,
+					borderLeftColor: '#FF5252'
+				}}>
+					<Text style={{ fontSize: 14, color: '#666', textAlign: 'center' }}>
+						📋 Mostrando {viajes.length} de máximo 30 viajes más recientes
+					</Text>
+					<Text style={{ fontSize: 12, color: '#888', textAlign: 'center', marginTop: 4 }}>
+						Los viajes más antiguos se eliminan automáticamente
+					</Text>
+				</View>
+			)}
 			{/* Lista de viajes o loader/error */}
 			{loading ? (
 				<ActivityIndicator size="large" color="#B71C1C" style={{ marginTop: 32 }} />
@@ -82,23 +82,27 @@ const HistorialViajes = () => {
 					data={viajes}
 					keyExtractor={(item) => item.id.toString()}
 					renderItem={({ item }) => (
-						<TouchableOpacity
-							style={styles.item}
-							onPress={() => router.push({
-								pathname: '/(cliente)/Viaje/ParaderoDetalle',
-								params: {
-									paradero_sube: item.paradero_sube || '',
-									paradero_baja: item.paradero_baja || '',
-									fecha: item.fecha,
-									imagen: item.imagen || ''
-								}
-							})}
-						>
+					<TouchableOpacity
+						style={styles.item}
+						onPress={() => router.push({
+							pathname: '/(cliente)/Viaje/ParaderoDetalle',
+							params: {
+								id_historial: item.id.toString(),
+								paradero_sube: item.paradero_sube || '',
+								paradero_baja: item.paradero_baja || '',
+								fecha: item.fecha,
+								fecha_subida: item.fecha_subida || '',
+								fecha_bajada: item.fecha_bajada || '',
+								tiempo_recorrido_minutos: item.tiempo_recorrido_minutos?.toString() || '',
+								imagen: item.imagen || ''
+							}
+						})}
+					>
 							<View>
 								<Text style={styles.paradero}>
 									{`🔼 ${item.paradero_sube || 'Sin dato'}  🔽 ${item.paradero_baja || 'Sin dato'}`}
 								</Text>
-								<Text style={styles.fecha}>{formatearFecha(item.fecha)}</Text>
+								<Text style={styles.fecha}>{historialService.formatearFecha(item.fecha)}</Text>
 							</View>
 							<Icon name="chevron-forward" size={22} color="#888" />
 						</TouchableOpacity>
