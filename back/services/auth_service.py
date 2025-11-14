@@ -6,7 +6,6 @@ from fastapi import HTTPException, status
 from models.UsuarioBase import UsuarioBase
 
 
-
 class AuthService:
     """
     Servicio de autenticación para manejar login y generación de tokens JWT.

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Body
 from sqlalchemy.orm import Session
-from services.corredor_service import CorredorService
+from services.DiagramaClases.corredor_service import CorredorService
 from config.db import get_db
 
 

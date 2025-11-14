@@ -1,6 +1,6 @@
 from typing import List
 from models.Ruta import Ruta
-from services.EstrategiaFiltroRuta import EstrategiaFiltroRuta
+from .EstrategiaFiltroRuta import EstrategiaFiltroRuta
 
 class SistemaFiltros:
     """

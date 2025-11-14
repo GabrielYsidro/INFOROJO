@@ -1,19 +1,61 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, Alert } from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import styles from "./StylesIndex";
-import EnviarReporteDesvio from "./EnviarReporteDesvio/EnviarReporteDesvio";
+import EnviarReporteDesvio, { DesvioData } from "./EnviarReporteDesvio/EnviarReporteDesvio";
 import RFallaModal from "./ReporteFalla/RFallaModal";
+import EnviarReporteTrafico from "./EnviarReporteTrafico/EnviarReporteTrafico";
+
 import MapSection from "@/components/MapSection";
+import { enviarDesvio } from "@/services/ReporteService"; // Importamos el servicio de reporte
 
 export default function ConductorMenuPrincipal() {
   const router = useRouter();
   const [openDesvio, setOpenDesvio] = useState(false);
   const [openFalla, setOpenFalla] = useState(false);
+  const [openTrafico, setOpenTrafico] = useState(false);
+
 
   const handleNavigate = (path: any) => {
     router.push(path);
+  };
+
+  // Función que maneja el envío del reporte de desvío al backend
+  const handleEnviarDesvio = async (data: DesvioData) => {
+    try {
+      const conductorIdStr = await AsyncStorage.getItem('userId');
+      if (!conductorIdStr) {
+        Alert.alert("Error de Autenticación", "No se pudo encontrar la sesión del conductor. Por favor, inicie sesión de nuevo.");
+        return;
+      }
+      const conductor_id = parseInt(conductorIdStr, 10);
+
+      // Construimos el payload para el backend
+      const payload = {
+        id_reporte: `cli-${Date.now()}`, // ID único para idempotencia
+        conductor_id: conductor_id,
+        ruta_id: data.rutaId,
+        paradero_afectado_id: data.paraderoAfectadoId,
+        paradero_alterna_id: data.paraderoAlternaId,
+        tipo: 3, // ID para el tipo de reporte "Desvío"
+        descripcion: data.motivo,
+      };
+
+      console.log("Enviando reporte de desvío:", JSON.stringify(payload, null, 2));
+
+      // Llamamos al servicio para enviar los datos
+      await enviarDesvio(payload, { xUserId: conductorIdStr });
+
+      Alert.alert("Éxito", "El reporte de desvío ha sido enviado correctamente.");
+      setOpenDesvio(false); // Cierra el modal
+
+    } catch (error: any) {
+      console.error("Error al enviar reporte de desvío:", error);
+      const errorBody = error.body ? `\nDetalle: ${JSON.stringify(error.body)}` : '';
+      Alert.alert("Error", `No se pudo enviar el reporte.${errorBody}`);
+    }
   };
 
   return (
@@ -29,15 +71,12 @@ export default function ConductorMenuPrincipal() {
 
         <TouchableOpacity
           style={styles.topButton}
-          onPress={() =>
-            handleNavigate(
-              "/(conductor)/EnviarReporteTrafico/EnviarReporteTrafico"
-            )
-          }
+          onPress={() => setOpenTrafico(true)}
         >
           <Icon name="alert-circle-outline" size={20} color="#fff" />
-          <Text style={styles.topButtonText}>Trafico</Text>
+          <Text style={styles.topButtonText}>Tráfico</Text>
         </TouchableOpacity>
+
         <TouchableOpacity
           style={styles.topButton}
           onPress={() => setOpenDesvio(true)}
@@ -54,15 +93,14 @@ export default function ConductorMenuPrincipal() {
         </TouchableOpacity>
       </View>
 
-      <EnviarReporteDesvio
-        visible={openDesvio}
-        onClose={() => setOpenDesvio(false)}
-        onSubmit={(data) => {
-          // aquí manejas el envío: llamada al backend o lógica local
-          // ejemplo rápido: console.log y luego cerrar (si prefieres que el modal haga el POST, deja esto vacío)
-          console.log("Reporte enviado desde conductor:", data);
-        }}
-      />
+      {/* El modal ahora usa la nueva función handleEnviarDesvio */}
+      {openDesvio && (
+        <EnviarReporteDesvio
+          visible={openDesvio}
+          onClose={() => setOpenDesvio(false)}
+          onSubmit={handleEnviarDesvio}
+        />
+      )}
 
       <RFallaModal
         visible={openFalla}
@@ -83,6 +121,12 @@ export default function ConductorMenuPrincipal() {
           });
         }}
       />
+
+      <EnviarReporteTrafico
+        visible={openTrafico}
+        onClose={() => setOpenTrafico(false)}
+      />
+
 
       {/* Map Section */}
       <MapSection />
