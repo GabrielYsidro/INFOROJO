@@ -160,3 +160,39 @@ class ReporteService:
 
         saved = self.save_report(record)
         return saved
+    
+    def crear_reporte_falla(self, payload: Dict) -> Dict:
+        """
+        Crea un reporte de tipo 'falla'.
+        """
+        if self.reporte_factory:
+            reporte_obj = self.reporte_factory.crear("falla", payload)
+            record = getattr(reporte_obj, "to_dict", lambda: None)()
+            if record is None:
+                # fallback: generar directamente desde objeto
+                record = {
+                    "id_reporte": reporte_obj.id_reporte,
+                    "id_tipo_reporte": payload.get("id_tipo_reporte", 1),  # tipo 1 = falla
+                    "id_emisor": int(reporte_obj.conductor_id),
+                    "descripcion": payload.get("descripcion"),
+                    "requiere_intervencion": payload.get("requiere_intervencion", False),
+                    "es_critica": payload.get("es_critica", False),
+                    "mensaje": reporte_obj.generar_mensaje(),
+                    # Campos NULL para fallas (no aplican)
+                    "id_ruta_afectada": None,
+                    "id_paradero_inicial": None,
+                    "id_paradero_final": None,
+                    "id_corredor_afectado": payload.get("id_corredor_afectado"),
+                    "tiempo_retraso_min": None,
+                }
+        else:
+            # Si no hay factory, usar directamente el payload
+            record = dict(payload)
+            record.setdefault("id_tipo_reporte", 1)
+            record.setdefault(
+                "mensaje",
+                f"Falla reportada: {payload.get('tipo_falla', 'No especificado')}"
+            )
+        
+        saved = self.save_report(record)
+        return saved
