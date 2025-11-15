@@ -82,21 +82,22 @@ const HistorialViajes = () => {
 					data={viajes}
 					keyExtractor={(item) => item.id.toString()}
 					renderItem={({ item }) => (
-						<TouchableOpacity
-							style={styles.item}
-							onPress={() => router.push({
-								pathname: '/(cliente)/Viaje/ParaderoDetalle',
-								params: {
-									paradero_sube: item.paradero_sube || '',
-									paradero_baja: item.paradero_baja || '',
-									fecha: item.fecha,
-									fecha_subida: item.fecha_subida || '',
-									fecha_bajada: item.fecha_bajada || '',
-									tiempo_recorrido_minutos: item.tiempo_recorrido_minutos?.toString() || '',
-									imagen: item.imagen || ''
-								}
-							})}
-						>
+					<TouchableOpacity
+						style={styles.item}
+						onPress={() => router.push({
+							pathname: '/(cliente)/Viaje/ParaderoDetalle',
+							params: {
+								id_historial: item.id.toString(),
+								paradero_sube: item.paradero_sube || '',
+								paradero_baja: item.paradero_baja || '',
+								fecha: item.fecha,
+								fecha_subida: item.fecha_subida || '',
+								fecha_bajada: item.fecha_bajada || '',
+								tiempo_recorrido_minutos: item.tiempo_recorrido_minutos?.toString() || '',
+								imagen: item.imagen || ''
+							}
+						})}
+					>
 							<View>
 								<Text style={styles.paradero}>
 									{`🔼 ${item.paradero_sube || 'Sin dato'}  🔽 ${item.paradero_baja || 'Sin dato'}`}
