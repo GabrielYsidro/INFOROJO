@@ -91,16 +91,15 @@ def crear_reporte_desvio(payload: Dict = Body(...), conductor_header_id: Optiona
 
     # mapear a los campos que necesita el servicio / DB
     mapped_payload = {
-        "id_emisor": id_emisor,                       # id_conductor
-        "id_tipo_reporte": tipo,                      # tipo
-        "id_corredor_afectado": ruta_id,              # ruta_id
-        "id_paradero_inicial": paradero_inicial,      # paradero_afectado_id
-        "id_paradero_final": paradero_final,          # paradero_alterna_id (opcional)
+        "id_emisor": id_emisor,
+        "id_tipo_reporte": tipo,
+        "id_ruta_afectada": ruta_id,  # Corregido
+        "id_paradero_inicial": paradero_inicial,
+        "id_paradero_final": paradero_final,
         "descripcion": payload.get("descripcion"),
-        "mensaje": payload.get("mensaje"),
-        # claves antiguas que espera reporte_service (compatibilidad)
+        # Claves para la factory y la idempotencia
+        "id_reporte": payload.get("id_reporte"),
         "conductor_id": id_emisor,
-        "tipo": tipo,
         "ruta_id": ruta_id,
         "paradero_afectado_id": paradero_inicial,
         "paradero_alterna_id": paradero_final,
@@ -173,3 +172,62 @@ def crear_reporte_retraso(payload: Dict = Body(...), conductor_header_id: Option
     except Exception as e:
         print("[ERROR] crear_reporte_retraso exception:", e)
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/falla")
+def crear_reporte_falla(payload: Dict = Body(...), conductor_header_id: Optional[int] = Depends(get_user_id_from_headers)):
+    """
+    Crea un reporte de tipo 'falla'.
+    El formulario envía: paradero (str), tipo_falla (str), requiere_mantenimiento (bool), unidad_afectada (str), motivo (str)
+    """
+    conductor_id = payload.get("conductor_id") or conductor_header_id
+    if conductor_id is None:
+        raise HTTPException(status_code=401, detail="Usuario no autenticado")
+
+    tipo = 1  # Tipo de reporte "Falla"
+    
+    # Construir descripción completa con todos los datos del formulario
+    paradero_nombre = payload.get("paradero", "Automático")
+    tipo_falla = payload.get("tipo_falla", "No especificado")
+    unidad_afectada = payload.get("unidad_afectada", "No especificada")
+    motivo = payload.get("motivo", "")
+    requiere_intervencion = bool(payload.get("requiere_intervencion") or payload.get("requiere_mantenimiento"))
+    
+    # Construir descripción estructurada que incluya toda la información
+    descripcion_completa = (
+        f"Falla en unidad {unidad_afectada} | "
+        f"Paradero: {paradero_nombre} | "
+        f"Tipo: {tipo_falla} | "
+        f"Requiere intervención: {'Sí' if requiere_intervencion else 'No'}"
+    )
+    if motivo:
+        descripcion_completa += f" | Motivo: {motivo}"
+    
+    mapped_payload = {
+        "id_emisor": int(conductor_id),
+        "id_tipo_reporte": tipo,
+        "descripcion": descripcion_completa,
+        "requiere_intervencion": requiere_intervencion,
+        # Campos opcionales que pueden ser None
+        "id_corredor_afectado": int(payload.get("id_corredor_afectado")) if payload.get("id_corredor_afectado") else None,
+        "id_ruta_afectada": None,
+        "id_paradero_inicial": None,
+        "id_paradero_final": None,
+        "tiempo_retraso_min": None,
+        "es_critica": requiere_intervencion,  # Si requiere intervención, lo marcamos como crítico
+        # Datos para la factory (usados en generar_mensaje)
+        "paradero": paradero_nombre,
+        "tipo_falla": tipo_falla,
+        "unidad_afectada": unidad_afectada,
+        "motivo": motivo,
+    }
+
+    print("[DEBUG] /reports/falla mapped_payload:", mapped_payload)
+
+    try:
+        saved = service.crear_reporte_falla(mapped_payload)
+        return {"ok": True, "reporte": saved}
+    except Exception as e:
+        print("[ERROR] crear_reporte_falla exception:", e)
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+    

@@ -3,9 +3,16 @@ import 'dotenv/config'; // Necesario si usas un archivo .env local
 
 export default {
   expo: {
+    "owner" : "inforojoorg",
     "name": "InfoRojoApp",
     "slug": "InfoRojoApp",
     "version": "1.0.0",
+    "updates" : {
+      "url" : "https://u.expo.dev/af721a0f-209b-44b6-a917-c7f28766ffac"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "inforojoapp",

@@ -1,8 +1,8 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
+# Docs for Docker build action: https://github.com/docker/build-push-action
 # More GitHub Actions for Azure: https://github.com/Azure/actions
-# More info on Python, GitHub Actions, and Azure App Service: https://aka.ms/python-webapps-actions
+# More info on Python, GitHub Actions, and Azure Container Registry: https://aka.ms/container-registry
 
-name: Build and deploy Python app to Azure Web App - backend-inforojo
+name: Build and push Docker image to Azure Container Registry - backend-inforojo
 
 on:
   push:
@@ -11,66 +11,40 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  build-and-push:
     runs-on: ubuntu-latest
     permissions:
-      contents: read #This is required for actions/checkout
+      contents: read
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Set up Python version
-        uses: actions/setup-python@v5
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Azure Container Registry
+        uses: docker/login-action@v3
         with:
-          python-version: '3.12'
+          registry: ${{ secrets.AZURE_REGISTRY_LOGIN_SERVER }}
+          username: ${{ secrets.AZURE_REGISTRY_USERNAME }}
+          password: ${{ secrets.AZURE_REGISTRY_PASSWORD }}
 
-      - name: Create and start virtual environment / Install dependencies
+      - name: Build and push Docker image to ACR
+        uses: docker/build-push-action@v5
+        with:
+          context: ./back
+          file: ./back/Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.AZURE_REGISTRY_LOGIN_SERVER }}/inforojo-backend:latest
+            ${{ secrets.AZURE_REGISTRY_LOGIN_SERVER }}/inforojo-backend:${{ github.sha }}
+          cache-from: type=registry,ref=${{ secrets.AZURE_REGISTRY_LOGIN_SERVER }}/inforojo-backend:buildcache
+          cache-to: type=registry,ref=${{ secrets.AZURE_REGISTRY_LOGIN_SERVER }}/inforojo-backend:buildcache,mode=max
+
+      - name: Verify image push to ACR
         run: |
-          python -m venv venv
-          source venv/bin/activate
-          cd back
-          pip install -r requirements.txt
-        
-      # Optional: Add step to run tests here (PyTest, Django test suites, etc.)
-
-      - name: Zip the backend for deployment
-        run: |
-          cd back
-          zip -r ../release.zip .
-
-      - name: Upload artifact for deployment jobs
-        uses: actions/upload-artifact@v4
-        with:
-          name: python-app  
-          path: release.zip
-
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build
-    permissions:
-      id-token: write #This is required for requesting the JWT
-      contents: read #This is required for actions/checkout
-
-    steps:
-      - name: Download artifact from build job
-        uses: actions/download-artifact@v4
-        with:
-          name: python-app
-
-      - name: List files after downloading artifact
-        run: ls -R
-      
-      - name: Login to Azure
-        uses: azure/login@v2
-        with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_36E1F1165F4D4D8883DFCBC1A83A1EBB }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_6EA4B1CBD4D64101A6C492F451808015 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_83850A51978B49D08412C97CCC027D43 }}
-
-      - name: 'Deploy to Azure Web App'
-        uses: azure/webapps-deploy@v3
-        id: deploy-to-webapp
-        with:
-          app-name: 'backend-inforojo'
-          slot-name: 'Production'
-          package: release.zip        
+          echo "✅ Docker image successfully pushed to Azure Container Registry"
+          echo "Registry: ${{ secrets.AZURE_REGISTRY_LOGIN_SERVER }}"
+          echo "Image: inforojo-backend:latest"
+          echo "Image: inforojo-backend:${{ github.sha }}"        
