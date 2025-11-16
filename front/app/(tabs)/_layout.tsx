@@ -55,13 +55,6 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="mapa-configuracion"
-        options={{
-          title: 'Configuración',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="gearshape.fill" color={color} />,
-        }}
-      />
-      <Tabs.Screen
         name="login"
         options={{
           title: 'Login',
