@@ -1,11 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
-const API_URL_DEV = "http://10.0.2.2:8000";
-const API_URL_PROD = "https://backend-inforojo-ckh4hedjhqdtdfaq.eastus-01.azurewebsites.net";
-
-const isDev = process.env.NODE_ENV !== 'production';
-
-export const API_URL = isDev ? API_URL_DEV : API_URL_PROD;
+import { API_URL } from './userService';
 
 interface CalificacionPayload {
     id_historial: number;
@@ -29,6 +23,9 @@ interface CalificacionResponse {
  */
 export async function enviarCalificacion(payload: CalificacionPayload): Promise<CalificacionResponse> {
     try {
+        console.log('📍 API_URL utilizada:', API_URL);
+        console.log('📦 Payload de calificación:', payload);
+        
         // Obtener el ID del usuario del AsyncStorage para autenticación
         const userDataStr = await AsyncStorage.getItem('user');
         let userId: string | null = null;
@@ -43,6 +40,8 @@ export async function enviarCalificacion(payload: CalificacionPayload): Promise<
         }
 
         const url = `${API_URL}/calificaciones/actualizar`;
+        console.log('🌐 URL completa:', url);
+        
         const headers: Record<string, string> = {
             'Content-Type': 'application/json',
         };
@@ -58,7 +57,11 @@ export async function enviarCalificacion(payload: CalificacionPayload): Promise<
             body: JSON.stringify(payload),
         });
 
+        console.log('📥 Response status:', response.status);
+        
         const responseText = await response.text();
+        console.log('📄 Response text:', responseText);
+        
         let data: any;
 
         try {
