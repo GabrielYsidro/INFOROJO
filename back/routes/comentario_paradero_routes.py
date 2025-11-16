@@ -8,9 +8,9 @@ router = APIRouter(
    tags=["comentario_paradero"]
 )
 
-@router.get("/perfil/{id_paradero}")
-def obtener_corredor(id_paradero: int, db: Session = Depends(get_db)):
-   corredor = ComentarioParaderoService(db).obtener_paradero_perfil(id_paradero)
+@router.get("/perfil/{nombre_paradero}")
+def obtener_paradero(nombre_paradero : str, db: Session = Depends(get_db)):
+   corredor = ComentarioParaderoService(db).obtener_paradero_perfil_nombre(nombre_paradero)
    if not corredor:
        raise HTTPException(status_code=404, detail="Corredor no encontrado")
    return corredor

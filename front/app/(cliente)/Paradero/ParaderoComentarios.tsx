@@ -1,61 +1,54 @@
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
 import {
-    FlatList,
-    Image,
-    KeyboardAvoidingView,
-    Platform,
-    SafeAreaView,
-    StatusBar,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  FlatList,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  SafeAreaView,
+  StatusBar,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-// Si usas Expo:
-// import { Ionicons, MaterialIcons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import { Comment, ParaderoInfo, getCommentsByParadero } from '../../../services/paraderoComentarioService';
 import styles from './StylesParaderoComentarios';
 
-type Comment = {
-  id: string;
-  name: string;
-  time: string;
-  text: string;
-};
-
-const comments : Comment[] = [
-  {
-    id: '1',
-    name: 'Cristina',
-    time: '2d',
-    text: 'Estuve esperando 30 minutos y el bus nunca llegó.',
-  },
-  {
-    id: '2',
-    name: 'Jose',
-    time: '1d',
-    text: 'La semana pasada el bus llegó puntual y el conductor fue muy amable.',
-  },
-  {
-    id: '3',
-    name: 'Aldo',
-    time: '2d',
-    text: 'El paradero estaba muy sucio y desordenado.',
-  },
-];
-
 const ParaderoCommentsScreen = () => {
+
     const router = useRouter();
+    const [paraderoInfo, setParaderoInfo] = useState<ParaderoInfo>({
+      id_paradero: 0,
+  nombre: 'No encontrado',
+  imagen_url: null,
+});
+
+const [comments, setComments] = useState<Comment[]> ([]);
+
+const { paradero_nombre } = useLocalSearchParams<{ paradero_nombre: string }>();
+
+useEffect(() => {
+  const fetchParaderoData = async () => {
+    console.log('Paradero nombre recibido en comentarios:', paradero_nombre);
+    const data = await getCommentsByParadero(paradero_nombre);
+    setParaderoInfo(data.paradero);
+
+    setComments(data.comentarios);
+  }
+  fetchParaderoData();
+}, []);
   const renderComment = ({item}:{ item: Comment }) => (
     <View style={styles.commentRow}>
       {/*<Image source={{ uri: item.avatar }} style={styles.avatar} />*/}
       <View style={styles.commentContent}>
         <View style={styles.commentHeader}>
-          <Text style={styles.commentName}>{item.name}</Text>
-          <Text style={styles.commentTime}>{item.time}</Text>
+          <Text style={styles.commentName}>{item.nombre_usuario}</Text>
+          <Text style={styles.commentTime}>{item.created_at}</Text>
         </View>
-        <Text style={styles.commentText}>{item.text}</Text>
+        <Text style={styles.commentText}>{item.comentario}</Text>
       </View>
     </View>
   );
@@ -70,7 +63,7 @@ const ParaderoCommentsScreen = () => {
           <Ionicons name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
 
-        <Text style={styles.headerTitle}>Salaverry</Text>
+        <Text style={styles.headerTitle}>{paraderoInfo.nombre}</Text>
 
         <TouchableOpacity>
           <MaterialIcons name="more-vert" size={24} color="#fff" />
@@ -87,7 +80,7 @@ const ParaderoCommentsScreen = () => {
           <Image
             style={styles.mainImage}
             source={{
-              uri: 'https://lamula.pe/media/uploads/t/7dcbc7e8e50864b1253331e1c7b72dd0.jpg',
+              uri: paraderoInfo.imagen_url? paraderoInfo.imagen_url : 'https://via.placeholder.com/300x200.png?text=No+Image',
             }}
           />
 
@@ -95,13 +88,13 @@ const ParaderoCommentsScreen = () => {
           <Text style={styles.sectionTitle}>Comentarios</Text>
 
           {/* Lista de comentarios */}
-          <FlatList
+          {comments? <FlatList
             data={comments}
-            keyExtractor={(item) => item.id}
+            //keyExtractor={(item) => item.id.toString()}
             renderItem={renderComment}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.commentsList}
-          />
+          />: <Text>No hay comentarios disponibles.</Text>}
         </View>
 
         {/* Caja de mensaje */}
