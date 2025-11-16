@@ -23,9 +23,6 @@ export const getAllParaderos = async (): Promise<Paradero[]> => {
         
         const res = await fetch(`${API_URL}/paradero/`, {
             method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-            },
         });
 
         const elapsed = Date.now() - startTime;
