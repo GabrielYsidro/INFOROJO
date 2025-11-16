@@ -46,7 +46,7 @@ def generar_link_comparticion(usuario_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=f"Error al generar link: {str(e)}")
 
 
-@router.get("/api/share/{token}", response_class=HTMLResponse)
+@router.get("/share/{token}", response_class=HTMLResponse)
 def obtener_pagina_comparticion(token: str, db: Session = Depends(get_db)):
     """
     🗺️ Página web interactiva para ver la ubicación compartida en tiempo real
