@@ -21,7 +21,7 @@ export const getAllParaderos = async (): Promise<Paradero[]> => {
     try {
         console.log(`📡 [FETCH] Iniciando fetch...`);
         
-        const res = await fetch(`${API_URL}/paradero`, {
+        const res = await fetch(`${API_URL}/paradero/`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",

@@ -38,7 +38,7 @@ export const getAllBuses = async () => {
   try {
     console.log(`📡 [FETCH] Iniciando fetch...`);
     
-    const res = await fetch(`${API_URL}/corredor`, {
+    const res = await fetch(`${API_URL}/corredor/`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
