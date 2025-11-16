@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from config.db import Base, engine
-from fastapi.middleware.cors import CORSMiddleware # Importar el middleware
+from fastapi.middleware.cors import CORSMiddleware
 from routes.ruta_routes import router as ruta_routes
 from routes.usuario_routes import router as usuario_routes
 from routes.auth_routes import router as auth_routes
@@ -12,6 +12,7 @@ from routes.calificacion_routes import router as calificacion_routes
 from routes.paradero_routes import router as paradero_routes
 from routes.comentario_paradero_routes import router as comentario_paradero_routes
 from routes.feedback_routes import router as feedback_routes
+from routes.fcm_test_routes import router as fcm_test_routes
 
 app = FastAPI(
     title="API de Inforrojo", 
@@ -48,3 +49,4 @@ app.include_router(calificacion_routes)
 app.include_router(paradero_routes)
 app.include_router(comentario_paradero_routes)
 app.include_router(feedback_routes)
+app.include_router(fcm_test_routes)
