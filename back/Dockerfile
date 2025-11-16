@@ -1,5 +1,5 @@
 # Stage 1: Base image con Python
-FROM python:3.12.3-slim
+FROM python:3.12-slim
 
 # Establecer el directorio de trabajo
 WORKDIR /app
