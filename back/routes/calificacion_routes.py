@@ -26,12 +26,12 @@ def get_user_id_from_headers(x_user_id: Optional[str] = Header(None), authorizat
             return int(token)
     return None
 
-@router.get("/_health")
+@router.get("/_health/")
 def health():
     """Endpoint de salud para verificar que el servicio está funcionando"""
     return {"ok": True}
 
-@router.post("/actualizar")
+@router.post("/actualizar/")
 def actualizar_calificacion(
     payload: Dict = Body(...),
     x_user_id: Optional[str] = Header(None),
@@ -89,14 +89,14 @@ def actualizar_calificacion(
             detail=str(e)
         )
     except Exception as e:
-        print(f"[ERROR] /actualizar: {e}")
+        print(f"[ERROR] /actualizar/: {e}")
         traceback.print_exc()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error al actualizar calificación: {str(e)}"
         )
 
-@router.get("/obtener/{id_historial}")
+@router.get("/obtener/{id_historial}/")
 def obtener_calificacion(id_historial: int):
     """
     Obtiene la calificación de un historial específico.
@@ -118,14 +118,14 @@ def obtener_calificacion(id_historial: int):
     except HTTPException:
         raise
     except Exception as e:
-        print(f"[ERROR] /obtener/{id_historial}: {e}")
+        print(f"[ERROR] /obtener/{id_historial}/: {e}")
         traceback.print_exc()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error al obtener calificación: {str(e)}"
         )
 
-@router.get("/estadisticas")
+@router.get("/estadisticas/")
 def obtener_estadisticas(id_paradero: Optional[int] = None):
     """
     Obtiene estadísticas de calificaciones.
@@ -140,7 +140,7 @@ def obtener_estadisticas(id_paradero: Optional[int] = None):
         }
         
     except Exception as e:
-        print(f"[ERROR] /estadisticas: {e}")
+        print(f"[ERROR] /estadisticas/: {e}")
         traceback.print_exc()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
