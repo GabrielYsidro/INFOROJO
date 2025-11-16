@@ -136,5 +136,20 @@ class UsuarioService:
             print(f"Error en get_historial_limitado: {str(e)}")
             return []
     
+    def actualizar_fcm_token(self, user_id: int, fcm_token: str) -> bool:
+        """
+        Actualiza el FCM token de un usuario para push notifications
+        Retorna True si se actualizó correctamente, False si el usuario no existe
+        """
+        usuario = self.db.query(UsuarioBase).filter(UsuarioBase.id_usuario == user_id).first()
+        if not usuario:
+            return False
+        
+        usuario.fcm_token = fcm_token
+        self.db.commit()
+        self.db.refresh(usuario)
+        print(f"✅ FCM token actualizado para usuario {user_id}: {fcm_token[:20]}...")
+        return True
+    
 
 

@@ -12,3 +12,5 @@ __pycache__/
 google-services.json
 /back/AZURE_DEPLOYMENT_GUIDE.md
 AZURE_DEPLOYMENT_GUIDE.md
+/.idea
+FCM_KEY.json
