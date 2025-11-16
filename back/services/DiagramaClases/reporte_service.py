@@ -16,7 +16,7 @@ class ReporteService:
             raise RuntimeError("No hay engine de DB disponible en ReporteService.")
         self.paradero_service = paradero_service or Paradero_Service(self.engine)
         # instancia factory si la usas (ajusta según tu implementación)
-        self.reporte_factory = CreadorReportes() if 'ReporteFactory' in globals() else None
+        self.reporte_factory = CreadorReportes()
 
     def _reflect_table(self, candidates: Iterable[str]) -> Table:
         meta = MetaData()
@@ -97,37 +97,36 @@ class ReporteService:
         Orquesta la creación del reporte de desvío:
         - valida existencia de paradero
         - evita duplicados usando columna cliente si existe
-        - usa factory para transformar payload (si aplica)
+        - usa factory para transformar payload
         - persiste y devuelve fila insertada
         """
-        # usar factory si existe para transformar payload a dict DB-ready
-        if self.reporte_factory:
-            # ajusta el nombre del método según tu factory (build_payload / to_dict)
-            reporte_obj = self.reporte_factory.create("desvio", payload)  # si tu factory tiene otra API, ajusta
-            record = getattr(reporte_obj, "to_dict", lambda: None)()
-            if record is None:
-                # si factory no tiene to_dict, intentar método build_payload
-                record = getattr(reporte_obj, "build_payload", lambda: payload)()
-        else:
-            # si no hay factory, usar payload directo y construir mensaje simple
-            record = dict(payload)
-            # ejemplo de campo mensaje, ajusta según tu modelo
-            record.setdefault("mensaje", f"Desvío en ruta {payload.get('ruta_id')} — paradero afectado {payload.get('paradero_afectado_id')}. Descripción: {payload.get('descripcion', '')}")
+        # 1. Usar la factory para crear un objeto de reporte estandarizado
+        reporte_obj = self.reporte_factory.crear("desvio", payload)
 
-        # validar paradero
-        paradero_id = int(payload.get("paradero_afectado_id"))
-        if not self.paradero_service.get_paradero_by_id(paradero_id):
-            raise ValueError("Paradero afectado no encontrado")
+        # 2. Construir un diccionario limpio para la base de datos
+        record = {
+            "id_reporte": reporte_obj.id_reporte,
+            "id_emisor": reporte_obj.conductor_id,
+            "id_tipo_reporte": payload.get("id_tipo_reporte"), # El tipo viene en el payload original
+            "id_ruta_afectada": reporte_obj.ruta_id,
+            "id_paradero_inicial": reporte_obj.paradero_afectado_id,
+            "id_paradero_final": reporte_obj.paradero_alterna_id,
+            "descripcion": reporte_obj.descripcion,
+            "mensaje": reporte_obj.generar_mensaje(),
+        }
 
-        # idempotencia
-        id_cliente = str(payload.get("id_reporte")) if payload.get("id_reporte") else None
+        # 3. Validar paradero
+        if not self.paradero_service.get_paradero_by_id(record["id_paradero_inicial"]):
+            raise ValueError(f"Paradero afectado no encontrado: {record['id_paradero_inicial']}")
+
+        # 4. Idempotencia (evitar duplicados)
+        id_cliente = str(record.get("id_reporte"))
         if id_cliente:
             existing = self.find_report_by_id_reporte(id_cliente)
             if existing:
-                # devuelve existente para idempotencia
-                return existing
+                return existing # Devuelve el reporte existente si se reenvía
 
-        # persistir
+        # 5. Persistir en la base de datos
         saved = self.save_report(record)
         return saved
     
@@ -159,5 +158,41 @@ class ReporteService:
                 f"a {payload.get('paradero_final_id')} ({payload.get('tiempo_retraso_min')} min)",
             )
 
+        saved = self.save_report(record)
+        return saved
+    
+    def crear_reporte_falla(self, payload: Dict) -> Dict:
+        """
+        Crea un reporte de tipo 'falla'.
+        """
+        if self.reporte_factory:
+            reporte_obj = self.reporte_factory.crear("falla", payload)
+            record = getattr(reporte_obj, "to_dict", lambda: None)()
+            if record is None:
+                # fallback: generar directamente desde objeto
+                record = {
+                    "id_reporte": reporte_obj.id_reporte,
+                    "id_tipo_reporte": payload.get("id_tipo_reporte", 1),  # tipo 1 = falla
+                    "id_emisor": int(reporte_obj.conductor_id),
+                    "descripcion": payload.get("descripcion"),
+                    "requiere_intervencion": payload.get("requiere_intervencion", False),
+                    "es_critica": payload.get("es_critica", False),
+                    "mensaje": reporte_obj.generar_mensaje(),
+                    # Campos NULL para fallas (no aplican)
+                    "id_ruta_afectada": None,
+                    "id_paradero_inicial": None,
+                    "id_paradero_final": None,
+                    "id_corredor_afectado": payload.get("id_corredor_afectado"),
+                    "tiempo_retraso_min": None,
+                }
+        else:
+            # Si no hay factory, usar directamente el payload
+            record = dict(payload)
+            record.setdefault("id_tipo_reporte", 1)
+            record.setdefault(
+                "mensaje",
+                f"Falla reportada: {payload.get('tipo_falla', 'No especificado')}"
+            )
+        
         saved = self.save_report(record)
         return saved
