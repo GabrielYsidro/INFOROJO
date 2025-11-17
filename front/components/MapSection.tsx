@@ -81,7 +81,7 @@ export default function MapSection() {
     };
 
     fetchBuses();
-    const interval = setInterval(fetchBuses, 5000);
+    const interval = setInterval(fetchBuses, 10000); // 10 segundos en lugar de 5
 
     return () => clearInterval(interval);
   }, []);
