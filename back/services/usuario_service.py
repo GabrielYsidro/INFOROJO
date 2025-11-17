@@ -56,3 +56,8 @@ class UsuarioService:
         """
         return self.db.query(UsuarioBase).filter(UsuarioBase.id_usuario == user_id).first()
 
+    def get_corredor_asignado(self, user_id: int) -> int | None:
+        usuario = self.get_usuario_by_id(user_id)
+        if not usuario:
+            return None
+        return usuario.id_corredor_asignado

@@ -49,6 +49,12 @@ export default function ClienteMenuPrincipal() {
                     <Icon name="bus" size={20} color="#fff" />
                     <Text style={styles.topButtonText}>Viajes</Text>
                 </TouchableOpacity>
+                <TouchableOpacity 
+                    style={styles.topButton}
+                    onPress={() => router.push('/(cliente)/RegistroNotificaciones/RegistroNotificaciones')}
+                >
+                    <Icon name="bell" size={20} color="#fff" />
+                </TouchableOpacity>
             </View>
 
             {/* Map Section */}
