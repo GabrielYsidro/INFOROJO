@@ -42,7 +42,19 @@ class Paradero_Service:
         return None
     
     def get_paraderos(self) -> list[Dict]:
-        return self.db.query(Paradero).all()
+        """Retorna lista serializada de paraderos sin reflexión ni lógica compleja"""
+        paraderos = self.db.query(Paradero).all()
+        return [
+            {
+                "id_paradero": p.id_paradero,
+                "nombre": p.nombre,
+                "coordenada_lat": p.coordenada_lat,
+                "coordenada_lng": p.coordenada_lng,
+                "colapso_actual": p.colapso_actual,
+                "imagen_url": p.imagen_url
+            }
+            for p in paraderos
+        ]
 
     def get_paradero_by_id(self, id_paradero: int) -> Optional[Dict]:
         table = self._reflect_table(("paradero", "paraderos"))

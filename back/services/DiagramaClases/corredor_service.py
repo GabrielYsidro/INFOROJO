@@ -24,7 +24,18 @@ class CorredorService:
 
 
    def get_corredores(self):
-    return self.db.query(Corredor).filter(Corredor.estado.isnot(None)).all()
+       """Retorna lista serializada de corredores sin cálculos complejos"""
+       corredores = self.db.query(Corredor).filter(Corredor.estado.isnot(None)).all()
+       return [
+           {
+               "id_corredor": c.id_corredor,
+               "capacidad_max": c.capacidad_max,
+               "ubicacion_lat": c.ubicacion_lat,
+               "ubicacion_lng": c.ubicacion_lng,
+               "estado": c.estado
+           }
+           for c in corredores
+       ]
 
 
 
