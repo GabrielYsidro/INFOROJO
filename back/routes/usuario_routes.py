@@ -64,7 +64,16 @@ def obtener_usuario_por_id(user_id: int, db: Session = Depends(get_db)):
         return {"error": "Usuario no encontrado"}
     return usuario
 
-# Endpoint para obtener historial de viajes de un usuario (máximo 30 viajes más recientes)
+@router.get("/corredorasignado/{user_id}")
+def obtener_corredor_asignado_por_usuario(user_id: int, db: Session = Depends(get_db)):
+    usuario = UsuarioService(db).get_usuario_by_id(user_id)
+    
+    if usuario is None:
+        return {"error": "Usuario no encontrado"}
+    
+    return {"id_corredor_asignado": usuario.id_corredor_asignado}
+
+# Endpoint para obtener historial de viajes de un usuario
 @router.get("/{user_id}/historial")
 def obtener_historial_usuario(user_id: int, db: Session = Depends(get_db)):
     try:
