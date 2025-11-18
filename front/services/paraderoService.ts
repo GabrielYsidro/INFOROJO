@@ -15,30 +15,48 @@ export interface Paradero {
 }
 
 export const getAllParaderos = async (): Promise<Paradero[]> => {
-    console.log(`📡 Solicitando lista de paraderos desde: ${API_URL}/paradero`);
+    console.log(`📡 [START] Solicitando lista de paraderos desde: ${API_URL}/paradero`);
+    const startTime = Date.now();
 
-    const res = await fetch(`${API_URL}/paradero`, {
-        method: "GET",
-    });
+    try {
+        console.log(`📡 [FETCH] Iniciando fetch...`);
+        
+        const res = await fetch(`${API_URL}/paradero/`, {
+            method: "GET",
+        });
 
-    if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        console.error("❌ Error al obtener paraderos:", errorData);
-        throw new Error(errorData.detail || "No se pudo obtener la lista de paraderos");
+        const elapsed = Date.now() - startTime;
+        console.log(`📡 [RESPONSE] Recibida en ${elapsed}ms, status: ${res.status}`);
+
+        if (!res.ok) {
+            console.error(`❌ [ERROR_HTTP] Status ${res.status}`);
+            const errorData = await res.json().catch(() => ({}));
+            console.error("❌ Error al obtener paraderos:", errorData);
+            throw new Error(errorData.detail || "No se pudo obtener la lista de paraderos");
+        }
+
+        const data: Paradero[] = await res.json();
+        
+        const filteredParaderos = data.filter(paradero => 
+            paradero.coordenada_lat !== null && 
+            paradero.coordenada_lng !== null &&
+            typeof paradero.coordenada_lat === 'number' &&
+            typeof paradero.coordenada_lng === 'number'
+        );
+
+        const totalElapsed = Date.now() - startTime;
+        console.log(`✅ [SUCCESS] Se obtuvieron ${filteredParaderos.length} paraderos en ${totalElapsed}ms (filtrados de ${data.length})`);
+        return filteredParaderos;
+    } catch (error: any) {
+        const elapsed = Date.now() - startTime;
+        console.error(`❌ [CATCH] Error después de ${elapsed}ms:`, {
+            message: error.message,
+            name: error.name,
+            code: error.code,
+        });
+        throw error;
     }
-
-    const data: Paradero[] = await res.json();
-    
-    const filteredParaderos = data.filter(paradero => 
-        paradero.coordenada_lat !== null && 
-        paradero.coordenada_lng !== null &&
-        typeof paradero.coordenada_lat === 'number' &&
-        typeof paradero.coordenada_lng === 'number'
-    );
-
-    console.log(`✅ Se obtuvieron ${filteredParaderos.length} paraderos válidos (filtrados de ${data.length})`);
-    return filteredParaderos;
-}
+};
 
 export default {
     getAllParaderos,
