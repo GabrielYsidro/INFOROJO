@@ -46,6 +46,39 @@ export const getCommentsByParadero = async (paradero_nombre: string): Promise<{p
   }
 }
 
+export const postComentario = async (token: string,paradero_id: number, comentario: string): Promise<{paradero:ParaderoInfo, comentarios: Comment[]}> => {
+  console.log(`📡 [START] Añadiendo comentario para paradero ID ${paradero_id}`);
+  const startTime = Date.now();
+
+  try {
+      console.log(`📡 [FETCH] Iniciando fetch...`);
+      const res = await fetch(`${API_URL}/comentario_paradero/comentar/`, {
+                  method: "POST",
+                  headers: {
+                      "Content-Type": "application/json",
+                      "authorization": `Bearer ${token}`,
+                  },
+                  body: JSON.stringify({
+                      id_paradero: paradero_id,
+                      comentario,
+                  }),
+              });
+        const data: {paradero:ParaderoInfo, comentarios: Comment[]} = await res.json();
+
+        return data;
+      
+  } catch (error: any) {
+      const elapsed = Date.now() - startTime;
+      console.error(`❌ [CATCH] Error después de ${elapsed}ms:`, {
+          message: error.message,
+          name: error.name,
+          code: error.code,
+      });
+      throw error;
+  }
+}
+
 export default {
     getCommentsByParadero,
+    postComentario
 };
