@@ -46,18 +46,28 @@ useEffect(() => {
 }, []);
 
 const enviarComentario = async () => {
-  // Lógica para enviar el comentario al servidor
+  if (!commentText.trim()) return;
+
   console.log('Enviando comentario:', commentText);
-  // Después de enviar, limpiar el campo de texto
-  // (token, id_paradero, comentario)
-  const token : string | null = await AsyncStorage.getItem('token');
-  if(!token) {
+
+  const token: string | null = await AsyncStorage.getItem('token');
+  if (!token) {
     console.log('No hay token disponible para enviar el comentario.');
     return;
   }
-  postComentario(token, paraderoInfo.id_paradero, commentText);
-  setCommentText('');
-  fetchParaderoData();
+
+  try {
+    // 👈 ESPERAR a que se envíe el comentario
+    await postComentario(token, paraderoInfo.id_paradero, commentText.trim());
+
+    // limpiar input
+    setCommentText('');
+
+    // 👈 ESPERAR a que se vuelva a traer la info actualizada
+    await fetchParaderoData();
+  } catch (error) {
+    console.log('Error al enviar comentario:', error);
+  }
 }
 function diasTranscurridos(fechaISO: string): string {
   const fecha = new Date(fechaISO);       // Fecha del dato
