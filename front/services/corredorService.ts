@@ -13,7 +13,7 @@ export const API_URL = isDev ? API_URL_DEV : API_URL_PROD;
 export const getBusInfo = async (corredor_id: number) => {
   console.log(`📡 Obteniendo información del corredor ${corredor_id} desde: ${API_URL}/corredor/${corredor_id}`);
 
-  const res = await fetch(`${API_URL}/corredor/${corredor_id}`, {
+  const res = await fetch(`${API_URL}/corredor/${corredor_id}/`, {
     method: "GET",
   });
 
