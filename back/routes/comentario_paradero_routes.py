@@ -8,19 +8,19 @@ router = APIRouter(
    tags=["comentario_paradero"]
 )
 
-@router.get("/perfil/{nombre_paradero}")
+@router.get("/perfil/{nombre_paradero}/")
 def obtener_paradero(nombre_paradero : str, db: Session = Depends(get_db)):
    corredor = ComentarioParaderoService(db).obtener_paradero_perfil_nombre(nombre_paradero)
    if not corredor:
        raise HTTPException(status_code=404, detail="Corredor no encontrado")
    return corredor
 
-@router.get("/{id_paradero}")
+@router.get("/{id_paradero}/")
 def obtener_comentarios_paradero(id_paradero: int, db: Session = Depends(get_db)):
     comentarios = ComentarioParaderoService(db).obtener_comentarios(id_paradero)
     return comentarios
 
-@router.post("/comentar")
+@router.post("/comentar/")
 def comentar_paradero(
     authorization: str = Header(..., description="Authorization header. Use 'Bearer <token>'"),
     id_paradero: int = Body(..., embed=True, description="ID del paradero a comentar"),
@@ -30,7 +30,7 @@ def comentar_paradero(
     nuevo_comentario = ComentarioParaderoService(db).comentarParadero(authorization, id_paradero, comentario)
     return nuevo_comentario
 
-@router.put("/editar_comentario")
+@router.put("/editar_comentario/")
 def editar_comentario(
     authorization: str = Header(..., description="Authorization header. Use 'Bearer <token>'"),
     id_comentario: int = Body(..., embed=True, description="ID del comentario a editar"),
@@ -39,7 +39,7 @@ def editar_comentario(
     comentario_editado = ComentarioParaderoService(db).editar_comentario(authorization, id_comentario, nuevo_texto)
     return comentario_editado
 
-@router.delete("/eliminar_comentario")
+@router.delete("/eliminar_comentario/")
 def eliminar_comentario(
     authorization: str = Header(..., description="Authorization header. Use 'Bearer <token>'"),
     id_comentario: int = Body(..., embed=True, description="ID del comentario a eliminar"),

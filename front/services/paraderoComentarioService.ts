@@ -25,7 +25,7 @@ export const getCommentsByParadero = async (paradero_nombre: string): Promise<{p
 
   try {
       console.log(`📡 [FETCH] Iniciando fetch...`);
-      const res = await fetch(`${API_URL}/comentario_paradero/perfil/${paradero_nombre}`, {
+      const res = await fetch(`${API_URL}/comentario_paradero/perfil/${paradero_nombre}/`, {
                   method: "GET",
                   headers: {
                       "Content-Type": "application/json",
