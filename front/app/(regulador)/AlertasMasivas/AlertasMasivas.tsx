@@ -1,92 +1,98 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, Alert, TextInput, Switch } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
-import { useRouter, router as globalRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import styles from './StylesAlertasMasivas';
 import { 
-    obtenerTiposReporte, 
-    obtenerReportesPorTipo, 
-    enviarAlertaMasiva 
+    obtenerDatosFormulario, 
+    crearAlertaMasiva 
 } from '@/services/alertaMasivaService';
 
-interface TipoReporte {
-    id_tipo_reporte: number;
-    tipo: string;
+interface Corredor {
+    id_corredor: number;
+    nombre: string;
 }
 
-interface Reporte {
-    id_reporte: number;
-    descripcion: string;
-    fecha: string;
-    es_critica: boolean;
-    requiere_intervencion: boolean;
+interface Ruta {
+    id_ruta: number;
+    codigo: string;
+    nombre: string;
+}
+
+interface Paradero {
+    id_paradero: number;
+    nombre: string;
 }
 
 export default function AlertasMasivas() {
     const router = useRouter();
     const [loading, setLoading] = useState(true);
-    const [tiposReporte, setTiposReporte] = useState<TipoReporte[]>([]);
-    const [tipoSeleccionado, setTipoSeleccionado] = useState<number>(0);
-    const [reportes, setReportes] = useState<Reporte[]>([]);
     const [enviando, setEnviando] = useState(false);
 
-    // Cargar tipos de reporte al iniciar
+    // Datos para los dropdowns
+    const [corredores, setCorredores] = useState<Corredor[]>([]);
+    const [rutas, setRutas] = useState<Ruta[]>([]);
+    const [paraderos, setParaderos] = useState<Paradero[]>([]);
+
+    // Estados del formulario
+    const [descripcion, setDescripcion] = useState('');
+    const [idCorredorAfectado, setIdCorredorAfectado] = useState<number | undefined>(undefined);
+    const [esCritica, setEsCritica] = useState(false);
+    const [requiereIntervencion, setRequiereIntervencion] = useState(false);
+    const [idRutaAfectada, setIdRutaAfectada] = useState<number | undefined>(undefined);
+    const [idParaderoInicial, setIdParaderoInicial] = useState<number | undefined>(undefined);
+    const [idParaderoFinal, setIdParaderoFinal] = useState<number | undefined>(undefined);
+    const [tiempoRetrasoMin, setTiempoRetrasoMin] = useState('');
+
+    // Cargar datos al iniciar
     useEffect(() => {
-        cargarTiposReporte();
+        cargarDatosFormulario();
     }, []);
 
-    // Cargar reportes cuando cambia el tipo seleccionado
-    useEffect(() => {
-        if (tipoSeleccionado > 0) {
-            cargarReportes();
-        } else {
-            setReportes([]);
-        }
-    }, [tipoSeleccionado]);
-
     const handleVolver = () => {
-        // Intentar volver atrás en el historial
         if (router.canGoBack()) {
             router.back();
         } else {
-            // Si no hay historial, navegar al index del regulador
             router.replace('/(regulador)/' as any);
         }
     };
 
-    const cargarTiposReporte = async () => {
+    const cargarDatosFormulario = async () => {
         try {
             setLoading(true);
-            const data = await obtenerTiposReporte();
-            setTiposReporte(data);
+            const data = await obtenerDatosFormulario();
+            setCorredores(data.corredores || []);
+            setRutas(data.rutas || []);
+            setParaderos(data.paraderos || []);
         } catch (error) {
-            console.error('Error al cargar tipos de reporte:', error);
-            Alert.alert('Error', 'No se pudieron cargar los tipos de reporte');
+            console.error('Error al cargar datos del formulario:', error);
+            Alert.alert('Error', 'No se pudieron cargar los datos del formulario');
         } finally {
             setLoading(false);
         }
     };
 
-    const cargarReportes = async () => {
-        try {
-            const data = await obtenerReportesPorTipo(tipoSeleccionado);
-            setReportes(data);
-        } catch (error) {
-            console.error('Error al cargar reportes:', error);
-            Alert.alert('Error', 'No se pudieron cargar los reportes');
-        }
+    const limpiarFormulario = () => {
+        setDescripcion('');
+        setIdCorredorAfectado(undefined);
+        setEsCritica(false);
+        setRequiereIntervencion(false);
+        setIdRutaAfectada(undefined);
+        setIdParaderoInicial(undefined);
+        setIdParaderoFinal(undefined);
+        setTiempoRetrasoMin('');
     };
 
     const handleEnviarAlerta = async () => {
-        if (tipoSeleccionado === 0) {
-            Alert.alert('Error', 'Por favor selecciona un tipo de alerta');
+        if (!descripcion.trim()) {
+            Alert.alert('Error', 'Por favor ingresa una descripción para la alerta');
             return;
         }
 
         Alert.alert(
             'Confirmar Envío',
-            '¿Estás seguro de enviar esta alerta masiva a todos los usuarios (reguladores, clientes y conductores)?',
+            '¿Estás seguro de enviar esta alerta masiva?',
             [
                 {
                     text: 'Cancelar',
@@ -98,28 +104,26 @@ export default function AlertasMasivas() {
                         try {
                             setEnviando(true);
                             
-                            // Obtener el tipo de reporte seleccionado
-                            const tipoReporteObj = tiposReporte.find(
-                                t => t.id_tipo_reporte === tipoSeleccionado
-                            );
+                            const payload = {
+                                descripcion: descripcion.trim(),
+                                id_corredor_afectado: idCorredorAfectado,
+                                es_critica: esCritica,
+                                requiere_intervencion: requiereIntervencion,
+                                id_ruta_afectada: idRutaAfectada,
+                                id_paradero_inicial: idParaderoInicial,
+                                id_paradero_final: idParaderoFinal,
+                                tiempo_retraso_min: tiempoRetrasoMin ? parseInt(tiempoRetrasoMin) : undefined,
+                            };
 
-                            await enviarAlertaMasiva({
-                                id_tipo_reporte: tipoSeleccionado,
-                                titulo: `Alerta Masiva: ${tipoReporteObj?.tipo || 'Alerta'}`,
-                                descripcion: `Se ha enviado una alerta masiva de tipo ${tipoReporteObj?.tipo || 'Alerta'}`,
-                            });
+                            await crearAlertaMasiva(payload);
 
                             Alert.alert(
                                 'Éxito',
-                                'La alerta masiva ha sido enviada exitosamente a todos los usuarios',
+                                'La alerta masiva ha sido creada exitosamente',
                                 [
                                     {
                                         text: 'OK',
-                                        onPress: () => {
-                                            // Resetear el formulario
-                                            setTipoSeleccionado(0);
-                                            setReportes([]);
-                                        },
+                                        onPress: limpiarFormulario,
                                     },
                                 ]
                             );
@@ -133,18 +137,6 @@ export default function AlertasMasivas() {
                 },
             ]
         );
-    };
-
-    const formatearFecha = (fechaStr: string) => {
-        if (!fechaStr) return 'Fecha no disponible';
-        const fecha = new Date(fechaStr);
-        return fecha.toLocaleDateString('es-PE', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-        });
     };
 
     if (loading) {
@@ -169,60 +161,143 @@ export default function AlertasMasivas() {
 
             {/* Header */}
             <View style={styles.header}>
-                <Text style={styles.headerTitle}>ALERTA MASIVA</Text>
+                <Text style={styles.headerTitle}>CREAR ALERTA MASIVA</Text>
             </View>
 
             <ScrollView style={styles.content}>
-                {/* Selector de tipo de alerta */}
+                {/* Descripción (Requerido) */}
                 <View style={styles.section}>
-                    <Text style={styles.label}>Tipo de Alerta</Text>
+                    <Text style={styles.label}>Descripción *</Text>
+                    <TextInput
+                        style={styles.textInput}
+                        placeholder="Describe la alerta masiva..."
+                        value={descripcion}
+                        onChangeText={setDescripcion}
+                        multiline
+                        numberOfLines={4}
+                    />
+                </View>
+
+                {/* Corredor Afectado */}
+                <View style={styles.section}>
+                    <Text style={styles.label}>Corredor Afectado (Opcional)</Text>
                     <View style={styles.pickerContainer}>
                         <Picker
-                            selectedValue={tipoSeleccionado}
-                            onValueChange={(itemValue) => setTipoSeleccionado(itemValue)}
+                            selectedValue={idCorredorAfectado}
+                            onValueChange={(value) => setIdCorredorAfectado(value === 0 ? undefined : value)}
                             style={styles.picker}
                         >
-                            <Picker.Item label="Seleccione un tipo de alerta" value={0} />
-                            {tiposReporte.map((tipo) => (
+                            <Picker.Item label="Seleccionar corredor..." value={0} />
+                            {corredores.map((corredor) => (
                                 <Picker.Item
-                                    key={tipo.id_tipo_reporte}
-                                    label={tipo.tipo}
-                                    value={tipo.id_tipo_reporte}
+                                    key={corredor.id_corredor}
+                                    label={corredor.nombre}
+                                    value={corredor.id_corredor}
                                 />
                             ))}
                         </Picker>
                     </View>
                 </View>
 
-                {/* Lista de reportes del tipo seleccionado */}
-                {tipoSeleccionado > 0 && (
-                    <View style={styles.section}>
-                        <Text style={styles.label}>
-                            Reportes de {tiposReporte.find(t => t.id_tipo_reporte === tipoSeleccionado)?.tipo}
-                        </Text>
-                        <ScrollView style={styles.reportesList}>
-                            {reportes.length > 0 ? (
-                                reportes.map((reporte) => (
-                                    <View key={reporte.id_reporte} style={styles.reporteItem}>
-                                        <Text style={styles.reporteDescripcion}>
-                                            {reporte.descripcion || 'Sin descripción'}
-                                        </Text>
-                                        <Text style={styles.reporteFecha}>
-                                            {formatearFecha(reporte.fecha)}
-                                        </Text>
-                                        {reporte.es_critica && (
-                                            <Text style={styles.reporteCritica}>⚠️ CRÍTICA</Text>
-                                        )}
-                                    </View>
-                                ))
-                            ) : (
-                                <Text style={styles.emptyText}>
-                                    No hay reportes de este tipo
-                                </Text>
-                            )}
-                        </ScrollView>
+                {/* Ruta Afectada */}
+                <View style={styles.section}>
+                    <Text style={styles.label}>Ruta Afectada (Opcional)</Text>
+                    <View style={styles.pickerContainer}>
+                        <Picker
+                            selectedValue={idRutaAfectada}
+                            onValueChange={(value) => setIdRutaAfectada(value === 0 ? undefined : value)}
+                            style={styles.picker}
+                        >
+                            <Picker.Item label="Seleccionar ruta..." value={0} />
+                            {rutas.map((ruta) => (
+                                <Picker.Item
+                                    key={ruta.id_ruta}
+                                    label={`${ruta.codigo} - ${ruta.nombre}`}
+                                    value={ruta.id_ruta}
+                                />
+                            ))}
+                        </Picker>
                     </View>
-                )}
+                </View>
+
+                {/* Paradero Inicial */}
+                <View style={styles.section}>
+                    <Text style={styles.label}>Paradero Inicial (Opcional)</Text>
+                    <View style={styles.pickerContainer}>
+                        <Picker
+                            selectedValue={idParaderoInicial}
+                            onValueChange={(value) => setIdParaderoInicial(value === 0 ? undefined : value)}
+                            style={styles.picker}
+                        >
+                            <Picker.Item label="Seleccionar paradero..." value={0} />
+                            {paraderos.map((paradero) => (
+                                <Picker.Item
+                                    key={paradero.id_paradero}
+                                    label={paradero.nombre}
+                                    value={paradero.id_paradero}
+                                />
+                            ))}
+                        </Picker>
+                    </View>
+                </View>
+
+                {/* Paradero Final */}
+                <View style={styles.section}>
+                    <Text style={styles.label}>Paradero Final (Opcional)</Text>
+                    <View style={styles.pickerContainer}>
+                        <Picker
+                            selectedValue={idParaderoFinal}
+                            onValueChange={(value) => setIdParaderoFinal(value === 0 ? undefined : value)}
+                            style={styles.picker}
+                        >
+                            <Picker.Item label="Seleccionar paradero..." value={0} />
+                            {paraderos.map((paradero) => (
+                                <Picker.Item
+                                    key={paradero.id_paradero}
+                                    label={paradero.nombre}
+                                    value={paradero.id_paradero}
+                                />
+                            ))}
+                        </Picker>
+                    </View>
+                </View>
+
+                {/* Tiempo de Retraso */}
+                <View style={styles.section}>
+                    <Text style={styles.label}>Tiempo de Retraso (minutos)</Text>
+                    <TextInput
+                        style={styles.textInput}
+                        placeholder="Ej: 15"
+                        value={tiempoRetrasoMin}
+                        onChangeText={setTiempoRetrasoMin}
+                        keyboardType="numeric"
+                    />
+                </View>
+
+                {/* Switches */}
+                <View style={styles.section}>
+                    <View style={styles.switchRow}>
+                        <Text style={styles.label}>Es Crítica</Text>
+                        <Switch
+                            value={esCritica}
+                            onValueChange={setEsCritica}
+                            trackColor={{ false: '#767577', true: '#c62828' }}
+                            thumbColor={esCritica ? '#fff' : '#f4f3f4'}
+                        />
+                    </View>
+                </View>
+
+                <View style={styles.section}>
+                    <View style={styles.switchRow}>
+                        <Text style={styles.label}>Requiere Intervención</Text>
+                        <Switch
+                            value={requiereIntervencion}
+                            onValueChange={setRequiereIntervencion}
+                            trackColor={{ false: '#767577', true: '#c62828' }}
+                            thumbColor={requiereIntervencion ? '#fff' : '#f4f3f4'}
+                        />
+                    </View>
+                </View>
             </ScrollView>
 
             {/* Botón para enviar alerta masiva */}
@@ -230,10 +305,10 @@ export default function AlertasMasivas() {
                 <TouchableOpacity
                     style={[
                         styles.button,
-                        (tipoSeleccionado === 0 || enviando) && styles.buttonDisabled,
+                        (!descripcion.trim() || enviando) && styles.buttonDisabled,
                     ]}
                     onPress={handleEnviarAlerta}
-                    disabled={tipoSeleccionado === 0 || enviando}
+                    disabled={!descripcion.trim() || enviando}
                 >
                     {enviando ? (
                         <ActivityIndicator color="#fff" />

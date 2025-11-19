@@ -26,75 +26,62 @@ def get_user_id_from_headers(x_user_id: Optional[str] = Header(None), authorizat
             return int(token)
     return None
 
-@router.get("/_health")
+@router.get("/_health/")
 def health():
     """Endpoint de salud para verificar que el servicio está funcionando"""
     return {"ok": True}
 
-@router.get("/tipos-reporte")
-def obtener_tipos_reporte():
+@router.get("/datos-formulario/")
+def obtener_datos_formulario():
     """
-    Obtiene todos los tipos de reporte disponibles.
-    Retorna una lista con id_tipo_reporte y tipo.
+    Obtiene todos los datos necesarios para el formulario de alerta masiva:
+    - Lista de corredores
+    - Lista de rutas
+    - Lista de paraderos
     """
     try:
-        tipos = service.obtener_tipos_reporte()
+        datos = service.obtener_datos_formulario()
         return {
             "success": True,
-            "data": tipos
+            "data": datos
         }
     except Exception as e:
-        print(f"[ERROR] /tipos-reporte: {e}")
+        print(f"[ERROR] /datos-formulario: {e}/")
         traceback.print_exc()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error al obtener tipos de reporte: {str(e)}"
+            detail=f"Error al obtener datos del formulario: {str(e)}"
         )
 
-@router.get("/reportes/{id_tipo_reporte}")
-def obtener_reportes_por_tipo(id_tipo_reporte: int):
-    """
-    Obtiene todos los reportes de un tipo específico.
-    Path parameter: id_tipo_reporte
-    """
-    try:
-        reportes = service.obtener_reportes_por_tipo(id_tipo_reporte)
-        return {
-            "success": True,
-            "data": reportes
-        }
-    except Exception as e:
-        print(f"[ERROR] /reportes/{id_tipo_reporte}: {e}")
-        traceback.print_exc()
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error al obtener reportes: {str(e)}"
-        )
-
-@router.post("/enviar")
-def enviar_alerta_masiva(
+@router.post("/enviar/")
+def crear_alerta_masiva(
     payload: Dict = Body(...),
     x_user_id: Optional[str] = Header(None),
     authorization: Optional[str] = Header(None)
 ):
     """
-    Envía una alerta masiva a todos los tipos de usuarios.
-    La lista de reportes se obtiene filtrando por tipo de reporte de la tabla existente.
+    Crea una nueva alerta masiva (reporte tipo "Otro").
+    Guarda el reporte en la base de datos con todos los campos necesarios.
     
     Body esperado:
     {
-        "id_tipo_reporte": int (requerido),
-        "descripcion": str (opcional),
-        "titulo": str (opcional)
+        "descripcion": str (requerido),
+        "id_corredor_afectado": int (opcional),
+        "es_critica": bool (opcional),
+        "requiere_intervencion": bool (opcional),
+        "id_ruta_afectada": int (opcional),
+        "id_paradero_inicial": int (opcional),
+        "id_paradero_final": int (opcional),
+        "tiempo_retraso_min": int (opcional)
     }
     
     El id_emisor se obtiene de los headers X-User-Id o Authorization.
+    El id_tipo_reporte se asigna automáticamente a 4 (Otro).
     """
     try:
         # Obtener ID del usuario emisor
         user_id = get_user_id_from_headers(x_user_id, authorization)
         
-        # Validar que existe el usuario
         if user_id is None:
             # Intentar obtener del payload como fallback
             user_id = payload.get("id_emisor")
@@ -102,34 +89,35 @@ def enviar_alerta_masiva(
         if user_id is None:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Usuario no autenticado. Debe incluir X-User-Id o Authorization en headers, o id_emisor en el body."
+                detail="Usuario no autenticado. Debe incluir X-User-Id o Authorization en headers."
             )
         
         # Validar campo requerido
-        if "id_tipo_reporte" not in payload:
+        if "descripcion" not in payload or not payload["descripcion"]:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Campo requerido: id_tipo_reporte"
+                detail="Campo requerido: descripcion"
             )
         
-        # Agregar el id_emisor al payload
+        # Agregar el id_emisor y tipo al payload
         payload["id_emisor"] = user_id
+        payload["id_tipo_reporte"] = 4  # Tipo "Otro" para alertas masivas
         
-        # Enviar la alerta masiva (solo confirmación, no guarda en BD)
-        resultado = service.enviar_alerta_masiva(payload)
+        # Crear el reporte
+        resultado = service.crear_alerta_masiva(payload)
         
         return {
             "success": True,
             "data": resultado,
-            "message": "Alerta masiva enviada exitosamente a todos los usuarios (regulador, cliente y conductor)"
+            "message": "Alerta masiva creada exitosamente"
         }
         
     except HTTPException:
         raise
     except Exception as e:
-        print(f"[ERROR] /enviar: {e}")
+        print(f"[ERROR] /enviar: {e}/")
         traceback.print_exc()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error al enviar alerta masiva: {str(e)}"
+            detail=f"Error al crear alerta masiva: {str(e)}"
         )

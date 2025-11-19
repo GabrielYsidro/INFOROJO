@@ -30,6 +30,22 @@ const styles = StyleSheet.create({
         color: '#333',
         marginBottom: 8,
     },
+    textInput: {
+        borderWidth: 1,
+        borderColor: '#c62828',
+        borderRadius: 8,
+        padding: 12,
+        fontSize: 16,
+        backgroundColor: '#fff',
+        color: '#333',
+        minHeight: 50,
+        textAlignVertical: 'top',
+    },
+    switchRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
     pickerContainer: {
         borderWidth: 1,
         borderColor: '#c62828',
