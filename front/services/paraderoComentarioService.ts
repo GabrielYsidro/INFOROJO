@@ -13,6 +13,7 @@ export interface ParaderoInfo {
 }
 
 export interface Comment {
+    id_usuario: number;
   id_comentario: number;
   nombre_usuario: string;
   created_at: string;

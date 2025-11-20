@@ -1,3 +1,4 @@
+import { getMe } from '@/services/AuthService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -32,8 +33,21 @@ const [comments, setComments] = useState<Comment[]> ([]);
 const { paradero_nombre } = useLocalSearchParams<{ paradero_nombre: string }>();
 
 const [commentText, setCommentText] = useState<string>('');
+const [userData, setUserData] = useState<any>(null);
+const [token, setToken]= useState<string | null>(null);
+
+const fetchToken = async () => {
+  const storedToken = await AsyncStorage.getItem('token');
+  setToken(storedToken);
+}
+
 const fetchParaderoData = async () => {
-    
+  if (!token) {
+    console.log('No hay token disponible para obtener los datos del paradero.');
+    return;
+  }
+    const user = await getMe(token);
+    setUserData(user)
     const data = await getCommentsByParadero(paradero_nombre);
     setParaderoInfo(data.paradero);
 
@@ -41,16 +55,19 @@ const fetchParaderoData = async () => {
     console.log(data);
   }
 useEffect(() => {
-  
-  fetchParaderoData();
+  fetchToken();
 }, []);
+
+useEffect(() => {
+  if (token) {
+    fetchParaderoData();
+  }
+}, [token]);
 
 const enviarComentario = async () => {
   if (!commentText.trim()) return;
 
-  console.log('Enviando comentario:', commentText);
-
-  const token: string | null = await AsyncStorage.getItem('token');
+  console.log('Enviando comentario:', commentText);;
   if (!token) {
     console.log('No hay token disponible para enviar el comentario.');
     return;
@@ -89,6 +106,16 @@ function diasTranscurridos(fechaISO: string): string {
           <Text style={styles.commentTime}>{diasTranscurridos(item.created_at)}</Text>
         </View>
         <Text style={styles.commentText}>{item.comentario}</Text>
+        {item.id_usuario === userData?.id_usuario && (
+          <View style={ styles.settingsStyle}>
+          <TouchableOpacity style={styles.editButton}>
+            <MaterialIcons name="edit" size={25} color={'#F4695A'} />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.deleteButton}>
+            <MaterialIcons name="delete" size={25} color={'#FFFFFF'}/>
+          </TouchableOpacity>
+        </View>
+        )}
       </View>
     </View>
   );
