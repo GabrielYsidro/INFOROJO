@@ -2,14 +2,14 @@ import { Comment, ParaderoInfo, postComentario } from '@/services/paraderoComent
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import {
-    FlatList,
-    Image,
-    KeyboardAvoidingView,
-    Platform,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  FlatList,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import RenderComment from './RenderComment';
 import styles from './StylesParaderoComentarios';
@@ -20,6 +20,8 @@ type PantallaParaderoProps = {
   userId: number;
   onRefresh: () => Promise<void>;
   token: string | null;
+  onEditComment: (comment: Comment) => void;
+  onDeleteComment: (comment: Comment) => void;
 };
 
 const PantallaParadero: React.FC<PantallaParaderoProps> = ({
@@ -28,6 +30,8 @@ const PantallaParadero: React.FC<PantallaParaderoProps> = ({
   userId,
   onRefresh,
   token,
+  onEditComment,
+  onDeleteComment,
 }) => {
   const [commentText, setCommentText] = useState<string>('');
 
@@ -80,7 +84,8 @@ const PantallaParadero: React.FC<PantallaParaderoProps> = ({
               (item as any).id?.toString() ?? index.toString()
             }
             renderItem={({ item }) => (
-              <RenderComment comment={item} userId={userId} />
+              <RenderComment comment={item} userId={userId} onEdit={() => onEditComment(item)}
+  onDelete={() => onDeleteComment(item)}/>
             )}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.commentsList}

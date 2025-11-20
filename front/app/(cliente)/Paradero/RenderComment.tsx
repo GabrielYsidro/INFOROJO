@@ -8,9 +8,11 @@ import styles from './StylesParaderoComentarios';
 type RenderCommentProps = {
   comment: Comment;
   userId: number;
+  onEdit: () => void;
+  onDelete: () => void;
 };
 
-const RenderComment: React.FC<RenderCommentProps> = ({ comment, userId }) => {
+const RenderComment: React.FC<RenderCommentProps> = ({ comment, userId, onEdit,onDelete }) => {
   return (
     <View style={styles.commentRow}>
       <View style={styles.commentContent}>
@@ -26,11 +28,11 @@ const RenderComment: React.FC<RenderCommentProps> = ({ comment, userId }) => {
 
         {comment.id_usuario === userId && (
           <View style={styles.settingsStyle}>
-            <TouchableOpacity style={styles.editButton}>
+            <TouchableOpacity style={styles.editButton} onPress={onEdit}>
               <MaterialIcons name="edit" size={25} color="#F4695A" />
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.deleteButton}>
+            <TouchableOpacity style={styles.deleteButton} onPress={onDelete}>
               <MaterialIcons name="delete" size={25} color="#FFFFFF" />
             </TouchableOpacity>
           </View>
