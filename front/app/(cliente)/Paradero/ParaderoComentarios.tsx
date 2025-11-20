@@ -23,7 +23,8 @@ const { paradero_nombre } = useLocalSearchParams<{ paradero_nombre: string }>();
 
 const [userData, setUserData] = useState<number>(0);
 const [token, setToken]= useState<string | null>(null);
-
+const [modalEditVisible, setModalEditVisible] = useState<boolean>(false);
+const [modalDeleteVisible, setModalDeleteVisible] = useState<boolean>(false);
 
 const fetchToken = async () => {
   const storedToken = await AsyncStorage.getItem('token');

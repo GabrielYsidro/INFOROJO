@@ -79,7 +79,72 @@ export const postComentario = async (token: string,paradero_id: number, comentar
   }
 }
 
+export const editComentario = async (token: string,comentario_id: number, nComentario: string) => {
+    console.log(`📡 [START] Editando comentario ID ${comentario_id}`);
+    const startTime = Date.now();
+
+    try {
+        console.log(`📡 [FETCH] Iniciando fetch...`);
+        const res = await fetch(`${API_URL}/comentario_paradero/editar_comentario/`, {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "authorization": `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({
+                        id_comentario: comentario_id,
+                        nuevo_texto: nComentario,
+                    }),
+                });
+          const data = await res.json();
+
+          return data;
+        
+    } catch (error: any) {
+        const elapsed = Date.now() - startTime;
+        console.error(`❌ [CATCH] Error después de ${elapsed}ms:`, {
+            message: error.message,
+            name: error.name,
+            code: error.code,
+        });
+        throw error;
+    }
+}
+
+export const deleteComentario = async (token: string, comentario_id: number) => {
+    console.log(`📡 [START] Eliminando comentario ID ${comentario_id}`);
+    const startTime = Date.now();
+
+    try {
+        console.log(`📡 [FETCH] Iniciando fetch...`);
+        const res = await fetch(`${API_URL}/comentario_paradero/eliminar_comentario/`, {
+                    method: "DELETE",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "authorization": `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({
+                        id_comentario: comentario_id,
+                    }),
+                });
+          const data = await res.json();
+
+          return data;
+        
+    } catch (error: any) {
+        const elapsed = Date.now() - startTime;
+        console.error(`❌ [CATCH] Error después de ${elapsed}ms:`, {
+            message: error.message,
+            name: error.name,
+            code: error.code,
+        });
+        throw error;
+    }
+}
+
 export default {
     getCommentsByParadero,
-    postComentario
+    postComentario,
+    editComentario,
+    deleteComentario,
 };
