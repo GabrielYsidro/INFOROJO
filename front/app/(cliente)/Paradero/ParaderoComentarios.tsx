@@ -2,17 +2,10 @@ import { getMe } from '@/services/AuthService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import {
-  SafeAreaView,
-  StatusBar,
-  Text,
-  TouchableOpacity,
-  View
-} from 'react-native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import { SafeAreaView, StatusBar } from 'react-native';
 import { Comment, ParaderoInfo, getCommentsByParadero } from '../../../services/paraderoComentarioService';
 import PantallaParadero from './PantallaParadero';
+import ParaderoHeader from './ParaderoHeader';
 import styles from './StylesParaderoComentarios';
 
 const ParaderoCommentsScreen = () => {
@@ -62,19 +55,7 @@ useEffect(() => {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" />
-
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="#fff" />
-        </TouchableOpacity>
-
-        <Text style={styles.headerTitle}>{paraderoInfo.nombre}</Text>
-
-        <TouchableOpacity>
-          <MaterialIcons name="more-vert" size={24} color="#fff" />
-        </TouchableOpacity>
-      </View>
+      <ParaderoHeader nombre={paraderoInfo.nombre} back={() => router.back()} />
       <PantallaParadero
   paraderoInfo={paraderoInfo}
   comments={comments}
@@ -82,7 +63,6 @@ useEffect(() => {
   onRefresh={fetchParaderoData}
   token={token}
 />
-
     </SafeAreaView>
   );
 };
