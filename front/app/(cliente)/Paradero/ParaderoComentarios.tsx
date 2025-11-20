@@ -17,6 +17,7 @@ import {
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { Comment, ParaderoInfo, getCommentsByParadero, postComentario } from '../../../services/paraderoComentarioService';
+import RenderComment from './RenderComment';
 import styles from './StylesParaderoComentarios';
 
 const ParaderoCommentsScreen = () => {
@@ -66,60 +67,19 @@ useEffect(() => {
 
 const enviarComentario = async () => {
   if (!commentText.trim()) return;
-
   console.log('Enviando comentario:', commentText);;
   if (!token) {
     console.log('No hay token disponible para enviar el comentario.');
     return;
   }
-
   try {
-    // 👈 ESPERAR a que se envíe el comentario
     await postComentario(token, paraderoInfo.id_paradero, commentText.trim());
-
-    // limpiar input
     setCommentText('');
-
-    // 👈 ESPERAR a que se vuelva a traer la info actualizada
     await fetchParaderoData();
   } catch (error) {
     console.log('Error al enviar comentario:', error);
   }
 }
-function diasTranscurridos(fechaISO: string): string {
-  const fecha = new Date(fechaISO);       // Fecha del dato
-  const ahora = new Date();               // Fecha actual
-
-  const diffMs = ahora.getTime() - fecha.getTime();  // Diferencia en ms
-
-  const dias = diffMs / (1000 * 60 * 60 * 24);        // Convertir a días
-
-  return 'hace '+Math.floor(dias)+' días';
-}
-
-  const renderComment = ({item}:{ item: Comment }) => (
-    <View style={styles.commentRow}>
-      {/*<Image source={{ uri: item.avatar }} style={styles.avatar} />*/}
-      <View style={styles.commentContent}>
-        <View style={styles.commentHeader}>
-          <Text style={styles.commentName}>{item.nombre_usuario}</Text>
-          <Text style={styles.commentTime}>{diasTranscurridos(item.created_at)}</Text>
-        </View>
-        <Text style={styles.commentText}>{item.comentario}</Text>
-        {item.id_usuario === userData?.id_usuario && (
-          <View style={ styles.settingsStyle}>
-          <TouchableOpacity style={styles.editButton}>
-            <MaterialIcons name="edit" size={25} color={'#F4695A'} />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.deleteButton}>
-            <MaterialIcons name="delete" size={25} color={'#FFFFFF'}/>
-          </TouchableOpacity>
-        </View>
-        )}
-      </View>
-    </View>
-  );
-
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" />
@@ -158,7 +118,7 @@ function diasTranscurridos(fechaISO: string): string {
           {comments? <FlatList
             data={comments}
             //keyExtractor={(item) => item.id.toString()}
-            renderItem={renderComment}
+            renderItem={({ item }) => (RenderComment(item, userData?.id_usuario))}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.commentsList}
           />: <Text>No hay comentarios disponibles.</Text>}
