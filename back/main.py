@@ -13,6 +13,7 @@ from routes.paradero_routes import router as paradero_routes
 from routes.comentario_paradero_routes import router as comentario_paradero_routes
 from routes.feedback_routes import router as feedback_routes
 from routes.fcm_test_routes import router as fcm_test_routes
+from routes.shared_location_routes import router as shared_location_routes
 
 app = FastAPI(
     title="API de Inforrojo", 
@@ -50,3 +51,4 @@ app.include_router(paradero_routes)
 app.include_router(comentario_paradero_routes)
 app.include_router(feedback_routes)
 app.include_router(fcm_test_routes)
+app.include_router(shared_location_routes)

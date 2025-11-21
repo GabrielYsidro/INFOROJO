@@ -64,6 +64,12 @@ export default function ClienteMenuPrincipal() {
                     <Icon name="message-text" size={20} color="#fff" />
                     <Text style={styles.topButtonText}>Feedback</Text>
                 </TouchableOpacity>
+                <TouchableOpacity 
+                    style={styles.topButton}
+                    onPress={() => router.push('/(cliente)/RegistroNotificaciones/RegistroNotificaciones')}
+                >
+                    <Icon name="bell" size={20} color="#fff" />
+                </TouchableOpacity>
             </View>
 
             {/* Map Section */}
