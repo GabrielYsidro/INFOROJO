@@ -8,6 +8,7 @@ from datetime import datetime
 from config.db import engine as shared_engine
 from .paradero_service import Paradero_Service
 from .reporte_factory import CreadorReportes
+from services.usuario_service import UsuarioService
 
 class ReporteService:
     def __init__(self, engine: Engine = None, paradero_service: Paradero_Service = None):
@@ -132,17 +133,41 @@ class ReporteService:
     
     def crear_reporte_retraso(self, payload: Dict) -> Dict:
         """
-        Crea un reporte de tipo 'retraso' (alerta por tráfico).
+        Crea un reporte de tipo 'retraso' y asigna id_corredor_afectado de usuario_base automáticamente.
         """
+
+        # 1️⃣ Extraer conductor
+        conductor_id = payload.get("id_emisor") or payload.get("conductor_id")
+        if conductor_id is None:
+            raise ValueError("No se recibió conductor (id_emisor) en el payload")
+
+        # 2️⃣ Obtener corredor asignado desde usuario_base
+        # Crear usuario service con sesión activa
+        from config.db import SessionLocal
+        db = SessionLocal()
+        usuario_service = UsuarioService(db)
+
+        usuario = usuario_service.get_usuario_by_id(int(conductor_id))
+        if not usuario:
+            db.close()
+            raise ValueError(f"El usuario {conductor_id} no existe")
+
+        id_corredor_asignado = usuario.id_corredor_asignado
+        db.close()
+
+        if id_corredor_asignado is None:
+            raise ValueError("El conductor no tiene un corredor asignado en usuario_base")
+
+        # 3️⃣ Crear el record según si existe factory
         if self.reporte_factory:
             reporte_obj = self.reporte_factory.crear("retraso", payload)
-            record = getattr(reporte_obj, "to_dict", lambda: None)()
+            record = getattr(reporte_obj, "to_dict", None)
+            record = record() if callable(record) else None
             if record is None:
-                # fallback: generar directamente desde objeto
                 record = {
                     "id_reporte": reporte_obj.id_reporte,
                     "id_tipo_reporte": payload.get("id_tipo_reporte"),
-                    "id_emisor": payload.get("id_emisor"),
+                    "id_emisor": conductor_id,
                     "id_ruta_afectada": reporte_obj.ruta_id,
                     "id_paradero_inicial": reporte_obj.paradero_inicial_id,
                     "id_paradero_final": reporte_obj.paradero_final_id,
@@ -194,5 +219,39 @@ class ReporteService:
                 f"Falla reportada: {payload.get('tipo_falla', 'No especificado')}"
             )
         
+        # 4️⃣ Insertar corredor asignado automáticamente
+        record["id_corredor_afectado"] = id_corredor_asignado
+
+        # 5️⃣ Guardar
         saved = self.save_report(record)
         return saved
+
+    def obtener_ultimo_reporte_por_corredor_id(self, id_corredor: int):
+        """
+        Retorna el último reporte con id_tipo_reporte = 2 (Retraso)
+        filtrado por id_corredor_afectado
+        """
+
+        table = self._reflect_table(("reporte", "reportes", "report"))
+        cols = table.c
+
+        if "id_corredor_afectado" not in cols or "id_tipo_reporte" not in cols or "fecha" not in cols:
+            raise ValueError("Las columnas necesarias no existen en la tabla reporte")
+
+        stmt = (
+            select(table)
+            .where(
+                cols.id_corredor_afectado == id_corredor,
+                cols.id_tipo_reporte == 2
+            )
+            .order_by(cols.fecha.desc())
+            .limit(1)
+        )
+
+        try:
+            with self.engine.connect() as conn:
+                result = conn.execute(stmt).mappings().first()
+                return dict(result) if result else None
+        except Exception as e:
+            print("[DB ERROR] obtener_ultimo_reporte_por_corredor_id:", e)
+            raise
