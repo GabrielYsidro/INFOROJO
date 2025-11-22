@@ -6,6 +6,7 @@ const API_URL_PROD = "https://backend-inforojo-ckh4hedjhqdtdfaq.eastus-01.azurew
 const isDev = process.env.NODE_ENV !== 'production';
 
 export const API_URL = isDev ? API_URL_DEV : API_URL_PROD;
+//export const API_URL =  API_URL_PROD;
 
 interface TipoReporte {
     id_tipo_reporte: number;
