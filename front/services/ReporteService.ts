@@ -7,6 +7,7 @@ const API_URL_PROD = Constants.expoConfig?.extra?.API_URL_PROD;
 const isDev = process.env.NODE_ENV !== 'production';
 
 export const API_URL = isDev ? API_URL_DEV : API_URL_PROD;
+//export const API_URL =  API_URL_PROD;
 
 export async function enviarDesvio(body: Record<string, any>, options?: { xUserId?: string; token?: string }) {
   const url = `${API_URL}/reports/desvio`;
