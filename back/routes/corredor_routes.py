@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Body
 from sqlalchemy.orm import Session
 from services.DiagramaClases.corredor_service import CorredorService
 from config.db import get_db
+from fastapi import HTTPException
 
 
 router = APIRouter(
@@ -37,6 +38,22 @@ def obtener_corredor(id_corredor: int, db: Session = Depends(get_db)):
    if not corredor:
        raise HTTPException(status_code=404, detail="Corredor no encontrado")
    return corredor
+
+
+@router.get("/{id_corredor}/eta")
+def obtener_eta_corredor(id_corredor: int, paradero_id: int, db: Session = Depends(get_db)):
+    """
+    Calcula y devuelve el ETA (minutos) desde el corredor dado hasta el paradero indicado.
+    Respuesta: { corredor_id, paradero_id, distancia_km, eta_minutos }
+    """
+    servicio = CorredorService(db)
+    try:
+        result = servicio.calcular_eta(id_corredor=id_corredor, id_paradero=paradero_id)
+    except ValueError as ve:
+        raise HTTPException(status_code=404, detail=str(ve))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Error interno al calcular ETA")
+    return result
 
 @router.put("/{id_corredor}/ubicacion")
 def actualizar_ubicacion_corredor(

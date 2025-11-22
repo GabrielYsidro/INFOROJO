@@ -12,6 +12,7 @@ export interface Paradero {
     coordenada_lat: number;
     coordenada_lng: number;
     colapso_actual: boolean;
+    eta_minutos?: number | null;
 }
 
 export const getAllParaderos = async (): Promise<Paradero[]> => {
