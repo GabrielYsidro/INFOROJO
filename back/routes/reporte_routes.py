@@ -149,6 +149,7 @@ def crear_reporte_retraso(payload: Dict = Body(...), conductor_header_id: Option
     tipo = 2  # ⚠️ ID del tipo_reporte "Retraso" en tu tabla tipo_reporte
 
     mapped_payload = {
+        "id_reporte": payload.get("id_reporte", None),   # ← OBLIGATORIO PARA EVITAR EL ERROR
         "id_emisor": int(conductor_id),
         "id_tipo_reporte": tipo,
         "id_ruta_afectada": ruta_id,
@@ -161,7 +162,6 @@ def crear_reporte_retraso(payload: Dict = Body(...), conductor_header_id: Option
         "ruta_id": ruta_id,
         "paradero_inicial_id": paradero_inicial,
         "paradero_final_id": paradero_final,
-        "tiempo_retraso_min": tiempo_retraso_min,
     }
 
     print("[DEBUG] /reports/retraso mapped_payload:", mapped_payload)
@@ -230,4 +230,30 @@ def crear_reporte_falla(payload: Dict = Body(...), conductor_header_id: Optional
         print("[ERROR] crear_reporte_falla exception:", e)
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
-    
+        
+@router.get("/retraso/ultimo/corredor/{id_corredor}")
+def obtener_ultimo_reporte_por_corredor_id(id_corredor: int):
+    """
+    Devuelve el último reporte de retraso (id_tipo_reporte = 2)
+    filtrado por el id_corredor_afectado.
+    """
+
+    try:
+        # Servicio devuelve lista o None
+        reporte = service.obtener_ultimo_reporte_por_corredor_id(id_corredor)
+
+        if not reporte:
+            return {
+                "ok": True,
+                "mensaje": f"No existen reportes de retraso para el corredor con id {id_corredor}",
+                "reporte": None
+            }
+
+        return {
+            "ok": True,
+            "reporte": reporte,
+        }
+
+    except Exception as e:
+        print("[ERROR] obtener_ultimo_reporte_por_corredor_id:", e)
+        raise HTTPException(status_code=500, detail=str(e))
