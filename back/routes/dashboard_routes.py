@@ -8,6 +8,6 @@ router = APIRouter(
    tags=["dashboard"]
 )
 
-@router.get("/{dias_cant}")
+@router.get("/{dias_cant}/")
 def obtenerDashboard(dias_cant: int,db: Session = Depends(get_db)):
    return DashboardService(db).getDashboard(dias_serie=dias_cant)

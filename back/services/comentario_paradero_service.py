@@ -18,7 +18,7 @@ class ComentarioParaderoService:
         comentarios_mapped = list(map(lambda c: {
             "id_comentario": c.id_comentario,
             "id_usuario": c.id_usuario,
-            "nomre_usuario": next((u.nombre for u in usuarios if u.id_usuario == c.id_usuario), "Desconocido"),
+            "nombre_usuario": next((u.nombre for u in usuarios if u.id_usuario == c.id_usuario), "Desconocido"),
             "comentario": c.comentario,
             "created_at": c.created_at
         },comentarios))
@@ -27,6 +27,16 @@ class ComentarioParaderoService:
     def obtener_paradero_perfil(self, id_paradero:int):
         paradero = self.db.query(Paradero).filter(Paradero.id_paradero==id_paradero).first()
         comentarios = self.obtener_comentarios(id_paradero)
+        return {
+            "paradero": paradero,
+            "comentarios": comentarios
+        }
+    
+    def obtener_paradero_perfil_nombre(self, nombre_paradero:str):
+        paradero = self.db.query(Paradero).filter(Paradero.nombre==nombre_paradero).first()
+        if paradero is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Paradero no encontrado")
+        comentarios = self.obtener_comentarios(paradero.id_paradero)
         return {
             "paradero": paradero,
             "comentarios": comentarios

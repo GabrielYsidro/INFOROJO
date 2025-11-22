@@ -1,6 +1,6 @@
 import { StyleSheet } from "react-native";
 
-const PRIMARY = '#F4695A';
+export const PRIMARY = '#F4695A';
 
 const styles = StyleSheet.create({
   container: {
@@ -82,6 +82,35 @@ const styles = StyleSheet.create({
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: '#eee',
     backgroundColor: '#fff',
+  },
+  settingsStyle: {
+    fontSize: 25,
+    
+    position: 'absolute',
+    flexDirection: 'row', marginTop: 0,
+    right: 0,
+  },
+  deleteButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: PRIMARY,
+    color: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    top: 0,
+    right: 0,
+    padding: 2,
+  },
+  editButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    top: 0,
+    right: 0,
+    padding: 2,
   },
   messageBox: {
     flex: 1,

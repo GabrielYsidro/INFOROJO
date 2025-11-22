@@ -1,130 +1,208 @@
+import AppModal from '@/components/Modals/AppModal';
+import { getMe } from '@/services/AuthService';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { SafeAreaView, StatusBar, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import {
-    FlatList,
-    Image,
-    KeyboardAvoidingView,
-    Platform,
-    SafeAreaView,
-    StatusBar,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
-} from 'react-native';
-// Si usas Expo:
-// import { Ionicons, MaterialIcons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+  Comment,
+  ParaderoInfo,
+  deleteComentario,
+  editComentario,
+  getCommentsByParadero,
+} from '../../../services/paraderoComentarioService';
+import PantallaParadero from './PantallaParadero';
+import ParaderoHeader from './ParaderoHeader';
 import styles from './StylesParaderoComentarios';
 
-type Comment = {
-  id: string;
-  name: string;
-  time: string;
-  text: string;
-};
-
-const comments : Comment[] = [
-  {
-    id: '1',
-    name: 'Cristina',
-    time: '2d',
-    text: 'Q buen servizcio',
-  },
-  {
-    id: '2',
-    name: 'Jose',
-    time: '2d',
-    text: 'Liked your comment',
-  },
-  {
-    id: '3',
-    name: 'emberecho',
-    time: '2d',
-    text: 'Liked your comment',
-  },
-];
-
 const ParaderoCommentsScreen = () => {
-    const router = useRouter();
-  const renderComment = ({item}:{ item: Comment }) => (
-    <View style={styles.commentRow}>
-      {/*<Image source={{ uri: item.avatar }} style={styles.avatar} />*/}
-      <View style={styles.commentContent}>
-        <View style={styles.commentHeader}>
-          <Text style={styles.commentName}>{item.name}</Text>
-          <Text style={styles.commentTime}>{item.time}</Text>
-        </View>
-        <Text style={styles.commentText}>{item.text}</Text>
-      </View>
-    </View>
-  );
+  const router = useRouter();
+
+  const [paraderoInfo, setParaderoInfo] = useState<ParaderoInfo>({
+    id_paradero: 0,
+    nombre: 'No encontrado',
+    imagen_url: null,
+  });
+
+  const [comments, setComments] = useState<Comment[]>([]);
+  const { paradero_nombre } = useLocalSearchParams<{ paradero_nombre: string }>();
+
+  const [userData, setUserData] = useState<number>(0);
+  const [token, setToken] = useState<string | null>(null);
+
+  const [modalEditVisible, setModalEditVisible] = useState<boolean>(false);
+  const [modalDeleteVisible, setModalDeleteVisible] = useState<boolean>(false);
+  const [editText, setEditText] = useState<string>('');
+
+  // Modal variables
+  const [commentId, setCommentId] = useState<number>(0);
+  const [newText, setNewText] = useState<string>('');
+
+  const fetchToken = async () => {
+    const storedToken = await AsyncStorage.getItem('token');
+    setToken(storedToken);
+  };
+
+  const fetchParaderoData = async () => {
+    if (!token) {
+      console.log('No hay token disponible para obtener los datos del paradero.');
+      return;
+    }
+
+    const user = await getMe(token);
+    setUserData(user.id_usuario);
+
+    const data = await getCommentsByParadero(paradero_nombre);
+    setParaderoInfo(data.paradero);
+    setComments(data.comentarios);
+  };
+
+  useEffect(() => {
+    fetchToken();
+  }, []);
+
+  useEffect(() => {
+    if (token) {
+      fetchParaderoData();
+    }
+  }, [token]);
+
+  // ==== HANDLERS PARA LOS ICONOS ====
+
+  const handleEditPress = (comment: Comment) => {
+    setCommentId(comment.id_comentario);
+    setNewText(comment.comentario);
+    setEditText(comment.comentario);
+    setModalEditVisible(true);
+  };
+
+  const handleDeletePress = (comment: Comment) => {
+    setCommentId(comment.id_comentario);
+    setModalDeleteVisible(true);
+  };
+
+  // ==== CONFIRMAR MODAL EDIT ====
+
+  const handleConfirmEdit = async () => {
+    if (!token) return;
+    try {
+      await editComentario(token,commentId, newText);
+      setModalEditVisible(false);
+      await fetchParaderoData();
+    } catch (error) {
+      console.log('Error al actualizar comentario', error);
+    }
+  };
+
+  // ==== CONFIRMAR MODAL DELETE ====
+
+  const handleConfirmDelete = async () => {
+    if (!token) return;
+    try {
+      await deleteComentario(token, commentId);
+      setModalDeleteVisible(false);
+      await fetchParaderoData();
+    } catch (error) {
+      console.log('Error al eliminar comentario', error);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" />
 
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="#fff" />
-        </TouchableOpacity>
+      <ParaderoHeader nombre={paraderoInfo.nombre} back={() => router.back()} />
 
-        <Text style={styles.headerTitle}>Paradero B</Text>
+      <PantallaParadero
+        paraderoInfo={paraderoInfo}
+        comments={comments}
+        userId={userData}
+        onRefresh={fetchParaderoData}
+        token={token}
+        // NUEVAS PROPS PARA QUE LOS ICONOS LLAMEN A LOS MODALES:
+        onEditComment={handleEditPress}
+        onDeleteComment={handleDeletePress}
+      />
 
-        <TouchableOpacity>
-          <MaterialIcons name="more-vert" size={24} color="#fff" />
-        </TouchableOpacity>
-      </View>
+      {/* MODAL EDITAR */}
+<AppModal visible={modalEditVisible} onClose={() => setModalEditVisible(false)}>
+  <View
+    style={{
+      backgroundColor: "white",
+      width: "100%",
+      padding: 20,
+      borderRadius: 12,
+      gap: 16,
+    }}
+  >
+    <Text style={{ fontSize: 18, fontWeight: "600" }}>Editar comentario</Text>
 
-      <KeyboardAvoidingView
-        style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
-      >
-        <View style={styles.content}>
-          {/* Foto del paradero */}
-          <Image
-            style={styles.mainImage}
-            source={{
-              uri: 'https://images.pexels.com/photos/460672/pexels-photo-460672.jpeg?auto=compress&cs=tinysrgb&w=800',
-            }}
-          />
+    <TextInput
+      value={newText}
+      onChangeText={setNewText}
+      multiline
+      style={{
+        backgroundColor: "#f2f2f2",
+        padding: 10,
+        borderRadius: 8,
+        minHeight: 100,
+        textAlignVertical: "top",
+      }}
+    />
 
-          {/* Título comentarios */}
-          <Text style={styles.sectionTitle}>Comentarios</Text>
+    <View style={{ flexDirection: "row", justifyContent: "flex-end", gap: 10 }}>
+      <TouchableOpacity onPress={() => setModalEditVisible(false)}>
+        <Text style={{ fontSize: 16, color: "#666" }}>Cancelar</Text>
+      </TouchableOpacity>
 
-          {/* Lista de comentarios */}
-          <FlatList
-            data={comments}
-            keyExtractor={(item) => item.id}
-            renderItem={renderComment}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.commentsList}
-          />
-        </View>
+      <TouchableOpacity onPress={handleConfirmEdit}>
+        <Text style={{ fontSize: 16, color: "#F4695A", fontWeight: "600" }}>
+          Guardar
+        </Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+</AppModal>
 
-        {/* Caja de mensaje */}
-        <View style={styles.inputBar}>
-          <View style={styles.messageBox}>
-            <TextInput
-              placeholder="Message..."
-              style={styles.textInput}
-              placeholderTextColor="#999"
-            />
-            <TouchableOpacity>
-              <Ionicons name="mic-outline" size={22} color="#999" />
-            </TouchableOpacity>
-          </View>
 
-          <TouchableOpacity style={styles.sendButton}>
-            <Ionicons name="paper-plane" size={22} color="#fff" />
-          </TouchableOpacity>
-        </View>
-      </KeyboardAvoidingView>
+      {/* MODAL ELIMINAR */}
+<AppModal
+  visible={modalDeleteVisible}
+  onClose={() => setModalDeleteVisible(false)}
+>
+  <View
+    style={{
+      backgroundColor: "white",
+      width: "100%",
+      padding: 20,
+      borderRadius: 12,
+      gap: 16,
+    }}
+  >
+    <Text style={{ fontSize: 18, fontWeight: "600" }}>
+      Eliminar comentario
+    </Text>
+
+    <Text style={{ fontSize: 16 }}>
+      ¿Seguro que deseas eliminar este comentario?
+    </Text>
+
+    <View style={{ flexDirection: "row", justifyContent: "flex-end", gap: 10 }}>
+      <TouchableOpacity onPress={() => setModalDeleteVisible(false)}>
+        <Text style={{ fontSize: 16, color: "#666" }}>Cancelar</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity onPress={handleConfirmDelete}>
+        <Text style={{ fontSize: 16, color: "red", fontWeight: "600" }}>
+          Eliminar
+        </Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+</AppModal>
+
     </SafeAreaView>
   );
 };
 
 export default ParaderoCommentsScreen;
-

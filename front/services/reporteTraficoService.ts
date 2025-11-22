@@ -19,10 +19,10 @@ export const enviarReporteTrafico = async (
   tiempo_retraso_min: number,
   descripcion: string
 ) => {
-  console.log("🚦 Enviando reporte de tráfico a:", `${API_URL}/reports/retraso/`);
+  console.log("🚦 Enviando reporte de tráfico a:", `${API_URL}/reports/retraso`);
   console.log("👤 Conductor:", conductor_id);
 
-  const res = await fetch(`${API_URL}/reports/retraso/`, {
+  const res = await fetch(`${API_URL}/reports/retraso`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -78,7 +78,7 @@ export const obtenerUltimoReportePorCorredor = async (corredor: number) => {
 
   const url = `${API_URL}/reports/retraso/ultimo/corredor/${encodeURIComponent(
     corredor
-  )}/`;
+  )}`;
 
   console.log("🔗 URL final:", url);
 
