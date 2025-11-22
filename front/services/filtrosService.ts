@@ -64,7 +64,7 @@ export const aplicarFiltros = async (filtros: FiltrosData): Promise<RutaFiltrada
 
 export const obtenerRutasDisponibles = async (): Promise<RutaFiltrada[]> => {
   try {
-    const response = await fetch(`${API_URL}/ruta/`, {
+    const response = await fetch(`${API_URL}/ruta/obtenerRutas`, {
       method: 'GET',
     });
 
