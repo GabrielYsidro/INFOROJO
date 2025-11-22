@@ -76,7 +76,7 @@ export const listarReportesTrafico = async () => {
 export const obtenerUltimoReportePorCorredor = async (corredor: number) => {
   console.log("📡 Obteniendo último reporte del corredor:", corredor);
 
-  const url = `${API_URL}/reports/retraso/${encodeURIComponent(
+  const url = `${API_URL}/reports/ultimo/${encodeURIComponent(
     corredor
   )}`;
 
