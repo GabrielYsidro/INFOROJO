@@ -32,17 +32,14 @@ export const getBusInfo = async (corredor_id: number) => {
  * 🔹 Obtiene la lista completa de corredores activos.
  */
 export const getAllBuses = async () => {
-  console.log(`📡 [START] Solicitando lista de corredores desde: ${API_URL}/corredor`);
+  console.log(`📡 [START] Solicitando lista de corredores desde: ${API_URL}/corredor/`);
   const startTime = Date.now();
 
   try {
     console.log(`📡 [FETCH] Iniciando fetch...`);
     
-    const res = await fetch(`${API_URL}/corredor`, {
+    const res = await fetch(`${API_URL}/corredor/`, {
       method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
     });
 
     const elapsed = Date.now() - startTime;

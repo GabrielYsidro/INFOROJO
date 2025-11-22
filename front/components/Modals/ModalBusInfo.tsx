@@ -1,4 +1,5 @@
 import { getBusInfo } from '@/services/corredorService';
+import { obtenerUltimoReportePorCorredor } from '@/services/reporteTraficoService';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
@@ -40,10 +41,40 @@ export default function ModalBusInfo({
 
     fetchBusInfo();
   }, [bus_id]);
+
+  
+  const [tiempoRetraso, setTiempoRetraso] = useState<number | null>(null);
+  const [descripcionRetraso, setDescripcionRetraso] = useState<string | null>(null);
+
+  
+  useEffect(() => {
+    const fetchRetraso = async () => {
+      try {
+        const data = await obtenerUltimoReportePorCorredor(bus_id);
+
+        console.log(data)
+
+        if (data?.reporte) {
+          setTiempoRetraso(data.reporte.tiempo_retraso_min ?? null);
+          setDescripcionRetraso(data.reporte.descripcion ?? null);
+        } else {
+          setTiempoRetraso(null);
+          setDescripcionRetraso(null);
+        }
+      } catch (error) {
+        console.error('Error al obtener reporte de retraso:', error);
+      }
+    };
+
+    fetchRetraso();
+  }, []);
+
   return (
     <View style={styles.card}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Corredor</Text>
+        <Text style={styles.headerTitle}>Corredor {bus_id}</Text>
+
+        
         <Pressable onPress={onClose} hitSlop={10} style={styles.closeBtn}>
           <Ionicons name="close" size={20} />
         </Pressable>
@@ -58,7 +89,25 @@ export default function ModalBusInfo({
 
       <View style={styles.row}>
         <Text style={styles.label}>Capacidad</Text>
-        <Text style={styles.value}>{String(busData.numero_pasajeros)}/{String(busData.capacidad_max)}</Text>
+        <Text style={styles.value}>
+          {String(busData.numero_pasajeros)}/{String(busData.capacidad_max)}
+        </Text>
+      </View>
+
+      <View style={styles.row}>
+        <Text style={styles.label}>Retraso</Text>
+        <Text style={styles.value}>
+          {tiempoRetraso !== null ? `${tiempoRetraso} min` : 'Sin reporte'}
+        </Text>
+      </View>
+
+      <View style={styles.row}>
+        <Text style={styles.label}>Razón retraso</Text>
+        <Text style={styles.value}>
+          {descripcionRetraso && descripcionRetraso.trim() !== '' 
+            ? descripcionRetraso 
+            : 'No especificado'}
+        </Text>
       </View>
 
       <View style={styles.footer}>
@@ -109,7 +158,15 @@ const styles = StyleSheet.create({
   closeBtn: { padding: 6, borderRadius: 999 },
   row: { flexDirection: 'row', justifyContent: 'space-between', gap: 12, paddingVertical: 10 },
   label: { color: '#6B7280', fontSize: 14, fontWeight: '600' },
-  value: { color: '#111827', fontSize: 14, fontWeight: '600' },
+  value: { 
+  color: '#111827', 
+  fontSize: 14, 
+  fontWeight: '600',
+  flexShrink: 1,
+  flexWrap: 'wrap',
+  textAlign: 'right'
+},
+
   divider: { height: StyleSheet.hairlineWidth, backgroundColor: '#E5E7EB' },
   footer: { marginTop: 12, alignItems: 'flex-end' },
   okBtn: {

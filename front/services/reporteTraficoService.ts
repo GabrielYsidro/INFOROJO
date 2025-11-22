@@ -67,7 +67,40 @@ export const listarReportesTrafico = async () => {
   return res.json(); // devuelve lista de reportes
 };
 
+/**
+ * Obtiene el último reporte de tráfico registrado para un corredor específico.
+ * @param corredor Nombre o código del corredor (por ejemplo, "Corredor Rojo").
+ */
+export const obtenerUltimoReportePorCorredor = async (corredor: number) => {
+  console.log("📡 Obteniendo último reporte del corredor:", corredor);
+
+  const res = await fetch(
+    `${API_URL}/reports/retraso/ultimo/corredor/${encodeURIComponent(corredor)}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    console.error("❌ Error al obtener último reporte:", err);
+    throw new Error(err.detail || `No se pudo obtener el último reporte del corredor ${corredor}.`);
+  }
+
+  const data = await res.json();
+
+  console.log("📦 [DEBUG] Respuesta cruda último reporte:", JSON.stringify(data, null, 2));
+
+  // data tiene forma { ok: boolean, reporte: {...} }
+  return data; // lo usas como data?.reporte en el componente
+};
+
+
 export default {
   enviarReporteTrafico,
   listarReportesTrafico,
+  obtenerUltimoReportePorCorredor
 };

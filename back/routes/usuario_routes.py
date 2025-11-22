@@ -1,7 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Body
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from services.usuario_service import UsuarioService
 from config.db import get_db
+
+class FCMTokenRequest(BaseModel):
+    user_id: int
+    fcm_token: str
 
 router = APIRouter(
     prefix="/usuario",
@@ -37,6 +42,21 @@ def crear_usuario(
 def listar_usuarios(db: Session = Depends(get_db)):
     return UsuarioService(db).get_usuarios()
 
+@router.post("/registrar-fcm-token")
+def registrar_fcm_token(
+    request: FCMTokenRequest,
+    db: Session = Depends(get_db)
+):
+    """
+    Registra el FCM token de un usuario para recibir push notifications
+    """
+    usuario_service = UsuarioService(db)
+    resultado = usuario_service.actualizar_fcm_token(request.user_id, request.fcm_token)
+    if resultado:
+        return {"message": "FCM token registrado correctamente", "user_id": request.user_id}
+    else:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+
 @router.get("/{user_id}")
 def obtener_usuario_por_id(user_id: int, db: Session = Depends(get_db)):
     usuario = UsuarioService(db).get_usuario_by_id(user_id)
@@ -44,7 +64,16 @@ def obtener_usuario_por_id(user_id: int, db: Session = Depends(get_db)):
         return {"error": "Usuario no encontrado"}
     return usuario
 
-# Endpoint para obtener historial de viajes de un usuario (máximo 30 viajes más recientes)
+@router.get("/corredorasignado/{user_id}")
+def obtener_corredor_asignado_por_usuario(user_id: int, db: Session = Depends(get_db)):
+    usuario = UsuarioService(db).get_usuario_by_id(user_id)
+    
+    if usuario is None:
+        return {"error": "Usuario no encontrado"}
+    
+    return {"id_corredor_asignado": usuario.id_corredor_asignado}
+
+# Endpoint para obtener historial de viajes de un usuario
 @router.get("/{user_id}/historial")
 def obtener_historial_usuario(user_id: int, db: Session = Depends(get_db)):
     try:

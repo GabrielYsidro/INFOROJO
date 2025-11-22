@@ -26,6 +26,7 @@ def crear_corredor(
    )
 
 
+@router.get("")
 @router.get("/")
 def listar_corredores(db: Session = Depends(get_db)):
    return CorredorService(db).get_corredores()

@@ -10,10 +10,7 @@ export default function BusInfoScreen() {
   return (
     <ModalBackdrop onPressBackdrop={close}>
       <ModalBusInfo
-        title={String(title)}
-        stop={String(stop)}
-        capacity={Number(capacity)}
-        max={Number(max)}
+ 
         onClose={close}
       />
     </ModalBackdrop>

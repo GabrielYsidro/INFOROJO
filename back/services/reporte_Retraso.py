@@ -1,4 +1,6 @@
 from typing import Dict, Optional, Any
+
+from .usuario_service import UsuarioService
 from .DiagramaClases.reporte_Interface import ReporteInterface
 
 
@@ -29,10 +31,18 @@ class Reporte_Retraso(ReporteInterface):
         )
 
     def enviar(self, repo) -> Dict[str, Any]:
+
+        corredor_id = UsuarioService.get_corredor_asignado(self.conductor_id)
+
+        if corredor_id is None:
+            raise ValueError("El conductor no tiene un corredor asignado en usuario_base")
+
+
         record = {
             "id_reporte": self.id_reporte,
             "tipo": "retraso",
             "conductor_id": int(self.conductor_id),
+            "id_corredor_afectado": corredor_id,  
             "id_ruta_afectada": self.ruta_id,
             "id_paradero_inicial": self.paradero_inicial_id,
             "id_paradero_final": self.paradero_final_id,
