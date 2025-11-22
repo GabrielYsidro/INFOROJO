@@ -43,7 +43,7 @@ export async function enviarCalificacion(payload: CalificacionPayload): Promise<
             }
         }
 
-        const url = `${API_URL}/calificaciones/actualizar`;
+        const url = `${API_URL}/calificaciones/actualizar/`;
         const headers: Record<string, string> = {
             'Content-Type': 'application/json',
         };
@@ -88,7 +88,7 @@ export async function enviarCalificacion(payload: CalificacionPayload): Promise<
  */
 export async function obtenerCalificacion(idHistorial: number): Promise<any> {
     try {
-        const url = `${API_URL}/calificaciones/obtener/${idHistorial}`;
+        const url = `${API_URL}/calificaciones/obtener/${idHistorial}/`;
         const response = await fetch(url, {
             method: 'GET',
             headers: {
@@ -116,7 +116,7 @@ export async function obtenerCalificacion(idHistorial: number): Promise<any> {
  */
 export async function obtenerEstadisticasCalificaciones(idParadero?: number): Promise<any> {
     try {
-        let url = `${API_URL}/calificaciones/estadisticas`;
+        let url = `${API_URL}/calificaciones/estadisticas/`;
         if (idParadero) {
             url += `?id_paradero=${idParadero}`;
         }

@@ -91,15 +91,15 @@ export default function AlertasMasivas() {
         }
 
         Alert.alert(
-            'Confirmar Envío',
-            '¿Estás seguro de enviar esta alerta masiva?',
+            'Confirmar Guardado',
+            '¿Estás seguro de guardar esta alerta masiva en la base de datos?',
             [
                 {
                     text: 'Cancelar',
                     style: 'cancel',
                 },
                 {
-                    text: 'Enviar',
+                    text: 'Guardar',
                     onPress: async () => {
                         try {
                             setEnviando(true);
@@ -119,7 +119,7 @@ export default function AlertasMasivas() {
 
                             Alert.alert(
                                 'Éxito',
-                                'La alerta masiva ha sido creada exitosamente',
+                                'La alerta masiva ha sido guardada exitosamente',
                                 [
                                     {
                                         text: 'OK',
@@ -128,14 +128,22 @@ export default function AlertasMasivas() {
                                 ]
                             );
                         } catch (error) {
-                            console.error('Error al enviar alerta:', error);
-                            Alert.alert('Error', 'No se pudo enviar la alerta masiva');
+                            console.error('Error al guardar alerta:', error);
+                            Alert.alert('Error', 'No se pudo guardar la alerta masiva');
                         } finally {
                             setEnviando(false);
                         }
                     },
                 },
             ]
+        );
+    };
+
+    const handleEnviarNotificacion = () => {
+        Alert.alert(
+            'Función no disponible',
+            'El envío de notificaciones masivas estará disponible próximamente',
+            [{ text: 'OK' }]
         );
     };
 
@@ -300,11 +308,13 @@ export default function AlertasMasivas() {
                 </View>
             </ScrollView>
 
-            {/* Botón para enviar alerta masiva */}
+            {/* Botones de acción */}
             <View style={styles.buttonContainer}>
+                {/* Botón Guardar */}
                 <TouchableOpacity
                     style={[
                         styles.button,
+                        styles.buttonGuardar,
                         (!descripcion.trim() || enviando) && styles.buttonDisabled,
                     ]}
                     onPress={handleEnviarAlerta}
@@ -313,8 +323,16 @@ export default function AlertasMasivas() {
                     {enviando ? (
                         <ActivityIndicator color="#fff" />
                     ) : (
-                        <Text style={styles.buttonText}>ENVIAR ALERTA MASIVA</Text>
+                        <Text style={styles.buttonText}>GUARDAR ALERTA</Text>
                     )}
+                </TouchableOpacity>
+
+                {/* Botón Enviar Notificación */}
+                <TouchableOpacity
+                    style={[styles.button, styles.buttonEnviar]}
+                    onPress={handleEnviarNotificacion}
+                >
+                    <Text style={styles.buttonText}>ENVIAR NOTIFICACIÓN</Text>
                 </TouchableOpacity>
             </View>
         </View>

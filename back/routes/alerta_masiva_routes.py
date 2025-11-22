@@ -46,7 +46,7 @@ def obtener_datos_formulario():
             "data": datos
         }
     except Exception as e:
-        print(f"[ERROR] /datos-formulario: {e}/")
+        print(f"[ERROR] /datos-formulario: {e}")
         traceback.print_exc()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -115,7 +115,7 @@ def crear_alerta_masiva(
     except HTTPException:
         raise
     except Exception as e:
-        print(f"[ERROR] /enviar: {e}/")
+        print(f"[ERROR] /enviar: {e}")
         traceback.print_exc()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

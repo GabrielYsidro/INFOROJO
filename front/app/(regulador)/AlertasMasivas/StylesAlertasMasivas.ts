@@ -103,20 +103,28 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
         borderTopWidth: 1,
         borderColor: '#e0e0e0',
+        gap: 12,
     },
     button: {
-        backgroundColor: '#c62828',
         paddingVertical: 15,
         borderRadius: 8,
         alignItems: 'center',
         elevation: 3,
-        shadowColor: '#c62828',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.3,
         shadowRadius: 3,
     },
+    buttonGuardar: {
+        backgroundColor: '#2e7d32',
+        shadowColor: '#2e7d32',
+    },
+    buttonEnviar: {
+        backgroundColor: '#1565c0',
+        shadowColor: '#1565c0',
+    },
     buttonDisabled: {
         backgroundColor: '#ccc',
+        shadowColor: '#ccc',
     },
     buttonText: {
         color: '#fff',

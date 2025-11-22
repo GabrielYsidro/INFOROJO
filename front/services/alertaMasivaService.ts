@@ -5,25 +5,6 @@ interface DatosFormulario {
     corredores: Array<{ id_corredor: number; nombre: string }>;
     rutas: Array<{ id_ruta: number; codigo: string; nombre: string }>;
     paraderos: Array<{ id_paradero: number; nombre: string }>;
-const API_URL_DEV = "http://10.0.2.2:8000";
-const API_URL_PROD = "https://backend-inforojo-ckh4hedjhqdtdfaq.eastus-01.azurewebsites.net";
-
-const isDev = process.env.NODE_ENV !== 'production';
-
-export const API_URL = isDev ? API_URL_DEV : API_URL_PROD;
-//export const API_URL =  API_URL_PROD;
-
-interface TipoReporte {
-    id_tipo_reporte: number;
-    tipo: string;
-}
-
-interface Reporte {
-    id_reporte: number;
-    descripcion: string;
-    fecha: string;
-    es_critica: boolean;
-    requiere_intervencion: boolean;
 }
 
 interface AlertaMasivaPayload {
