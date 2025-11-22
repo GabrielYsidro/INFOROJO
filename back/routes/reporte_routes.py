@@ -149,6 +149,7 @@ def crear_reporte_retraso(payload: Dict = Body(...), conductor_header_id: Option
     tipo = 2  # ⚠️ ID del tipo_reporte "Retraso" en tu tabla tipo_reporte
 
     mapped_payload = {
+        "id_reporte": payload.get("id_reporte", None),   # ← OBLIGATORIO PARA EVITAR EL ERROR
         "id_emisor": int(conductor_id),
         "id_tipo_reporte": tipo,
         "id_ruta_afectada": ruta_id,
@@ -161,7 +162,6 @@ def crear_reporte_retraso(payload: Dict = Body(...), conductor_header_id: Option
         "ruta_id": ruta_id,
         "paradero_inicial_id": paradero_inicial,
         "paradero_final_id": paradero_final,
-        "tiempo_retraso_min": tiempo_retraso_min,
     }
 
     print("[DEBUG] /reports/retraso mapped_payload:", mapped_payload)
