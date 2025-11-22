@@ -23,20 +23,38 @@ interface AlertaMasivaPayload {
  */
 export async function obtenerDatosFormulario(): Promise<DatosFormulario> {
     try {
-        const url = `${API_URL}/alertas-masivas/datos-formulario`;
-        const response = await fetch(url, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        });
+        // Obtener corredores, rutas y paraderos de sus endpoints respectivos
+        const [corredoresRes, rutasRes, paraderosRes] = await Promise.all([
+            fetch(`${API_URL}/corredor/`, { method: 'GET' }),
+            fetch(`${API_URL}/ruta/obtenerRutas`, { method: 'GET' }),
+            fetch(`${API_URL}/paradero/`, { method: 'GET' })
+        ]);
 
-        if (!response.ok) {
-            throw new Error(`Error al obtener datos del formulario: ${response.status}`);
+        if (!corredoresRes.ok || !rutasRes.ok || !paraderosRes.ok) {
+            throw new Error('Error al obtener datos del formulario');
         }
 
-        const result = await response.json();
-        return result.data || { corredores: [], rutas: [], paraderos: [] };
+        const [corredoresData, rutasData, paraderosData] = await Promise.all([
+            corredoresRes.json(),
+            rutasRes.json(),
+            paraderosRes.json()
+        ]);
+
+        return {
+            corredores: corredoresData.map((c: any) => ({
+                id_corredor: c.id_corredor,
+                nombre: c.nombre
+            })),
+            rutas: rutasData.map((r: any) => ({
+                id_ruta: r.id_ruta,
+                codigo: r.codigo,
+                nombre: r.nombre
+            })),
+            paraderos: paraderosData.map((p: any) => ({
+                id_paradero: p.id_paradero,
+                nombre: p.nombre
+            }))
+        };
     } catch (error) {
         console.error('Error en obtenerDatosFormulario:', error);
         throw error;
@@ -48,28 +66,18 @@ export async function obtenerDatosFormulario(): Promise<DatosFormulario> {
  */
 export async function crearAlertaMasiva(payload: AlertaMasivaPayload): Promise<any> {
     try {
-        // Obtener el ID del usuario del AsyncStorage
-        const userDataStr = await AsyncStorage.getItem('user');
-        let userId: string | null = null;
-
-        if (userDataStr) {
-            try {
-                const userData = JSON.parse(userDataStr);
-                userId = userData.id_usuario?.toString();
-            } catch (e) {
-                console.error('Error al parsear datos de usuario:', e);
-            }
+        // Obtener el token de autenticación
+        const token = await AsyncStorage.getItem('token');
+        
+        if (!token) {
+            throw new Error('No hay sesión activa');
         }
 
-        const url = `${API_URL}/alertas-masivas/enviar`;
+        const url = `${API_URL}/alertas-masivas/enviar/`;
         const headers: Record<string, string> = {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
         };
-
-        // Agregar el ID del usuario en los headers si está disponible
-        if (userId) {
-            headers['X-User-Id'] = userId;
-        }
 
         const response = await fetch(url, {
             method: 'POST',

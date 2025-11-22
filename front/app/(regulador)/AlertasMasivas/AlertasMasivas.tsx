@@ -172,7 +172,7 @@ export default function AlertasMasivas() {
                 <Text style={styles.headerTitle}>CREAR ALERTA MASIVA</Text>
             </View>
 
-            <ScrollView style={styles.content}>
+            <ScrollView style={styles.content} contentContainerStyle={styles.scrollContent}>
                 {/* Descripción (Requerido) */}
                 <View style={styles.section}>
                     <Text style={styles.label}>Descripción *</Text>

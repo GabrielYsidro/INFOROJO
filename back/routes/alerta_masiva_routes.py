@@ -1,30 +1,35 @@
 from fastapi import APIRouter, HTTPException, status, Body, Header
 from typing import Optional, Dict
 from services.alerta_masiva_service import AlertaMasivaService
+from services.auth_service import AuthService
 import traceback
 
 service = AlertaMasivaService()
+auth_service = AuthService()
 
 router = APIRouter(
     prefix="/alertas-masivas",
     tags=["alertas-masivas"]
 )
 
-def get_user_id_from_headers(x_user_id: Optional[str] = Header(None), authorization: Optional[str] = Header(None)) -> Optional[int]:
+def get_user_id_from_token(authorization: Optional[str] = Header(None)) -> Optional[int]:
     """
-    Dependencia que devuelve un user id numérico si está en:
-    - header X-User-Id
-    - header Authorization: Bearer <userId>
-    Retorna None si no encuentra.
+    Extrae el user_id del token JWT en el header Authorization.
+    Retorna None si no encuentra token válido.
     """
-    if x_user_id and x_user_id.isdigit():
-        return int(x_user_id)
-    auth = authorization or ""
-    if auth.lower().startswith("bearer "):
-        token = auth.split(None, 1)[1].strip()
-        if token.isdigit():
-            return int(token)
-    return None
+    if not authorization:
+        return None
+    
+    if not authorization.lower().startswith("bearer "):
+        return None
+    
+    try:
+        token = authorization.split(" ")[1]
+        payload = auth_service.verify_access_token(token)
+        return payload.get("id")
+    except Exception as e:
+        print(f"[ERROR] Verificando token: {e}")
+        return None
 
 @router.get("/_health/")
 def health():
@@ -56,7 +61,6 @@ def obtener_datos_formulario():
 @router.post("/enviar/")
 def crear_alerta_masiva(
     payload: Dict = Body(...),
-    x_user_id: Optional[str] = Header(None),
     authorization: Optional[str] = Header(None)
 ):
     """
@@ -75,21 +79,17 @@ def crear_alerta_masiva(
         "tiempo_retraso_min": int (opcional)
     }
     
-    El id_emisor se obtiene de los headers X-User-Id o Authorization.
+    El id_emisor se obtiene del token JWT en el header Authorization.
     El id_tipo_reporte se asigna automáticamente a 4 (Otro).
     """
     try:
-        # Obtener ID del usuario emisor
-        user_id = get_user_id_from_headers(x_user_id, authorization)
+        # Obtener ID del usuario del token JWT
+        user_id = get_user_id_from_token(authorization)
         
-        if user_id is None:
-            # Intentar obtener del payload como fallback
-            user_id = payload.get("id_emisor")
-            
         if user_id is None:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Usuario no autenticado. Debe incluir X-User-Id o Authorization en headers."
+                detail="Usuario no autenticado. Debe incluir un token válido en el header Authorization."
             )
         
         # Validar campo requerido

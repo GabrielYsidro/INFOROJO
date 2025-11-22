@@ -21,6 +21,9 @@ const styles = StyleSheet.create({
         flex: 1,
         paddingHorizontal: 16,
     },
+    scrollContent: {
+        paddingBottom: 20,
+    },
     section: {
         marginBottom: 20,
     },
