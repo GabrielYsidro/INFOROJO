@@ -18,8 +18,7 @@ def crear_ruta(nombre: str, db: Session = Depends(get_db)):
 def listar_rutas(db: Session = Depends(get_db)):
     return RutaService(db).get_rutas()
 
-@router.get("")
-@router.get("/")
+@router.get("/obtenerRutas")
 def listar_rutas(db: Session = Depends(get_db)):
     return RutaService(db).get_rutas()
     
