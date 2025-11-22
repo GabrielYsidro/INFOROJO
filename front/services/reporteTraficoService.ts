@@ -4,7 +4,9 @@ const API_URL_DEV = Constants.expoConfig?.extra?.API_URL_DEV;
 const API_URL_PROD = Constants.expoConfig?.extra?.API_URL_PROD;
 
 const isDev = process.env.NODE_ENV !== "production";
+
 export const API_URL = isDev ? API_URL_DEV : API_URL_PROD;
+//export const API_URL =  API_URL_PROD;
 
 /**
  * Envía un reporte de tráfico (retraso) al backend.
@@ -17,10 +19,10 @@ export const enviarReporteTrafico = async (
   tiempo_retraso_min: number,
   descripcion: string
 ) => {
-  console.log("🚦 Enviando reporte de tráfico a:", `${API_URL}/reports/retraso`);
+  console.log("🚦 Enviando reporte de tráfico a:", `${API_URL}/reports/retraso/`);
   console.log("👤 Conductor:", conductor_id);
 
-  const res = await fetch(`${API_URL}/reports/retraso`, {
+  const res = await fetch(`${API_URL}/reports/retraso/`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -74,28 +76,21 @@ export const listarReportesTrafico = async () => {
 export const obtenerUltimoReportePorCorredor = async (corredor: number) => {
   console.log("📡 Obteniendo último reporte del corredor:", corredor);
 
-  const res = await fetch(
-    `${API_URL}/reports/retraso/ultimo/corredor/${encodeURIComponent(corredor)}`,
-    {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }
-  );
+  const url = `${API_URL}/reports/retraso/ultimo/corredor/${encodeURIComponent(
+    corredor
+  )}/`;
+
+  console.log("🔗 URL final:", url);
+
+  const res = await fetch(url);
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     console.error("❌ Error al obtener último reporte:", err);
-    throw new Error(err.detail || `No se pudo obtener el último reporte del corredor ${corredor}.`);
+    throw new Error(err.detail || "No encontrado.");
   }
 
-  const data = await res.json();
-
-  console.log("📦 [DEBUG] Respuesta cruda último reporte:", JSON.stringify(data, null, 2));
-
-  // data tiene forma { ok: boolean, reporte: {...} }
-  return data; // lo usas como data?.reporte en el componente
+  return res.json();
 };
 
 
