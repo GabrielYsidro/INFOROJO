@@ -25,7 +25,7 @@ class RutaService:
         rutas = self.db.query(Ruta).all()
         return [{'id_ruta': r.id_ruta, 'nombre': r.nombre} for r in rutas]
 
-    def filtrar_rutas(self, ruta: Optional[str] = None, ruta_id: Optional[int] = None, distrito: Optional[str] = None, distancia: Optional[float] = None) -> List[Dict]:
+    def filtrar_rutas(self, ruta: Optional[str] = None, ruta_id: Optional[int] = None, distancia: Optional[float] = None) -> List[Dict]:
         """
         Filtra rutas usando el patrón Strategy y adjunta paraderos.
 
@@ -53,7 +53,6 @@ class RutaService:
             if ubicacion_usuario:
                 sistema_filtros.agregar_estrategia(FiltroCercania(distancia, ubicacion_usuario))
 
-        # TODO: filtro por distrito si se implementa
         rutas_filtradas = sistema_filtros.aplicar_filtros(todas_rutas)
 
         resultado: List[Dict] = []
