@@ -231,7 +231,7 @@ def crear_reporte_falla(payload: Dict = Body(...), conductor_header_id: Optional
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
         
-@router.get("/retraso/{id_corredor}")
+@router.get("/ultimo/{id_corredor}")
 def obtener_ultimo_reporte_por_corredor_id(id_corredor: int):
     """
     Devuelve el último reporte de retraso (id_tipo_reporte = 2)

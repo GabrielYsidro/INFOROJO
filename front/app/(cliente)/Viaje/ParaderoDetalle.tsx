@@ -1,10 +1,10 @@
 
+import { enviarCalificacion } from '@/services/calificacionService';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Image, StyleSheet, Text, TouchableOpacity, View, Modal, TextInput, Alert } from 'react-native';
 import { useState } from 'react';
+import { Alert, Image, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import styles from './StylesParaderoDetalle';
-import { enviarCalificacion } from '@/services/calificacionService';
 
 const ParaderoDetalle = () => {
   const router = useRouter();
@@ -24,6 +24,15 @@ const ParaderoDetalle = () => {
   const [calificacion, setCalificacion] = useState(0);
   const [descripcion, setDescripcion] = useState('');
   const [enviando, setEnviando] = useState(false);
+
+  const goParaderoComments = (paradero_id:string) => {
+    router.push({
+      pathname: '/(cliente)/Paradero/ParaderoComentarios',
+      params: {
+        paradero_nombre: paradero_id
+      }
+    });
+  }
 
   // Función para renderizar estrellas
   const renderEstrellas = () => {
@@ -112,9 +121,7 @@ const ParaderoDetalle = () => {
   <View style={detalleStyles.infoColStyled}>
     <Text style={detalleStyles.labelStyled}>Subida</Text>
     <TouchableOpacity
-      onPress={() => router.push({
-								pathname: '/(cliente)/Paradero/ParaderoComentarios',
-							})}
+      onPress={()=> {goParaderoComments(paradero_sube as string)}}
       style={styles.buttonStyled}
     >
       <Text style={styles.valueStyled}>
@@ -127,9 +134,7 @@ const ParaderoDetalle = () => {
   <View style={detalleStyles.infoColStyled}>
     <Text style={detalleStyles.labelStyled}>Llegada</Text>
     <TouchableOpacity
-      onPress={() => router.push({
-								pathname: '/(cliente)/Paradero/ParaderoComentarios',
-							})}
+      onPress={()=> {goParaderoComments(paradero_baja as string)}}
       style={styles.buttonStyled}
     >
       <Text style={styles.valueStyled}>
