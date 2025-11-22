@@ -19,7 +19,7 @@ def get_user_id_from_headers(x_user_id: Optional[str] = Header(None), authorizat
             return int(token)
     return None
 
-@router.post("/")
+@router.post("/crearFeedback")
 def crear_feedback(payload: Dict = Body(...), user_id: Optional[int] = Depends(get_user_id_from_headers)):
     """
     Guarda feedback enviado por cliente.
@@ -36,7 +36,7 @@ def crear_feedback(payload: Dict = Body(...), user_id: Optional[int] = Depends(g
         print("[ERROR] crear_feedback:", e)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error al guardar feedback")
 
-@router.get("/")
+@router.get("/obtenerFeedback")
 def listar_feedback(limit: Optional[int] = 200):
     """
     Ruta para regulador: devuelve lista de feedback con fecha.
