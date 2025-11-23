@@ -26,6 +26,7 @@ class FirebaseAdmin:
         if self._initialized:
             return
         
+
         try:
             # Construir credenciales desde variables de entorno
             cred_dict = {
@@ -56,6 +57,7 @@ class FirebaseAdmin:
             
         except Exception as e:
             self._initialized = False
+            
             print(f"❌ Error al inicializar Firebase: {str(e)}")
             raise
     

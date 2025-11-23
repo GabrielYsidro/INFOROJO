@@ -156,7 +156,7 @@ def crear_reporte_retraso(payload: Dict = Body(...), conductor_header_id: Option
         "id_paradero_inicial": paradero_inicial,
         "id_paradero_final": paradero_final,
         "tiempo_retraso_min": tiempo_retraso_min,
-        "descripcion": payload.get("descripcion", ""),
+        "descripcion": payload.get("descripcion", " "),
         "mensaje": payload.get("mensaje"),
         "conductor_id": int(conductor_id),
         "ruta_id": ruta_id,
@@ -231,7 +231,7 @@ def crear_reporte_falla(payload: Dict = Body(...), conductor_header_id: Optional
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
         
-@router.get("/retraso/ultimo/corredor/{id_corredor}")
+@router.get("/ultimo/{id_corredor}")
 def obtener_ultimo_reporte_por_corredor_id(id_corredor: int):
     """
     Devuelve el último reporte de retraso (id_tipo_reporte = 2)
