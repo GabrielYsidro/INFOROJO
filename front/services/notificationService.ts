@@ -11,8 +11,8 @@ Notifications.setNotificationHandler({
     shouldShowAlert: true,
     shouldPlaySound: true,
     shouldSetBadge: false,
-    shouldShowBanner: true, // Add this line
-    shouldShowList: false,   // Add this line
+    shouldShowBanner: true, // Asegura que se muestre un banner de notificación
+    shouldShowList: true,   // Asegura que la notificación aparezca en la lista de notificaciones (Android)
   }),
 });
 
@@ -51,13 +51,25 @@ async function registerForPushNotificationsAsync() {
     console.log('Debe usar un dispositivo físico para las notificaciones Push.');
   }
 
-  // --- SUSCRIPCIÓN A TEMA ---
+  // --- SUSCRIPCIÓN A TEMAS ---
   try {
-    // Suscribir al dispositivo al tema 'all_users'
+    // Suscribir al dispositivo al tema 'all_users' (para alertas masivas)
     await messaging().subscribeToTopic('all_users');
     console.log('✅ Suscrito al tema: all_users');
+
+    // Obtener el rol del usuario para suscripciones condicionales
+    const userRole = await AsyncStorage.getItem('role');
+
+    // Suscripción condicional para reguladores
+    if (userRole === 'regulador') {
+      await messaging().subscribeToTopic('reguladores_alerts');
+      console.log('✅ Suscrito al tema: reguladores_alerts (Rol: Regulador)');
+    } else {
+      console.log(`ℹ️ Rol '${userRole || "no definido"}', no se suscribe a reguladores_alerts.`);
+    }
+
   } catch (error) {
-    console.error('❌ Error al suscribirse al tema:', error);
+    console.error('❌ Error al suscribirse a temas:', error);
   }
 
 

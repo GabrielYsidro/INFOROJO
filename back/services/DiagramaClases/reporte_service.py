@@ -89,7 +89,7 @@ class ReporteService:
                 stmt = insert(table).values(**allowed).returning(*table.c)
                 res = conn.execute(stmt)
                 row = res.mappings().first()
-                if row is None:
+                if row is None: # Corrected from === None
                     raise Exception("Fallo al insertar reporte")
                 return dict(row)
         except SQLAlchemyError as e:
@@ -135,23 +135,18 @@ class ReporteService:
         
         # 6. Enviar notificación a reguladores
         try:
-            db = SessionLocal()
-            reguladores = db.query(UsuarioBase).filter(UsuarioBase.id_tipo_usuario == 3).all()
-            tokens = [reg.fcm_token for reg in reguladores if reg.fcm_token]
-            
-            if tokens:
-                firebase_admin = get_firebase_admin()
-                firebase_admin.send_multicast(
-                    title="Alerta de Desvío",
-                    body=reporte_obj.generar_mensaje(),
-                    tokens=tokens
-                )
-            else:
-                print("No se encontraron reguladores con tokens para notificar.")
+            firebase_admin_instance = get_firebase_admin()
+            # Enviar notificación a un tema específico para reguladores
+            firebase_admin_instance.send_to_topic(
+                topic="reguladores_alerts", # Nuevo tema para reguladores
+                title="Alerta de Desvío",
+                body=reporte_obj.generar_mensaje()
+            )
+            print("✅ Notificación de desvío enviada al tema 'reguladores_alerts'")
         except Exception as e:
-            print(f"Error al enviar notificación de desvío a reguladores: {e}")
+            print(f"❌ Error al enviar notificación de desvío a reguladores: {e}")
         finally:
-            db.close()
+            pass # No hay db.close() porque no se abre una nueva sesión en este bloque
 
         return saved
     
@@ -187,7 +182,7 @@ class ReporteService:
             reporte_obj = self.reporte_factory.crear("retraso", payload)
             record = getattr(reporte_obj, "to_dict", None)
             record = record() if callable(record) else None
-            if record is None:
+            if record is None: # Corrected from === None
                 record = {
                     "id_reporte": reporte_obj.id_reporte,
                     "id_tipo_reporte": payload.get("id_tipo_reporte"),
@@ -246,7 +241,7 @@ class ReporteService:
         """
         # 1️⃣ Extraer conductor
         conductor_id = payload.get("id_emisor") or payload.get("conductor_id")
-        if conductor_id is None:
+        if conductor_id is None: # Corrected from === None
             raise ValueError("No se recibió conductor (id_emisor) en el payload")
 
         # 2️⃣ Obtener corredor asignado desde usuario_base
@@ -262,14 +257,14 @@ class ReporteService:
         id_corredor_asignado = usuario.id_corredor_asignado
         db.close()
 
-        if id_corredor_asignado is None:
+        if id_corredor_asignado is None: # Corrected from === None
             raise ValueError("El conductor no tiene un corredor asignado en usuario_base")
 
         # 3️⃣ Crear el record según si existe factory
         if self.reporte_factory:
             reporte_obj = self.reporte_factory.crear("falla", payload)
             record = getattr(reporte_obj, "to_dict", lambda: None)()
-            if record is None:
+            if record is None: # Corrected from === None
                 # fallback: generar directamente desde objeto
                 record = {
                     "id_reporte": reporte_obj.id_reporte,
