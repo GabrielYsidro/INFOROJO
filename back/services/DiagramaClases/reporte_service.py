@@ -9,6 +9,9 @@ from config.db import engine as shared_engine
 from .paradero_service import Paradero_Service
 from .reporte_factory import CreadorReportes
 from services.usuario_service import UsuarioService
+from config.firebase import get_firebase_admin, FirebaseAdmin
+from config.db import SessionLocal
+from models.UsuarioBase import UsuarioBase
 
 class ReporteService:
     def __init__(self, engine: Engine = None, paradero_service: Paradero_Service = None):
@@ -129,6 +132,27 @@ class ReporteService:
 
         # 5. Persistir en la base de datos
         saved = self.save_report(record)
+        
+        # 6. Enviar notificación a reguladores
+        try:
+            db = SessionLocal()
+            reguladores = db.query(UsuarioBase).filter(UsuarioBase.id_tipo_usuario == 3).all()
+            tokens = [reg.fcm_token for reg in reguladores if reg.fcm_token]
+            
+            if tokens:
+                firebase_admin = get_firebase_admin()
+                firebase_admin.send_multicast(
+                    title="Alerta de Desvío",
+                    body=reporte_obj.generar_mensaje(),
+                    tokens=tokens
+                )
+            else:
+                print("No se encontraron reguladores con tokens para notificar.")
+        except Exception as e:
+            print(f"Error al enviar notificación de desvío a reguladores: {e}")
+        finally:
+            db.close()
+
         return saved
     
     def crear_reporte_retraso(self, payload: Dict) -> Dict:
