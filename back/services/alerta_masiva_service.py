@@ -96,19 +96,32 @@ class AlertaMasivaService:
                 
                 session.commit()
 
-                # Si se solicita, enviar notificación al tema "all_users"
+                # Si se solicita, enviar notificación a todos los usuarios
                 if payload.get("send_notification"):
+                    from config.db import SessionLocal
+                    db = SessionLocal()
                     try:
                         firebase_admin = get_firebase_admin()
-                        firebase_admin.send_to_topic(
-                            topic="all_users",
-                            title="Alerta General",
-                            body=payload.get("descripcion")
-                        )
-                        print("✅ Notificación de alerta masiva enviada al tema 'all_users'")
+                        
+                        # Obtener tokens de todos los usuarios
+                        all_users = db.query(UsuarioBase).filter(UsuarioBase.fcm_token != None).all()
+                        tokens = [user.fcm_token for user in all_users if user.fcm_token]
+
+                        if tokens:
+                            print(f"✅ Encontrados {len(tokens)} tokens de usuarios. Enviando notificación masiva...")
+                            firebase_admin.send_multicast(
+                                title="Alerta General",
+                                body=payload.get("descripcion"),
+                                tokens=tokens
+                            )
+                        else:
+                            print("⚠️ No se encontraron tokens FCM para enviar alerta masiva.")
+                            
                     except Exception as e:
                         # Log del error pero no fallar la solicitud, ya que la alerta fue creada
-                        print(f"❌ [ERROR] Al enviar notificación de alerta masiva al tema: {e}")
+                        print(f"❌ [ERROR] Al enviar notificación de alerta masiva: {e}")
+                    finally:
+                        db.close()
                 
                 return {
                     "id_reporte": nuevo_reporte.id_reporte,

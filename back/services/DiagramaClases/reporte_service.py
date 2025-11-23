@@ -136,17 +136,25 @@ class ReporteService:
         # 6. Enviar notificación a reguladores
         try:
             firebase_admin_instance = get_firebase_admin()
-            # Enviar notificación a un tema específico para reguladores
-            firebase_admin_instance.send_to_topic(
-                topic="reguladores_alerts", # Nuevo tema para reguladores
-                title="Alerta de Desvío",
-                body=reporte_obj.generar_mensaje()
-            )
-            print("✅ Notificación de desvío enviada al tema 'reguladores_alerts'")
+            db = SessionLocal()
+            try:
+                # Obtener tokens de todos los reguladores (id_tipo_usuario = 3)
+                reguladores = db.query(UsuarioBase).filter(UsuarioBase.id_tipo_usuario == 3).all()
+                tokens = [user.fcm_token for user in reguladores if user.fcm_token]
+
+                if tokens:
+                    print(f"✅ Encontrados {len(tokens)} tokens de reguladores. Enviando notificación...")
+                    firebase_admin_instance.send_multicast(
+                        title="Alerta de Desvío",
+                        body=reporte_obj.generar_mensaje(),
+                        tokens=tokens
+                    )
+                else:
+                    print("⚠️ No se encontraron tokens FCM para los reguladores.")
+            finally:
+                db.close()
         except Exception as e:
             print(f"❌ Error al enviar notificación de desvío a reguladores: {e}")
-        finally:
-            pass # No hay db.close() porque no se abre una nueva sesión en este bloque
 
         return saved
     
