@@ -44,6 +44,11 @@ class RutaService:
         # Obtener todas las rutas con paraderos cargados para evitar lazy loads
         todas_rutas = self.db.query(Ruta).options(joinedload(Ruta.ruta_paraderos).joinedload(RutaParadero.paradero)).all()
 
+        # Nota: El modelo Ruta no tiene campo distrito actualmente.
+        # Si en el futuro se agrega, aquí se podría filtrar antes de aplicar estrategias:
+        # if distrito:
+        #     todas_rutas = [r for r in todas_rutas if getattr(r, 'distrito', None) == distrito]
+
         sistema_filtros = SistemaFiltros()
         if ruta and ruta.strip():
             sistema_filtros.agregar_estrategia(FiltroRuta(ruta))
@@ -53,7 +58,6 @@ class RutaService:
             if ubicacion_usuario:
                 sistema_filtros.agregar_estrategia(FiltroCercania(distancia, ubicacion_usuario))
 
-        # TODO: filtro por distrito si se implementa
         rutas_filtradas = sistema_filtros.aplicar_filtros(todas_rutas)
 
         resultado: List[Dict] = []

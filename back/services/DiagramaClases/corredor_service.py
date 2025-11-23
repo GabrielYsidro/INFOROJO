@@ -24,7 +24,18 @@ class CorredorService:
 
 
    def get_corredores(self):
-    return self.db.query(Corredor).filter(Corredor.estado.isnot(None)).all()
+       """Retorna lista serializada de corredores sin cálculos complejos"""
+       corredores = self.db.query(Corredor).filter(Corredor.estado.isnot(None)).all()
+       return [
+           {
+               "id_corredor": c.id_corredor,
+               "capacidad_max": c.capacidad_max,
+               "ubicacion_lat": c.ubicacion_lat,
+               "ubicacion_lng": c.ubicacion_lng,
+               "estado": c.estado
+           }
+           for c in corredores
+       ]
 
 
 
@@ -161,3 +172,54 @@ class CorredorService:
             self.db.refresh(corredor)
             return corredor
         return None
+
+   def calcular_eta(self, id_corredor: int, id_paradero: int, default_speed_kmh: float = 25.0):
+            """
+            Calcula el ETA (minutos) desde un corredor hasta un paradero.
+            Lanza ValueError con mensajes claros si falta información.
+            Devuelve dict: { corredor_id, paradero_id, distancia_km, eta_minutos }
+            """
+            # Validar corredor
+            corredor = self.db.query(Corredor).filter(Corredor.id_corredor == id_corredor).first()
+            if not corredor:
+                raise ValueError("Corredor no encontrado")
+
+            # Validar paradero
+            paradero = self.db.query(Paradero).filter(Paradero.id_paradero == id_paradero).first()
+            if not paradero:
+                raise ValueError("Paradero no encontrado")
+
+            if corredor.ubicacion_lat is None or corredor.ubicacion_lng is None:
+                raise ValueError("Corredor sin ubicación registrada")
+
+            if paradero.coordenada_lat is None or paradero.coordenada_lng is None:
+                raise ValueError("Paradero sin coordenadas")
+
+            # Haversine
+            def haversine(lat1, lon1, lat2, lon2):
+                R = 6371  # km
+                dlat = radians(lat2 - lat1)
+                dlon = radians(lon2 - lon1)
+                a = sin(dlat / 2) ** 2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon / 2) ** 2
+                c = 2 * atan2(sqrt(a), sqrt(1 - a))
+                return R * c
+
+            distancia_km = haversine(
+                corredor.ubicacion_lat,
+                corredor.ubicacion_lng,
+                paradero.coordenada_lat,
+                paradero.coordenada_lng,
+            )
+
+            speed = getattr(corredor, 'velocidad_kmh', default_speed_kmh) or default_speed_kmh
+            minutos = round((distancia_km / speed) * 60) if speed > 0 else None
+
+            if minutos is None:
+                raise ValueError("No es posible calcular ETA con los datos disponibles")
+
+            return {
+                "corredor_id": corredor.id_corredor,
+                "paradero_id": paradero.id_paradero,
+                "distancia_km": distancia_km,
+                "eta_minutos": max(0, minutos),
+            }

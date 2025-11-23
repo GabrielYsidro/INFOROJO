@@ -4,7 +4,9 @@ const API_URL_DEV = Constants.expoConfig?.extra?.API_URL_DEV;
 const API_URL_PROD = Constants.expoConfig?.extra?.API_URL_PROD;
 
 const isDev = process.env.NODE_ENV !== "production";
+
 export const API_URL = isDev ? API_URL_DEV : API_URL_PROD;
+//export const API_URL =  API_URL_PROD;
 
 /**
  * 🔹 Obtiene la información de un corredor (bus) por su ID.
@@ -13,7 +15,7 @@ export const API_URL = isDev ? API_URL_DEV : API_URL_PROD;
 export const getBusInfo = async (corredor_id: number) => {
   console.log(`📡 Obteniendo información del corredor ${corredor_id} desde: ${API_URL}/corredor/${corredor_id}`);
 
-  const res = await fetch(`${API_URL}/corredor/${corredor_id}`, {
+  const res = await fetch(`${API_URL}/corredor/${corredor_id}/`, {
     method: "GET",
   });
 
@@ -32,17 +34,14 @@ export const getBusInfo = async (corredor_id: number) => {
  * 🔹 Obtiene la lista completa de corredores activos.
  */
 export const getAllBuses = async () => {
-  console.log(`📡 [START] Solicitando lista de corredores desde: ${API_URL}/corredor`);
+  console.log(`📡 [START] Solicitando lista de corredores desde: ${API_URL}/corredor/`);
   const startTime = Date.now();
 
   try {
     console.log(`📡 [FETCH] Iniciando fetch...`);
     
-    const res = await fetch(`${API_URL}/corredor`, {
+    const res = await fetch(`${API_URL}/corredor/`, {
       method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
     });
 
     const elapsed = Date.now() - startTime;
