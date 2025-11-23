@@ -81,6 +81,11 @@ export default function ClienteMenuPrincipal() {
         }
     };
 
+    const handleLimpiarFiltros = () => {
+        setFiltros({ ruta: '', distrito: '', distancia: '' });
+        setParaderosFiltrados(null);
+    };
+
     return (
         <View style={styles.container}>
             {/* Top Buttons */}
@@ -150,6 +155,7 @@ export default function ClienteMenuPrincipal() {
                     filtros={filtros}
                     onFiltrosChange={setFiltros}
                     onAplicar={handleAplicarFiltros}
+                    onLimpiar={handleLimpiarFiltros}
                     onClose={() => setShowFiltros(false)}
                 />
             </AppModal>
