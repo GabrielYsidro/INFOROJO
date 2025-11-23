@@ -49,7 +49,7 @@ export default function Cuenta() {
   const handleLogout = async () => {
     try {
       await AsyncStorage.clear();
-      router.push("../login");
+      router.push("/login" as any);
     } catch (e) {
       Alert.alert("Error", "No se pudo cerrar sesión correctamente");
       console.error(e);
