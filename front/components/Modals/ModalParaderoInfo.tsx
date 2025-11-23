@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
-import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
-import { Paradero } from '@/services/paraderoService';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Paradero, API_URL } from '@/services/paraderoService';
 
 type Props = {
   paradero: Paradero;
@@ -9,6 +9,56 @@ type Props = {
 };
 
 export default function ModalParaderoInfo({ paradero, onClose }: Props) {
+  const [etaMinutos, setEtaMinutos] = useState<number | null | undefined>(paradero.eta_minutos ?? null);
+  const [loadingEta, setLoadingEta] = useState(false);
+  const [etaError, setEtaError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    const fetchEta = async () => {
+      // si ya viene en el objeto paradero, no es necesario solicitar
+      if (typeof paradero.eta_minutos === 'number') {
+        setEtaMinutos(paradero.eta_minutos);
+        return;
+      }
+
+      setLoadingEta(true);
+      setEtaError(null);
+      try {
+        const res = await fetch(`${API_URL}/paradero/${paradero.id_paradero}/eta`);
+        if (!mounted) return;
+        if (!res.ok) {
+          setEtaError('N/D');
+          setEtaMinutos(null);
+        } else {
+          const data = await res.json();
+          // data.eta_minutos esperado
+          setEtaMinutos(typeof data?.eta_minutos === 'number' ? data.eta_minutos : null);
+        }
+      } catch (err) {
+        console.error('Error al obtener ETA:', err);
+        if (mounted) {
+          setEtaError('N/D');
+          setEtaMinutos(null);
+        }
+      } finally {
+        if (mounted) setLoadingEta(false);
+      }
+    };
+
+    fetchEta();
+    return () => { mounted = false; };
+  }, [paradero]);
+
+  const eta = etaMinutos ?? null;
+  let etaColor = '#9CA3AF';
+  if (typeof eta === 'number') {
+    if (eta < 5)         etaColor = '#28c64a';
+    else if (eta >= 20)  etaColor = '#c62828';
+    else                 etaColor = '#F59E0B';
+  }
+  const etaText = typeof eta === 'number' ? (eta <= 0 ? '<1 min' : `${eta} min`) : 'N/D';
+
   return (
     <View style={styles.card}>
       <View style={styles.header}>
@@ -30,6 +80,22 @@ export default function ModalParaderoInfo({ paradero, onClose }: Props) {
         <Text style={[styles.value, { color: paradero.colapso_actual ? '#c62828' : '#28c64a' }]}>
           {paradero.colapso_actual ? 'Colapsado' : 'Normal'}
         </Text>
+      </View>
+
+      <View style={styles.row}>
+        <Text style={styles.label}>ETA</Text>
+        <View style={styles.etaBox}>
+          {loadingEta ? (
+            <ActivityIndicator size="small" color="#FF6B6B" />
+          ) : (
+            <>
+              <View style={[styles.etaIndicator, { backgroundColor: etaColor }]}>
+                <Ionicons name="bus" size={14} color="#fff" />
+              </View>
+              <Text style={styles.etaText}>{etaText}</Text>
+            </>
+          )}
+        </View>
       </View>
 
       <View style={styles.footer}>
@@ -73,4 +139,7 @@ const styles = StyleSheet.create({
     }),
   },
   okText: { color: '#FFF', fontSize: 16, fontWeight: '700' },
+  etaBox: { flexDirection: 'row', alignItems: 'center' },
+  etaIndicator: { width: 28, height: 28, borderRadius: 6, alignItems: 'center', justifyContent: 'center' },
+  etaText: { marginLeft: 8, fontSize: 14, fontWeight: '700', color: '#111827' },
 });

@@ -54,7 +54,7 @@ export default function CuentaConductor() {
   const handleLogout = async () => {
     try {
       await AsyncStorage.clear();
-      router.replace("/login");
+      router.replace("/login" as any);
     } catch (e) {
       Alert.alert("Error", "No se pudo cerrar sesión correctamente");
       console.error(e);
