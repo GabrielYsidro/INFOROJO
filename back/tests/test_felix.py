@@ -1,5 +1,5 @@
 # Este archivo contiene el análisis de pruebas y las pruebas unitarias
-# para la función crear_reporte_desvio del backend.
+# para la funcionalidad de alertas masivas del backend.
 
 import pytest
 from unittest.mock import patch, MagicMock
@@ -7,9 +7,14 @@ from sqlalchemy.exc import SQLAlchemyError
 
 # Importar el servicio que vamos a probar
 from services.DiagramaClases.reporte_service import ReporteService
+from services.alerta_masiva_service import AlertaMasivaService
+
+
+# ==============================================================================
+# PRUEBAS UNITARIAS PARA `crear_reporte_desvio`
+# ==============================================================================
 
 # --- Payload base para las pruebas de desvío ---
-# Un payload válido y completo que se puede modificar en cada prueba.
 BASE_DEVIATION_PAYLOAD = {
     "id_reporte": "dev-uuid-123",
     "conductor_id": 1,
@@ -67,10 +72,6 @@ def mocked_deviation_report_service():
             "get_firebase": mock_get_firebase
         }
 
-# ==============================================================================
-# PRUEBAS UNITARIAS PARA `crear_reporte_desvio`
-# ==============================================================================
-
 def test_crear_reporte_desvio_happy_path(mocked_deviation_report_service):
     """
     Prueba 1: "Camino Feliz" - Reporte de desvío creado y notificación enviada
@@ -93,7 +94,6 @@ def test_crear_reporte_desvio_happy_path(mocked_deviation_report_service):
         body=service.reporte_factory.crear.return_value.generar_mensaje.return_value
     )
     assert result["id_reporte"] == BASE_DEVIATION_PAYLOAD["id_reporte"]
-    # Removido: assert "mensaje" in result, porque la función devuelve el objeto 'saved' de la BD.
 
 
 def test_crear_reporte_desvio_paradero_invalido(mocked_deviation_report_service):
@@ -173,3 +173,126 @@ def test_crear_reporte_desvio_falla_en_db(mocked_deviation_report_service):
     # Afirmaciones
     service.save_report.assert_called_once()
     mocks["get_firebase"].return_value.send_to_topic.assert_not_called() # No debe enviar notificación
+
+# ==============================================================================
+# PRUEBAS UNITARIAS PARA `crear_alerta_masiva`
+# ==============================================================================
+
+# --- Payload base para las pruebas de alerta masiva ---
+BASE_ALERTA_PAYLOAD = {
+    "descripcion": "Tráfico denso en la Av. Principal",
+    "id_emisor": 1,
+    "id_corredor_afectado": 10,
+    "es_critica": False,
+    "requiere_intervencion": False,
+    "id_ruta_afectada": 101,
+    "id_paradero_inicial": 201,
+    "id_paradero_final": 205,
+    "tiempo_retraso_min": 15,
+    "send_notification": False
+}
+
+# --- Fixture para inicializar el servicio de AlertaMasivaService con mocks ---
+@pytest.fixture
+def mocked_alerta_masiva_service():
+    with patch('services.alerta_masiva_service.get_firebase_admin') as mock_get_firebase, \
+         patch('services.alerta_masiva_service.Session') as MockSession:
+
+        mock_session_instance = MockSession.return_value.__enter__.return_value
+        
+        mock_reporte_creado = MagicMock()
+        mock_reporte_creado.id_reporte = 123
+        mock_reporte_creado.fecha.isoformat.return_value = "2025-01-01T12:00:00"
+        mock_reporte_creado.descripcion = BASE_ALERTA_PAYLOAD["descripcion"]
+        mock_reporte_creado.id_emisor = BASE_ALERTA_PAYLOAD["id_emisor"]
+        mock_reporte_creado.id_tipo_reporte = 4
+        mock_reporte_creado.es_critica = False
+        mock_reporte_creado.requiere_intervencion = False
+        mock_session_instance.execute.return_value.scalar_one.return_value = mock_reporte_creado
+        
+        service = AlertaMasivaService(engine=MagicMock())
+        
+        yield service, {
+            "get_firebase": mock_get_firebase,
+            "session_instance": mock_session_instance
+        }
+
+def test_crear_alerta_masiva_solo_guarda(mocked_alerta_masiva_service):
+    """
+    Prueba 1/5 (Alerta Masiva): Verifica que la alerta se guarda pero NO se envía notificación
+    cuando `send_notification` es falso.
+    """
+    service, mocks = mocked_alerta_masiva_service
+    mock_firebase_instance = mocks["get_firebase"].return_value
+    
+    result = service.crear_alerta_masiva(BASE_ALERTA_PAYLOAD)
+    
+    mocks["session_instance"].execute.assert_called_once()
+    mocks["session_instance"].commit.assert_called_once()
+    mock_firebase_instance.send_to_topic.assert_not_called()
+    assert result["id_reporte"] == 123
+
+def test_crear_alerta_masiva_guarda_y_notifica(mocked_alerta_masiva_service):
+    """
+    Prueba 2/5 (Alerta Masiva): Verifica que la alerta se guarda Y se envía una notificación
+    al tema 'all_users' cuando `send_notification` es verdadero.
+    """
+    service, mocks = mocked_alerta_masiva_service
+    mock_firebase_instance = mocks["get_firebase"].return_value
+    
+    payload_con_notificacion = {**BASE_ALERTA_PAYLOAD, "send_notification": True}
+    
+    service.crear_alerta_masiva(payload_con_notificacion)
+    
+    mocks["session_instance"].commit.assert_called_once()
+    mock_firebase_instance.send_to_topic.assert_called_once_with(
+        topic="all_users",
+        title="Alerta General",
+        body=BASE_ALERTA_PAYLOAD["descripcion"]
+    )
+
+def test_crear_alerta_masiva_maneja_error_notificacion(mocked_alerta_masiva_service):
+    """
+    Prueba 3/5 (Alerta Masiva): Verifica que la función no falla si el envío de
+    la notificación produce un error.
+    """
+    service, mocks = mocked_alerta_masiva_service
+    mock_firebase_instance = mocks["get_firebase"].return_value
+    mock_firebase_instance.send_to_topic.side_effect = Exception("Firebase Error")
+    
+    payload_con_notificacion = {**BASE_ALERTA_PAYLOAD, "send_notification": True}
+    
+    result = service.crear_alerta_masiva(payload_con_notificacion)
+    
+    mocks["session_instance"].commit.assert_called_once()
+    mock_firebase_instance.send_to_topic.assert_called_once()
+    assert result["id_reporte"] == 123
+
+def test_crear_alerta_masiva_falla_si_db_falla(mocked_alerta_masiva_service):
+    """
+    Prueba 4/5 (Alerta Masiva): Verifica que se propaga una excepción de la BD
+    y no se intenta enviar una notificación.
+    """
+    service, mocks = mocked_alerta_masiva_service
+    mock_firebase_instance = mocks["get_firebase"].return_value
+    mocks["session_instance"].commit.side_effect = SQLAlchemyError("DB write failed")
+    
+    with pytest.raises(SQLAlchemyError, match="DB write failed"):
+        service.crear_alerta_masiva(BASE_ALERTA_PAYLOAD)
+    
+    mock_firebase_instance.send_to_topic.assert_not_called()
+
+def test_crear_alerta_masiva_sin_flag_de_notificacion(mocked_alerta_masiva_service):
+    """
+    Prueba 5/5 (Alerta Masiva): Verifica que por defecto no se envía notificación si
+    el flag 'send_notification' está ausente.
+    """
+    service, mocks = mocked_alerta_masiva_service
+    mock_firebase_instance = mocks["get_firebase"].return_value
+    
+    payload_sin_flag = {k: v for k, v in BASE_ALERTA_PAYLOAD.items() if k != "send_notification"}
+    
+    service.crear_alerta_masiva(payload_sin_flag)
+    
+    mocks["session_instance"].commit.assert_called_once()
+    mock_firebase_instance.send_to_topic.assert_not_called()
