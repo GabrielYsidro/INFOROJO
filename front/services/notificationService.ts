@@ -60,7 +60,7 @@ async function registerForPushNotificationsAsync() {
     // 🆕 ENVIAR TOKEN AL BACKEND
     if (token) {
       try {
-        const userId = await AsyncStorage.getItem('user_id');
+        const userId = await AsyncStorage.getItem('userId');
         if (userId) {
           const response = await fetch(`${API_URL}/usuario/registrar-fcm-token`, {
             method: 'POST',
@@ -77,7 +77,7 @@ async function registerForPushNotificationsAsync() {
             console.error('❌ Error al enviar FCM token:', response.status);
           }
         } else {
-          console.warn('⚠️ user_id no encontrado en AsyncStorage');
+          console.warn('⚠️ userId no encontrado en AsyncStorage');
         }
       } catch (error) {
         console.error('❌ Error al registrar FCM token:', error);
