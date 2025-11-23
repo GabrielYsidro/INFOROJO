@@ -1,6 +1,5 @@
 // app.config.js
 import 'dotenv/config'; // Necesario si usas un archivo .env local
-
 export default {
   expo: {
     "owner" : "inforojoorg",
