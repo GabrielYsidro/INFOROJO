@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, Alert, TextInput, Switch } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, Alert, TextInput, Switch, SafeAreaView } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { useRouter } from 'expo-router';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -11,12 +11,14 @@ import {
 
 interface Corredor {
     id_corredor: number;
-    nombre: string;
+    capacidad_max?: number;
+    ubicacion_lat?: number;
+    ubicacion_lng?: number;
+    estado?: string;
 }
 
 interface Ruta {
     id_ruta: number;
-    codigo: string;
     nombre: string;
 }
 
@@ -51,10 +53,12 @@ export default function AlertasMasivas() {
     }, []);
 
     const handleVolver = () => {
-        if (router.canGoBack()) {
+        console.log('🔙 Botón Volver presionado');
+        try {
             router.back();
-        } else {
-            router.replace('/(regulador)/' as any);
+            console.log('✅ Navegación exitosa');
+        } catch (error) {
+            console.error('❌ Error al volver:', error);
         }
     };
 
@@ -62,6 +66,7 @@ export default function AlertasMasivas() {
         try {
             setLoading(true);
             const data = await obtenerDatosFormulario();
+            console.log('📊 [AlertasMasivas] Datos cargados:', data);
             setCorredores(data.corredores || []);
             setRutas(data.rutas || []);
             setParaderos(data.paraderos || []);
@@ -85,8 +90,29 @@ export default function AlertasMasivas() {
     };
 
     const handleEnviarAlerta = async () => {
+        // Validar todos los campos obligatorios
         if (!descripcion.trim()) {
             Alert.alert('Error', 'Por favor ingresa una descripción para la alerta');
+            return;
+        }
+        if (!idCorredorAfectado) {
+            Alert.alert('Error', 'Por favor selecciona un corredor afectado');
+            return;
+        }
+        if (!idRutaAfectada) {
+            Alert.alert('Error', 'Por favor selecciona una ruta afectada');
+            return;
+        }
+        if (!idParaderoInicial) {
+            Alert.alert('Error', 'Por favor selecciona un paradero inicial');
+            return;
+        }
+        if (!idParaderoFinal) {
+            Alert.alert('Error', 'Por favor selecciona un paradero final');
+            return;
+        }
+        if (!tiempoRetrasoMin || parseInt(tiempoRetrasoMin) <= 0) {
+            Alert.alert('Error', 'Por favor ingresa un tiempo de retraso válido');
             return;
         }
 
@@ -158,19 +184,13 @@ export default function AlertasMasivas() {
 
     return (
         <View style={styles.container}>
-            {/* Botón de regreso */}
-            <TouchableOpacity 
-                style={styles.backButton} 
+            <TouchableOpacity
+                style={styles.backButton}
                 onPress={handleVolver}
             >
-                <Icon name="arrow-left" size={24} color="#c62828" />
-                <Text style={styles.backButtonText}>Volver</Text>
+                <Icon name="arrow-left" size={28} color="#222" />
             </TouchableOpacity>
-
-            {/* Header */}
-            <View style={styles.header}>
-                <Text style={styles.headerTitle}>CREAR ALERTA MASIVA</Text>
-            </View>
+            <Text style={styles.title}>Alertas Masivas</Text>
 
             <ScrollView style={styles.content} contentContainerStyle={styles.scrollContent}>
                 {/* Descripción (Requerido) */}
@@ -188,7 +208,7 @@ export default function AlertasMasivas() {
 
                 {/* Corredor Afectado */}
                 <View style={styles.section}>
-                    <Text style={styles.label}>Corredor Afectado (Opcional)</Text>
+                    <Text style={styles.label}>Corredor Afectado *</Text>
                     <View style={styles.pickerContainer}>
                         <Picker
                             selectedValue={idCorredorAfectado}
@@ -199,7 +219,7 @@ export default function AlertasMasivas() {
                             {corredores.map((corredor) => (
                                 <Picker.Item
                                     key={corredor.id_corredor}
-                                    label={corredor.nombre}
+                                    label={`Corredor ${corredor.id_corredor}${corredor.estado ? ` - ${corredor.estado}` : ''}`}
                                     value={corredor.id_corredor}
                                 />
                             ))}
@@ -209,7 +229,7 @@ export default function AlertasMasivas() {
 
                 {/* Ruta Afectada */}
                 <View style={styles.section}>
-                    <Text style={styles.label}>Ruta Afectada (Opcional)</Text>
+                    <Text style={styles.label}>Ruta Afectada *</Text>
                     <View style={styles.pickerContainer}>
                         <Picker
                             selectedValue={idRutaAfectada}
@@ -220,7 +240,7 @@ export default function AlertasMasivas() {
                             {rutas.map((ruta) => (
                                 <Picker.Item
                                     key={ruta.id_ruta}
-                                    label={`${ruta.codigo} - ${ruta.nombre}`}
+                                    label={ruta.nombre}
                                     value={ruta.id_ruta}
                                 />
                             ))}
@@ -230,7 +250,7 @@ export default function AlertasMasivas() {
 
                 {/* Paradero Inicial */}
                 <View style={styles.section}>
-                    <Text style={styles.label}>Paradero Inicial (Opcional)</Text>
+                    <Text style={styles.label}>Paradero Inicial *</Text>
                     <View style={styles.pickerContainer}>
                         <Picker
                             selectedValue={idParaderoInicial}
@@ -251,7 +271,7 @@ export default function AlertasMasivas() {
 
                 {/* Paradero Final */}
                 <View style={styles.section}>
-                    <Text style={styles.label}>Paradero Final (Opcional)</Text>
+                    <Text style={styles.label}>Paradero Final *</Text>
                     <View style={styles.pickerContainer}>
                         <Picker
                             selectedValue={idParaderoFinal}
@@ -272,7 +292,7 @@ export default function AlertasMasivas() {
 
                 {/* Tiempo de Retraso */}
                 <View style={styles.section}>
-                    <Text style={styles.label}>Tiempo de Retraso (minutos)</Text>
+                    <Text style={styles.label}>Tiempo de Retraso (minutos) *</Text>
                     <TextInput
                         style={styles.textInput}
                         placeholder="Ej: 15"
@@ -315,10 +335,10 @@ export default function AlertasMasivas() {
                     style={[
                         styles.button,
                         styles.buttonGuardar,
-                        (!descripcion.trim() || enviando) && styles.buttonDisabled,
+                        (!descripcion.trim() || !idCorredorAfectado || !idRutaAfectada || !idParaderoInicial || !idParaderoFinal || !tiempoRetrasoMin || enviando) && styles.buttonDisabled,
                     ]}
                     onPress={handleEnviarAlerta}
-                    disabled={!descripcion.trim() || enviando}
+                    disabled={!descripcion.trim() || !idCorredorAfectado || !idRutaAfectada || !idParaderoInicial || !idParaderoFinal || !tiempoRetrasoMin || enviando}
                 >
                     {enviando ? (
                         <ActivityIndicator color="#fff" />

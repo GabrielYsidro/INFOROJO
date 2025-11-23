@@ -23,12 +23,21 @@ interface AlertaMasivaPayload {
  */
 export async function obtenerDatosFormulario(): Promise<DatosFormulario> {
     try {
+        console.log('🔍 [AlertaMasiva] Cargando datos del formulario...');
+        console.log('🌐 [AlertaMasiva] API_URL:', API_URL);
+        
         // Obtener corredores, rutas y paraderos de sus endpoints respectivos
         const [corredoresRes, rutasRes, paraderosRes] = await Promise.all([
             fetch(`${API_URL}/corredor/`, { method: 'GET' }),
             fetch(`${API_URL}/ruta/obtenerRutas`, { method: 'GET' }),
             fetch(`${API_URL}/paradero/`, { method: 'GET' })
         ]);
+
+        console.log('📡 [AlertaMasiva] Status codes:', {
+            corredores: corredoresRes.status,
+            rutas: rutasRes.status,
+            paraderos: paraderosRes.status
+        });
 
         if (!corredoresRes.ok || !rutasRes.ok || !paraderosRes.ok) {
             throw new Error('Error al obtener datos del formulario');
@@ -40,14 +49,28 @@ export async function obtenerDatosFormulario(): Promise<DatosFormulario> {
             paraderosRes.json()
         ]);
 
+        console.log('✅ [AlertaMasiva] Datos obtenidos:', {
+            corredores: corredoresData.length,
+            rutas: rutasData.length,
+            paraderos: paraderosData.length
+        });
+
+        console.log('📦 [AlertaMasiva] Datos raw:', {
+            corredoresData,
+            rutasData,
+            paraderosData
+        });
+
         return {
             corredores: corredoresData.map((c: any) => ({
                 id_corredor: c.id_corredor,
-                nombre: c.nombre
+                capacidad_max: c.capacidad_max,
+                ubicacion_lat: c.ubicacion_lat,
+                ubicacion_lng: c.ubicacion_lng,
+                estado: c.estado
             })),
             rutas: rutasData.map((r: any) => ({
                 id_ruta: r.id_ruta,
-                codigo: r.codigo,
                 nombre: r.nombre
             })),
             paraderos: paraderosData.map((p: any) => ({
@@ -66,6 +89,9 @@ export async function obtenerDatosFormulario(): Promise<DatosFormulario> {
  */
 export async function crearAlertaMasiva(payload: AlertaMasivaPayload): Promise<any> {
     try {
+        console.log('📝 [AlertaMasiva] Guardando alerta...');
+        console.log('📋 [AlertaMasiva] Payload:', payload);
+        
         // Obtener el token de autenticación
         const token = await AsyncStorage.getItem('token');
         
@@ -73,7 +99,11 @@ export async function crearAlertaMasiva(payload: AlertaMasivaPayload): Promise<a
             throw new Error('No hay sesión activa');
         }
 
+        console.log('🔑 [AlertaMasiva] Token obtenido');
+
         const url = `${API_URL}/alertas-masivas/enviar/`;
+        console.log('📡 [AlertaMasiva] URL:', url);
+        
         const headers: Record<string, string> = {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`

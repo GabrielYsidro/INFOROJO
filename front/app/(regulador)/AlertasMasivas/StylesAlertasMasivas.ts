@@ -4,12 +4,27 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#fff',
+        paddingHorizontal: 16,
+        paddingTop: 32,
+    },
+    backButton: {
+        marginRight: 4,
+        padding: 4,
+    },
+    title: {
+        fontSize: 28,
+        fontWeight: 'bold',
+        color: '#c62828',
+        marginBottom: 24,
+        textAlign: 'center',
     },
     header: {
         backgroundColor: '#c62828',
-        paddingVertical: 20,
+        paddingVertical: 15,
         paddingHorizontal: 16,
+        flexDirection: 'row',
         alignItems: 'center',
+        justifyContent: 'space-between',
         marginBottom: 20,
     },
     headerTitle: {
@@ -19,7 +34,6 @@ const styles = StyleSheet.create({
     },
     content: {
         flex: 1,
-        paddingHorizontal: 16,
     },
     scrollContent: {
         paddingBottom: 20,
@@ -137,9 +151,17 @@ const styles = StyleSheet.create({
     backButton: {
         flexDirection: 'row',
         alignItems: 'center',
-        padding: 10,
+        padding: 12,
         marginLeft: 8,
         marginTop: 8,
+        zIndex: 10,
+        backgroundColor: '#fff',
+        borderRadius: 8,
+        alignSelf: 'flex-start',
+    },
+    backButtonInHeader: {
+        padding: 8,
+        marginRight: 8,
     },
     backButtonText: {
         color: '#c62828',
