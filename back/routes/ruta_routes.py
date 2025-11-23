@@ -15,10 +15,7 @@ router = APIRouter(
 def crear_ruta(nombre: str, db: Session = Depends(get_db)):
     return RutaService(db).create_ruta(nombre)
 
-def listar_rutas(db: Session = Depends(get_db)):
-    return RutaService(db).get_rutas()
-
-@router.get("/obtenerRutas")
+@router.get("/")
 def listar_rutas(db: Session = Depends(get_db)):
     return RutaService(db).get_rutas()
     
