@@ -3,17 +3,14 @@ import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_URL } from './AuthService';
+import messaging from '@react-native-firebase/messaging'; // Importar Firebase Messaging
 
 // --- CONFIGURACIÓN DE MANEJO EN PRIMER PLANO ---
-// Esto es necesario para que las notificaciones se muestren 
-// cuando la app está activa (en Android se muestra por defecto, pero es buena práctica)
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
     shouldPlaySound: true,
     shouldSetBadge: false,
-    shouldShowBanner: true,
-    shouldShowList: true,
   }),
 });
 
@@ -21,83 +18,74 @@ async function registerForPushNotificationsAsync() {
   let token;
 
   if (Platform.OS === 'android') {
-    // Esto es vital para Android: configura canales de notificación
-    await Notifications.setNotificationChannelGroupAsync('default', {
-        name: 'default',
-        description: 'Canal por defecto para notificaciones',
-      }
-    );
+    await Notifications.setNotificationChannelAsync('default', {
+      name: 'default',
+      importance: Notifications.AndroidImportance.MAX,
+      vibrationPattern: [0, 250, 250, 250],
+      lightColor: '#FF231F7C',
+    });
   }
 
-  // Funciona en dispositivos físicos Y emuladores para pruebas
-  if (Device.isDevice || true) {
+  if (Device.isDevice) {
     const { status: existingStatus } = await Notifications.getPermissionsAsync();
     let finalStatus = existingStatus;
-    
-    // 1. Solicitar permiso si no está concedido
     if (existingStatus !== 'granted') {
       const { status } = await Notifications.requestPermissionsAsync();
       finalStatus = status;
     }
-    
     if (finalStatus !== 'granted') {
-      console.error('⚠️ Falló la obtención del token: Permiso no concedido.');
-      alert('Se requiere permiso de notificación.');
+      alert('¡Error! No se pudo obtener el token para las notificaciones push.');
       return;
     }
-
-    // 2. Obtener el FCM token nativo (no Expo token)
-    // getDevicePushTokenAsync() retorna el FCM token en Android y APNs en iOS
     try {
       const deviceToken = await Notifications.getDevicePushTokenAsync();
       token = deviceToken.data;
-      console.log('✅ FCM Token obtenido:', token);
+      console.log('✅ Token de Notificación:', token);
     } catch (error) {
-      console.error('❌ Error al obtener FCM token:', error);
-      return;
+        console.error('❌ Error al obtener el token de notificación:', error);
+        return;
     }
-    
-    // 🆕 ENVIAR TOKEN AL BACKEND
-    if (token) {
-      try {
-        const userId = await AsyncStorage.getItem('userId');
-        if (userId) {
-          const response = await fetch(`${API_URL}/usuario/registrar-fcm-token`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              user_id: parseInt(userId),
-              fcm_token: token
-            })
-          });
-          
-          if (response.ok) {
-            console.log('✅ FCM Token enviado al backend correctamente');
-          } else {
-            console.error('❌ Error al enviar FCM token:', response.status);
-          }
+  } else {
+    console.log('Debe usar un dispositivo físico para las notificaciones Push.');
+  }
+
+  // --- SUSCRIPCIÓN A TEMA ---
+  try {
+    // Suscribir al dispositivo al tema 'all_users'
+    await messaging().subscribeToTopic('all_users');
+    console.log('✅ Suscrito al tema: all_users');
+  } catch (error) {
+    console.error('❌ Error al suscribirse al tema:', error);
+  }
+
+
+  // --- ENVIAR TOKEN AL BACKEND ---
+  if (token) {
+    try {
+      const userId = await AsyncStorage.getItem('userId');
+      if (userId) {
+        const response = await fetch(`${API_URL}/usuario/registrar-fcm-token`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user_id: parseInt(userId, 10),
+            fcm_token: token,
+          }),
+        });
+        if (response.ok) {
+          console.log('✅ FCM Token enviado al backend correctamente');
         } else {
-          console.warn('⚠️ userId no encontrado en AsyncStorage');
+          console.error('❌ Error al enviar FCM token al backend:', response.status);
         }
-      } catch (error) {
-        console.error('❌ Error al registrar FCM token:', error);
+      } else {
+        console.warn('⚠️ userId no encontrado en AsyncStorage, no se pudo registrar el token en el backend.');
       }
+    } catch (error) {
+      console.error('❌ Error al registrar FCM token en el backend:', error);
     }
-    
   }
 
   return token;
 }
 
 export default registerForPushNotificationsAsync;
-
-// Ejemplo de cómo usarlo en tu componente principal:
-// Importa este archivo en tu componente raíz y ejecuta la función:
-// useEffect(() => {
-//     registerForPushNotificationsAsync();
-//     // Opcional: listener para cuando el usuario toca la notificación
-//     const subscription = Notifications.addNotificationResponseReceivedListener(response => {
-//         console.log('Notificación tocada:', response.notification.request.content.data);
-//     });
-//     return () => Notifications.removeNotificationSubscription(subscription);
-// }, []);

@@ -8,7 +8,6 @@ from models.Corredor import Corredor
 from models.Ruta import Ruta
 from models.Paradero import Paradero
 from datetime import datetime, timezone
-from firebase_admin import messaging
 from models.UsuarioBase import UsuarioBase
 from config.firebase import get_firebase_admin
 
@@ -71,7 +70,7 @@ class AlertaMasivaService:
         """
         Crea un nuevo reporte tipo "Otro" (id_tipo_reporte = 4) para alertas masivas.
         Guarda todos los campos del reporte en la base de datos.
-        Si se especifica, envía una notificación masiva.
+        Si se especifica, envía una notificación masiva a un tema.
         """
         try:
             with Session(self.engine) as session:
@@ -97,33 +96,19 @@ class AlertaMasivaService:
                 
                 session.commit()
 
-                # Si se solicita, enviar notificación
+                # Si se solicita, enviar notificación al tema "all_users"
                 if payload.get("send_notification"):
-                    fcm_tokens = session.execute(
-                        select(UsuarioBase.fcm_token).where(UsuarioBase.fcm_token.isnot(None))
-                    ).scalars().all()
-                    
-                    if fcm_tokens:
-                        try:
-                            firebase_admin = get_firebase_admin()
-                            messages = [
-                                messaging.Message(
-                                    notification=messaging.Notification(
-                                        title="Alerta Masiva",
-                                        body=payload.get("descripcion")
-                                    ),
-                                    token=token,
-                                )
-                                for token in list(set(fcm_tokens))
-                            ]
-                            
-                            response = firebase_admin.send_all(messages)
-                            print(f"Notificaciones enviadas: {response.success_count}")
-                            if response.failure_count > 0:
-                                print(f"Notificaciones fallidas: {response.failure_count}")
-
-                        except Exception as e:
-                            print(f"[ERROR] Al enviar notificación de alerta masiva: {e}")
+                    try:
+                        firebase_admin = get_firebase_admin()
+                        firebase_admin.send_to_topic(
+                            topic="all_users",
+                            title="Alerta General",
+                            body=payload.get("descripcion")
+                        )
+                        print("✅ Notificación de alerta masiva enviada al tema 'all_users'")
+                    except Exception as e:
+                        # Log del error pero no fallar la solicitud, ya que la alerta fue creada
+                        print(f"❌ [ERROR] Al enviar notificación de alerta masiva al tema: {e}")
                 
                 return {
                     "id_reporte": nuevo_reporte.id_reporte,
