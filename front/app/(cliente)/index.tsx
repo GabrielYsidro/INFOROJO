@@ -7,7 +7,8 @@ import styles from './StylesIndex';
 import MapSection from '@/components/MapSection';
 import AppModal from '@/components/Modals/AppModal';
 import ModalFiltros from '@/components/Modals/ModalFiltros';
-import { FiltrosData, aplicarFiltros } from '@/services/filtrosService';
+import { FiltrosData, obtenerRutasDisponibles, RutaFiltrada, getParaderosPorRutaId, aplicarFiltros } from '@/services/filtrosService';
+import { Paradero } from '@/services/paraderoService';
 import FeedbackModal from './Feedback/Feedback';
 
 export default function ClienteMenuPrincipal() {
@@ -20,6 +21,7 @@ export default function ClienteMenuPrincipal() {
         distrito: '',
         distancia: ''
     });
+    const [paraderosFiltrados, setParaderosFiltrados] = useState<Paradero[] | null>(null);
 
     // Estado para el modal de feedback
     const [showFeedback, setShowFeedback] = useState(false);
@@ -27,12 +29,55 @@ export default function ClienteMenuPrincipal() {
     // Función para manejar la aplicación de filtros
     const handleAplicarFiltros = async () => {
         try {
-            const resultado = await aplicarFiltros(filtros);
-            console.log('Rutas filtradas:', resultado);
-            // Aquí puedes actualizar el mapa con las rutas filtradas
-            // Por ejemplo, pasar los resultados al MapSection
+            const nombreRuta = filtros.ruta.trim();
+            if (!nombreRuta) {
+                setParaderosFiltrados(null);
+                return;
+            }
+
+            // Obtener lista de rutas sin paraderos (endpoint obtenerRutas)
+            const rutasBasicas: RutaFiltrada[] = await obtenerRutasDisponibles();
+            const ruta = rutasBasicas.find(r => r.nombre === nombreRuta);
+            if (!ruta) {
+                Alert.alert('Sin resultados', 'No se encontró la ruta.');
+                setParaderosFiltrados(null);
+                return;
+            }
+
+            // Obtener paraderos directamente por id usando ruta_id (backend devuelve lista de paraderos)
+            let paraderosRuta = await getParaderosPorRutaId(ruta.id_ruta) as Paradero[];
+
+            // Fallback: si vacío intentar endpoint por nombre (/filtrar?ruta=nombre) para ver si backend adjunta paraderos
+            if (!paraderosRuta.length) {
+                console.log('[Fallback] Intentando filtrar por nombre');
+                try {
+                    const rutasNombre = await aplicarFiltros({ ruta: nombreRuta, distrito: '', distancia: '' });
+                    const candidata = rutasNombre.find(r => r.id_ruta === ruta.id_ruta || r.nombre === nombreRuta);
+                    if (candidata?.paraderos?.length) {
+                        paraderosRuta = candidata.paraderos as Paradero[];
+                        console.log('[Fallback] Paraderos obtenidos por nombre:', paraderosRuta.length);
+                    }
+                } catch (e) {
+                    console.warn('[Fallback] Error filtrando por nombre', e);
+                }
+            }
+            if (!paraderosRuta || paraderosRuta.length === 0) {
+                Alert.alert('Sin paraderos', 'La ruta no tiene paraderos.');
+                setParaderosFiltrados([]);
+                return;
+            }
+
+            const vistos = new Set<number>();
+            const lista = paraderosRuta.filter(p => {
+                if (!p.id_paradero || vistos.has(p.id_paradero)) return false;
+                if (typeof p.coordenada_lat !== 'number' || typeof p.coordenada_lng !== 'number') return false;
+                vistos.add(p.id_paradero);
+                return true;
+            });
+            setParaderosFiltrados(lista);
         } catch (error) {
-            console.error('Error al aplicar filtros:', error);
+            console.error('Error al aplicar filtros (ruta_id):', error);
+            Alert.alert('Error', 'No se pudo aplicar el filtro de ruta.');
         }
     };
 
@@ -73,7 +118,7 @@ export default function ClienteMenuPrincipal() {
             </View>
 
             {/* Map Section */}
-            <MapSection />
+            <MapSection filteredParaderos={paraderosFiltrados} />
 
             {/* Bottom Navigation */}
             <View style={styles.bottomNav}>
