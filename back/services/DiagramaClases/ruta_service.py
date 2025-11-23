@@ -25,7 +25,7 @@ class RutaService:
         rutas = self.db.query(Ruta).all()
         return [{'id_ruta': r.id_ruta, 'nombre': r.nombre} for r in rutas]
 
-    def filtrar_rutas(self, ruta: Optional[str] = None, ruta_id: Optional[int] = None, distancia: Optional[float] = None) -> List[Dict]:
+    def filtrar_rutas(self, ruta: Optional[str] = None, ruta_id: Optional[int] = None, distrito: Optional[str] = None, distancia: Optional[float] = None) -> List[Dict]:
         """
         Filtra rutas usando el patrón Strategy y adjunta paraderos.
 
@@ -43,6 +43,11 @@ class RutaService:
 
         # Obtener todas las rutas con paraderos cargados para evitar lazy loads
         todas_rutas = self.db.query(Ruta).options(joinedload(Ruta.ruta_paraderos).joinedload(RutaParadero.paradero)).all()
+
+        # Nota: El modelo Ruta no tiene campo distrito actualmente.
+        # Si en el futuro se agrega, aquí se podría filtrar antes de aplicar estrategias:
+        # if distrito:
+        #     todas_rutas = [r for r in todas_rutas if getattr(r, 'distrito', None) == distrito]
 
         sistema_filtros = SistemaFiltros()
         if ruta and ruta.strip():
