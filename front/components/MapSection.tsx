@@ -21,7 +21,11 @@ interface Corredor {
   estado: string;
 }
 
-export default function MapSection() {
+interface MapSectionProps {
+  filteredParaderos?: Paradero[] | null;
+}
+
+export default function MapSection({ filteredParaderos }: MapSectionProps) {
   const [initialRegion, setInitialRegion] = useState({
     latitude: -12.0464,
     longitude: -77.0428,
@@ -115,7 +119,7 @@ export default function MapSection() {
                 onPress={() => handleBusPress(bus)}
               />
             ))}
-            {paraderos.map(paradero => (
+            {(filteredParaderos ?? paraderos).map(paradero => (
               <ParaderoMarker
                 key={paradero.id_paradero}
                 paradero={paradero}
