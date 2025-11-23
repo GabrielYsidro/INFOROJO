@@ -1,7 +1,8 @@
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
-import Constants from 'expo-constants';
 import { Platform } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_URL } from './AuthService';
 
 // --- CONFIGURACIÓN DE MANEJO EN PRIMER PLANO ---
 // Esto es necesario para que las notificaciones se muestren 
@@ -45,18 +46,43 @@ async function registerForPushNotificationsAsync() {
       return;
     }
 
-    // 2. Obtener el ExpoPushToken
-    // El 'projectId' se obtiene desde Constants (expo-constants)
-    const projectId = Constants.expoConfig?.extra?.eas?.projectId;
-    
-    if (!projectId) {
-      console.error('❌ Project ID no encontrado en app.config.js');
+    // 2. Obtener el FCM token nativo (no Expo token)
+    // getDevicePushTokenAsync() retorna el FCM token en Android y APNs en iOS
+    try {
+      const deviceToken = await Notifications.getDevicePushTokenAsync();
+      token = deviceToken.data;
+      console.log('✅ FCM Token obtenido:', token);
+    } catch (error) {
+      console.error('❌ Error al obtener FCM token:', error);
       return;
     }
     
-    token = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
-    
-    console.log('✅ Expo Push Token obtenido:', token);
+    // 🆕 ENVIAR TOKEN AL BACKEND
+    if (token) {
+      try {
+        const userId = await AsyncStorage.getItem('user_id');
+        if (userId) {
+          const response = await fetch(`${API_URL}/usuario/registrar-fcm-token`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              user_id: parseInt(userId),
+              fcm_token: token
+            })
+          });
+          
+          if (response.ok) {
+            console.log('✅ FCM Token enviado al backend correctamente');
+          } else {
+            console.error('❌ Error al enviar FCM token:', response.status);
+          }
+        } else {
+          console.warn('⚠️ user_id no encontrado en AsyncStorage');
+        }
+      } catch (error) {
+        console.error('❌ Error al registrar FCM token:', error);
+      }
+    }
     
   }
 

@@ -4,7 +4,9 @@ const API_URL_DEV = Constants.expoConfig?.extra?.API_URL_DEV;
 const API_URL_PROD = Constants.expoConfig?.extra?.API_URL_PROD;
 
 const isDev = process.env.NODE_ENV !== "production";
+
 export const API_URL = isDev ? API_URL_DEV : API_URL_PROD;
+//export const API_URL =  API_URL_PROD;
 
 export interface Paradero {
     id_paradero: number;
@@ -22,11 +24,8 @@ export const getAllParaderos = async (): Promise<Paradero[]> => {
     try {
         console.log(`📡 [FETCH] Iniciando fetch...`);
         
-        const res = await fetch(`${API_URL}/paradero`, {
+        const res = await fetch(`${API_URL}/paradero/`, {
             method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-            },
         });
 
         const elapsed = Date.now() - startTime;

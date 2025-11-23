@@ -10,6 +10,7 @@ router = APIRouter(
     tags=["paradero"]
 )
 
+@router.get("")
 @router.get("/")
 def listar_paraderos(db: Session = Depends(get_db)):
     return Paradero_Service(db=db).get_paraderos()

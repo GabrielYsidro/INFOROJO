@@ -5,6 +5,7 @@ const API_URL_PROD = Constants.expoConfig?.extra?.API_URL_PROD;
 const isDev = process.env.NODE_ENV !== 'production';
 
 export const API_URL = isDev ? API_URL_DEV : API_URL_PROD;
+//export const API_URL =  API_URL_PROD;
 
 const getUsers = async (userId: number) =>{
     const res = await fetch(`${API_URL}/usuario/${userId}`, {

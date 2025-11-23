@@ -4,7 +4,9 @@ const API_URL_DEV = Constants.expoConfig?.extra?.API_URL_DEV;
 const API_URL_PROD = Constants.expoConfig?.extra?.API_URL_PROD;
 
 const isDev = process.env.NODE_ENV !== "production";
+
 export const API_URL = isDev ? API_URL_DEV : API_URL_PROD;
+//export const API_URL =  API_URL_PROD;
 
 /**
  * Envía un reporte de tráfico (retraso) al backend.
@@ -67,7 +69,33 @@ export const listarReportesTrafico = async () => {
   return res.json(); // devuelve lista de reportes
 };
 
+/**
+ * Obtiene el último reporte de tráfico registrado para un corredor específico.
+ * @param corredor Nombre o código del corredor (por ejemplo, "Corredor Rojo").
+ */
+export const obtenerUltimoReportePorCorredor = async (corredor: number) => {
+  console.log("📡 Obteniendo último reporte del corredor:", corredor);
+
+  const url = `${API_URL}/reports/ultimo/${encodeURIComponent(
+    corredor
+  )}`;
+
+  console.log("🔗 URL final:", url);
+
+  const res = await fetch(url);
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    console.error("❌ Error al obtener último reporte:", err);
+    throw new Error(err.detail || "No encontrado.");
+  }
+
+  return res.json();
+};
+
+
 export default {
   enviarReporteTrafico,
   listarReportesTrafico,
+  obtenerUltimoReportePorCorredor
 };

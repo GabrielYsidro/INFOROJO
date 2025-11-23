@@ -14,6 +14,7 @@ class UsuarioBase(Base):
     correo = Column(String)
     placa_unidad = Column(String)
     cod_empleado = Column(String)
+    fcm_token = Column(String, nullable=True)  # Token FCM para push notifications
 
     id_tipo_usuario = Column(Integer, ForeignKey("public.tipo_usuario.id_tipo_usuario"))
     id_corredor_asignado = Column(Integer, ForeignKey("public.corredor.id_corredor"))
