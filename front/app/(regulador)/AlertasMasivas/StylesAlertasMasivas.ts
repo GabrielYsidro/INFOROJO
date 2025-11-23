@@ -4,12 +4,27 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#fff',
+        paddingHorizontal: 16,
+        paddingTop: 32,
+    },
+    backButton: {
+        marginRight: 4,
+        padding: 4,
+    },
+    title: {
+        fontSize: 28,
+        fontWeight: 'bold',
+        color: '#c62828',
+        marginBottom: 24,
+        textAlign: 'center',
     },
     header: {
         backgroundColor: '#c62828',
-        paddingVertical: 20,
+        paddingVertical: 15,
         paddingHorizontal: 16,
+        flexDirection: 'row',
         alignItems: 'center',
+        justifyContent: 'space-between',
         marginBottom: 20,
     },
     headerTitle: {
@@ -19,7 +34,9 @@ const styles = StyleSheet.create({
     },
     content: {
         flex: 1,
-        paddingHorizontal: 16,
+    },
+    scrollContent: {
+        paddingBottom: 20,
     },
     section: {
         marginBottom: 20,
@@ -29,6 +46,22 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: '#333',
         marginBottom: 8,
+    },
+    textInput: {
+        borderWidth: 1,
+        borderColor: '#c62828',
+        borderRadius: 8,
+        padding: 12,
+        fontSize: 16,
+        backgroundColor: '#fff',
+        color: '#333',
+        minHeight: 50,
+        textAlignVertical: 'top',
+    },
+    switchRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
     },
     pickerContainer: {
         borderWidth: 1,
@@ -87,20 +120,28 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
         borderTopWidth: 1,
         borderColor: '#e0e0e0',
+        gap: 12,
     },
     button: {
-        backgroundColor: '#c62828',
         paddingVertical: 15,
         borderRadius: 8,
         alignItems: 'center',
         elevation: 3,
-        shadowColor: '#c62828',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.3,
         shadowRadius: 3,
     },
+    buttonGuardar: {
+        backgroundColor: '#2e7d32',
+        shadowColor: '#2e7d32',
+    },
+    buttonEnviar: {
+        backgroundColor: '#1565c0',
+        shadowColor: '#1565c0',
+    },
     buttonDisabled: {
         backgroundColor: '#ccc',
+        shadowColor: '#ccc',
     },
     buttonText: {
         color: '#fff',
@@ -110,9 +151,17 @@ const styles = StyleSheet.create({
     backButton: {
         flexDirection: 'row',
         alignItems: 'center',
-        padding: 10,
+        padding: 12,
         marginLeft: 8,
         marginTop: 8,
+        zIndex: 10,
+        backgroundColor: '#fff',
+        borderRadius: 8,
+        alignSelf: 'flex-start',
+    },
+    backButtonInHeader: {
+        padding: 8,
+        marginRight: 8,
     },
     backButtonText: {
         color: '#c62828',

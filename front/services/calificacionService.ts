@@ -1,12 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
-const API_URL_DEV = "http://10.0.2.2:8000";
-const API_URL_PROD = "https://backend-inforojo-ckh4hedjhqdtdfaq.eastus-01.azurewebsites.net";
-
-const isDev = process.env.NODE_ENV !== 'production';
-
-export const API_URL = isDev ? API_URL_DEV : API_URL_PROD;
-//export const API_URL =  API_URL_PROD;
+import { API_URL } from './userService';
 
 interface CalificacionPayload {
     id_historial: number;
@@ -30,28 +23,23 @@ interface CalificacionResponse {
  */
 export async function enviarCalificacion(payload: CalificacionPayload): Promise<CalificacionResponse> {
     try {
-        // Obtener el ID del usuario del AsyncStorage para autenticación
-        const userDataStr = await AsyncStorage.getItem('user');
-        let userId: string | null = null;
-
-        if (userDataStr) {
-            try {
-                const userData = JSON.parse(userDataStr);
-                userId = userData.id_usuario?.toString();
-            } catch (e) {
-                console.error('Error al parsear datos de usuario:', e);
-            }
+        console.log('📊 Enviando calificación:', payload);
+        console.log('🌐 API URL:', API_URL);
+        
+        // Obtener el token de autenticación
+        const token = await AsyncStorage.getItem('token');
+        
+        if (!token) {
+            throw new Error('No hay sesión activa');
         }
 
-        const url = `${API_URL}/calificaciones/actualizar`;
+        const url = `${API_URL}/calificaciones/actualizar/`;
+        console.log('📡 URL completa:', url);
+        
         const headers: Record<string, string> = {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
         };
-
-        // Agregar el ID del usuario en los headers si está disponible
-        if (userId) {
-            headers['X-User-Id'] = userId;
-        }
 
         const response = await fetch(url, {
             method: 'POST',
@@ -59,7 +47,11 @@ export async function enviarCalificacion(payload: CalificacionPayload): Promise<
             body: JSON.stringify(payload),
         });
 
+        console.log('📡 Response status:', response.status);
+
         const responseText = await response.text();
+        console.log('📡 Response text:', responseText);
+        
         let data: any;
 
         try {
@@ -88,7 +80,7 @@ export async function enviarCalificacion(payload: CalificacionPayload): Promise<
  */
 export async function obtenerCalificacion(idHistorial: number): Promise<any> {
     try {
-        const url = `${API_URL}/calificaciones/obtener/${idHistorial}`;
+        const url = `${API_URL}/calificaciones/obtener/${idHistorial}/`;
         const response = await fetch(url, {
             method: 'GET',
             headers: {
@@ -116,7 +108,7 @@ export async function obtenerCalificacion(idHistorial: number): Promise<any> {
  */
 export async function obtenerEstadisticasCalificaciones(idParadero?: number): Promise<any> {
     try {
-        let url = `${API_URL}/calificaciones/estadisticas`;
+        let url = `${API_URL}/calificaciones/estadisticas/`;
         if (idParadero) {
             url += `?id_paradero=${idParadero}`;
         }
