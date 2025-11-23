@@ -6,7 +6,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import styles from './StylesAlertasMasivas';
 import { 
     obtenerDatosFormulario, 
-    crearAlertaMasiva 
+    crearAlertaMasiva
 } from '@/services/alertaMasivaService';
 
 interface Corredor {
@@ -89,7 +89,7 @@ export default function AlertasMasivas() {
         setTiempoRetrasoMin('');
     };
 
-    const handleEnviarAlerta = async () => {
+    const handleGuardarOEnviar = async (sendNotification: boolean) => {
         // Validar todos los campos obligatorios
         if (!descripcion.trim()) {
             Alert.alert('Error', 'Por favor ingresa una descripción para la alerta');
@@ -116,16 +116,20 @@ export default function AlertasMasivas() {
             return;
         }
 
+        const actionText = sendNotification ? 'guardar y notificar' : 'guardar';
+        const confirmationTitle = sendNotification ? 'Confirmar Envío y Notificación' : 'Confirmar Guardado';
+        const confirmationMessage = `¿Estás seguro de ${actionText} esta alerta?`;
+        
         Alert.alert(
-            'Confirmar Guardado',
-            '¿Estás seguro de guardar esta alerta masiva en la base de datos?',
+            confirmationTitle,
+            confirmationMessage,
             [
                 {
                     text: 'Cancelar',
                     style: 'cancel',
                 },
                 {
-                    text: 'Guardar',
+                    text: 'Aceptar',
                     onPress: async () => {
                         try {
                             setEnviando(true);
@@ -139,13 +143,14 @@ export default function AlertasMasivas() {
                                 id_paradero_inicial: idParaderoInicial,
                                 id_paradero_final: idParaderoFinal,
                                 tiempo_retraso_min: tiempoRetrasoMin ? parseInt(tiempoRetrasoMin) : undefined,
+                                send_notification: sendNotification,
                             };
 
                             await crearAlertaMasiva(payload);
 
                             Alert.alert(
                                 'Éxito',
-                                'La alerta masiva ha sido guardada exitosamente',
+                                `La alerta masiva ha sido procesada exitosamente.`,
                                 [
                                     {
                                         text: 'OK',
@@ -154,22 +159,14 @@ export default function AlertasMasivas() {
                                 ]
                             );
                         } catch (error) {
-                            console.error('Error al guardar alerta:', error);
-                            Alert.alert('Error', 'No se pudo guardar la alerta masiva');
+                            console.error(`Error al ${actionText} la alerta:`, error);
+                            Alert.alert('Error', `No se pudo ${actionText} la alerta masiva.`);
                         } finally {
                             setEnviando(false);
                         }
                     },
                 },
             ]
-        );
-    };
-
-    const handleEnviarNotificacion = () => {
-        Alert.alert(
-            'Función no disponible',
-            'El envío de notificaciones masivas estará disponible próximamente',
-            [{ text: 'OK' }]
         );
     };
 
@@ -330,27 +327,11 @@ export default function AlertasMasivas() {
 
             {/* Botones de acción */}
             <View style={styles.buttonContainer}>
-                {/* Botón Guardar */}
-                <TouchableOpacity
-                    style={[
-                        styles.button,
-                        styles.buttonGuardar,
-                        (!descripcion.trim() || !idCorredorAfectado || !idRutaAfectada || !idParaderoInicial || !idParaderoFinal || !tiempoRetrasoMin || enviando) && styles.buttonDisabled,
-                    ]}
-                    onPress={handleEnviarAlerta}
-                    disabled={!descripcion.trim() || !idCorredorAfectado || !idRutaAfectada || !idParaderoInicial || !idParaderoFinal || !tiempoRetrasoMin || enviando}
-                >
-                    {enviando ? (
-                        <ActivityIndicator color="#fff" />
-                    ) : (
-                        <Text style={styles.buttonText}>GUARDAR ALERTA</Text>
-                    )}
-                </TouchableOpacity>
-
                 {/* Botón Enviar Notificación */}
                 <TouchableOpacity
-                    style={[styles.button, styles.buttonEnviar]}
-                    onPress={handleEnviarNotificacion}
+                    style={[styles.button, styles.buttonEnviar, ((!descripcion.trim() || enviando)) && styles.buttonDisabled]}
+                    onPress={() => handleGuardarOEnviar(true)}
+                    disabled={!descripcion.trim() || enviando}
                 >
                     <Text style={styles.buttonText}>ENVIAR NOTIFICACIÓN</Text>
                 </TouchableOpacity>

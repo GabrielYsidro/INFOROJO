@@ -139,7 +139,60 @@ export async function crearAlertaMasiva(payload: AlertaMasivaPayload): Promise<a
     }
 }
 
+/**
+ * Envía una notificación push masiva a todos los usuarios.
+ */
+export async function enviarNotificacionAlertaMasiva(descripcion: string): Promise<any> {
+    try {
+        console.log('🔔 [AlertaMasiva] Enviando notificación...');
+        console.log('📋 [AlertaMasiva] Descripción:', descripcion);
+        
+        const token = await AsyncStorage.getItem('token');
+        
+        if (!token) {
+            throw new Error('No hay sesión activa');
+        }
+
+        const url = `${API_URL}/alertas-masivas/enviar-notificacion/`;
+        console.log('📡 [AlertaMasiva] URL de notificación:', url);
+        
+        const headers: Record<string, string> = {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}` // Endpoint requiere autenticación
+        };
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({ descripcion: descripcion }),
+        });
+
+        const responseText = await response.text();
+        let data: any;
+
+        try {
+            data = JSON.parse(responseText);
+        } catch {
+            data = responseText;
+        }
+
+        if (!response.ok) {
+            throw new Error(
+                typeof data === 'object' && data.detail 
+                    ? data.detail 
+                    : `Error al enviar notificación masiva: ${response.status}`
+            );
+        }
+
+        return data;
+    } catch (error) {
+        console.error('Error en enviarNotificacionAlertaMasiva:', error);
+        throw error;
+    }
+}
+
 export default {
     obtenerDatosFormulario,
-    crearAlertaMasiva
+    crearAlertaMasiva,
+    enviarNotificacionAlertaMasiva
 };
