@@ -13,7 +13,6 @@ id_comentario = 5
 
 
 def test_editar_comentario_paradero_token_nulo():
-    """❌ TC2: Editar comentario de paradero con token nulo"""
     service = ComentarioParaderoService(db=None)
 
     with pytest.raises(HTTPException) as exc:
@@ -23,7 +22,6 @@ def test_editar_comentario_paradero_token_nulo():
     #assert "Token inválido: sin id de usuario" in exc.value.detail
 
 def test_editar_comentario_paradero_token_invalido():
-    """❌ TC2: Editar comentario de paradero con token nulo"""
     service = ComentarioParaderoService(db=None)
 
     with pytest.raises(HTTPException) as exc:
@@ -33,7 +31,6 @@ def test_editar_comentario_paradero_token_invalido():
     #assert "Token inválido: sin id de usuario" in exc.value.detail
 
 def test_editar_comentario_paradero_id_invalido():
-    """❌ TC2: Editar comentario de paradero con token nulo"""
     service = ComentarioParaderoService(db=None)
 
     with pytest.raises(HTTPException) as exc:
@@ -44,7 +41,6 @@ def test_editar_comentario_paradero_id_invalido():
 
 
 def test_eliminar_comentario_paradero_token_nulo():
-    """❌ TC2: Eliminar comentario de paradero con token nulo"""
     service = ComentarioParaderoService(db=None)
 
     with pytest.raises(HTTPException) as exc:
@@ -55,7 +51,6 @@ def test_eliminar_comentario_paradero_token_nulo():
 
 
 def test_eliminar_comentario_paradero_no_autorizado():
-    """❌ TC3: Eliminar comentario de paradero sin ser el autor"""
     service = ComentarioParaderoService(db=None)
 
     # Mock correcto
@@ -69,7 +64,6 @@ def test_eliminar_comentario_paradero_no_autorizado():
 
 
 def test_eliminar_comentario_paradero_no_encontrado():
-    """❌ TC4: Eliminar comentario de paradero que no existe"""
     service = ComentarioParaderoService(db=None)
     id_usuario_autor = 1
 
@@ -98,7 +92,6 @@ def test_eliminar_comentario_paradero_no_encontrado():
 
 
 def test_eliminar_comentario_paradero_autorizado():
-    """✅ TC1: Eliminar comentario de paradero siendo el autor"""
     service = ComentarioParaderoService(db=None)
     id_usuario_autor = 1
 
@@ -128,7 +121,6 @@ def test_eliminar_comentario_paradero_autorizado():
             pass
 
     service.db = FakeDB()
-
     try:
         service.eliminar_comentario(token_valido, id_comentario)
     except HTTPException:
