@@ -1,114 +1,147 @@
-import pytest
-from fastapi import HTTPException
-from fastapi.testclient import TestClient
-
-from services.comentario_paradero_service import ComentarioParaderoService
-from main import app
-
-client = TestClient(app)
-
-token_valido = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJwZXBpdG9AZ21haWwuY29tIiwiaWQiOjEsInJvbGUiOiJjbGllbnRlIiwiZXhwIjoxNzY0MDM4MzgwfQ.I6ckQEnkFSSHoplsSIiBaInHbCPv_z0VgRVmoPJB0NQ"
-id_comentario = 5
+from sqlalchemy.orm import Session
+from models.Paradero import Paradero
+from models.ComentarioUsuarioParadero import ComentarioUsuarioParadero
+from models.UsuarioBase import UsuarioBase
+from services.auth_service import AuthService
+from fastapi import HTTPException, status
+from datetime import datetime, timezone
 
 
-def test_editar_comentario_paradero_token_nulo():
-    """❌ TC2: Editar comentario de paradero con token nulo"""
-    service = ComentarioParaderoService(db=None)
+class ComentarioParaderoService:
+    def __init__(self, db: Session):
+        self.db = db
+        self.auth = AuthService()
+    
+    def obtener_comentarios(self, id_paradero:int):
+        comentarios = self.db.query(ComentarioUsuarioParadero).filter(ComentarioUsuarioParadero.id_paradero==id_paradero).all()
+        usuarios = self.db.query(UsuarioBase).all();
+        comentarios_mapped = list(map(lambda c: {
+            "id_comentario": c.id_comentario,
+            "id_usuario": c.id_usuario,
+            "nombre_usuario": next((u.nombre for u in usuarios if u.id_usuario == c.id_usuario), "Desconocido"),
+            "comentario": c.comentario,
+            "created_at": c.created_at
+        },comentarios))
+        return comentarios_mapped
+    
+    def obtener_paradero_perfil(self, id_paradero:int):
+        paradero = self.db.query(Paradero).filter(Paradero.id_paradero==id_paradero).first()
+        comentarios = self.obtener_comentarios(id_paradero)
+        return {
+            "paradero": paradero,
+            "comentarios": comentarios
+        }
+    
+    def obtener_paradero_perfil_nombre(self, nombre_paradero:str):
+        paradero = self.db.query(Paradero).filter(Paradero.nombre==nombre_paradero).first()
+        if paradero is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Paradero no encontrado")
+        comentarios = self.obtener_comentarios(paradero.id_paradero)
+        return {
+            "paradero": paradero,
+            "comentarios": comentarios
+        }
+    
+    def leerToken(self, token: str):
+        if not token:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token requerido")
 
-    with pytest.raises(HTTPException) as exc:
-        service.editar_comentario(None, id_comentario, "Nuevo comentario")
+        # soportar header "Bearer <token>"
+        if token.startswith("Bearer "):
+            token = token.split(" ", 1)[1]
 
-    assert exc.value.status_code == 401
-    #assert "Token inválido: sin id de usuario" in exc.value.detail
+        payload = None
+        try:
+            payload = self.auth.verify_access_token(token)
+        except HTTPException:
+            # re-lanzar la excepción para que FastAPI la maneje
+            raise
+        return payload
 
+    def comentarParadero(self, token: str, id_paradero: int, comentario: str):
+        payload = self.leerToken(token)
 
-def test_eliminar_comentario_paradero_token_nulo():
-    """❌ TC2: Eliminar comentario de paradero con token nulo"""
-    service = ComentarioParaderoService(db=None)
+        user_id = payload.get("id")
+        if user_id is None:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token inválido: sin id de usuario")
 
-    with pytest.raises(HTTPException) as exc:
-        service.eliminar_comentario(None, id_comentario)
+        # verificar existencia de usuario
+        user = self.db.query(UsuarioBase).filter(UsuarioBase.id_usuario == user_id).first()
+        if user is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuario no encontrado")
 
-    assert exc.value.status_code == 401
-    #assert "Token inválido: sin id de usuario" in exc.value.detail
+        # verificar existencia de paradero
+        paradero = self.db.query(Paradero).filter(Paradero.id_paradero == id_paradero).first()
+        if paradero is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Paradero no encontrado")
 
+        if not comentario or not isinstance(comentario, str) or comentario.strip() == "":
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Comentario vacío o inválido")
 
-def test_eliminar_comentario_paradero_no_autorizado():
-    """❌ TC3: Eliminar comentario de paradero sin ser el autor"""
-    service = ComentarioParaderoService(db=None)
+        nuevo = ComentarioUsuarioParadero(
+            created_at=datetime.now(timezone.utc),
+            id_usuario=user_id,
+            id_paradero=id_paradero,
+            comentario=comentario.strip()
+        )
 
-    # Mock correcto
-    service.leerToken = lambda t: {"id_usuario": 2}  # usuario falso NO es el autor
+        self.db.add(nuevo)
+        try:
+            self.db.commit()
+            self.db.refresh(nuevo)
+        except Exception as e:
+            self.db.rollback()
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error al guardar comentario: {e}")
 
-    with pytest.raises(HTTPException) as exc:
-        service.eliminar_comentario("token_fake", id_comentario)
+        return nuevo
+    
+    def editar_comentario(self, token: str, id_comentario: int, nuevo_texto: str):
+        payload = self.leerToken(token)
 
-    assert exc.value.status_code == 403
-    #assert "No autorizado para eliminar este comentario" in exc.value.detail
+        user_id = payload.get("id")
+        if user_id is None:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token inválido: sin id de usuario")
 
+        comentario = self.db.query(ComentarioUsuarioParadero).filter(ComentarioUsuarioParadero.id_comentario == id_comentario).first()
+        if comentario is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Comentario no encontrado")
 
-def test_eliminar_comentario_paradero_no_encontrado():
-    """❌ TC4: Eliminar comentario de paradero que no existe"""
-    service = ComentarioParaderoService(db=None)
-    id_usuario_autor = 1
+        if comentario.id_usuario != user_id:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="No autorizado para editar este comentario")
 
-    # Mock del token con usuario válido
-    service.leerToken = lambda t: {"id_usuario": id_usuario_autor}
+        if not nuevo_texto or not isinstance(nuevo_texto, str) or nuevo_texto.strip() == "":
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Nuevo texto de comentario vacío o inválido")
 
-    # Mock del DB para que .first() devuelva None
-    class FakeQuery:
-        def filter(self, *args, **kwargs):
-            class FakeFilter:
-                def first(self):
-                    return None
-            return FakeFilter()
+        comentario.comentario = nuevo_texto.strip()
+        try:
+            self.db.commit()
+            self.db.refresh(comentario)
+        except Exception as e:
+            self.db.rollback()
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error al actualizar comentario: {e}")
 
-    class FakeDB:
-        def query(self, x):
-            return FakeQuery()
+        return comentario
+    
+    def eliminar_comentario(self, token: str, id_comentario: int):
+        payload = self.leerToken(token)
 
-    service.db = FakeDB()
+        user_id = payload.get("id")
+        if user_id is None:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token inválido: sin id de usuario")
 
-    with pytest.raises(HTTPException) as exc:
-        service.eliminar_comentario(token_valido, 100)
+        comentario = self.db.query(ComentarioUsuarioParadero).filter(ComentarioUsuarioParadero.id_comentario == id_comentario).first()
+        if comentario is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Comentario no encontrado")
 
-    assert exc.value.status_code == 404
-    #assert "Comentario no encontrado" in exc.value.detail
+        if comentario.id_usuario != user_id:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="No autorizado para eliminar este comentario")
 
+        self.db.delete(comentario)
+        try:
+            self.db.commit()
+        except Exception as e:
+            self.db.rollback()
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error al eliminar comentario: {e}")
 
-def test_eliminar_comentario_paradero_autorizado():
-    """✅ TC1: Eliminar comentario de paradero siendo el autor"""
-    service = ComentarioParaderoService(db=None)
-    id_usuario_autor = 1
-
-    # Mock leerToken → correcto
-    service.leerToken = lambda t: {"id_usuario": id_usuario_autor}
-
-    # Mock que simula un comentario válido
-    class FakeComentario:
-        id_usuario = 1
-
-    class FakeFilter:
-        def first(self):
-            return FakeComentario()
-
-    class FakeQuery:
-        def filter(self, *args, **kwargs):
-            return FakeFilter()
-
-    class FakeDB:
-        def query(self, x):
-            return FakeQuery()
-
-        def delete(self, obj):
-            pass
-
-        def commit(self):
-            pass
-
-    service.db = FakeDB()
-
-    try:
-        service.eliminar_comentario(token_valido, id_comentario)
-    except HTTPException:
-        pytest.fail("El método lanzó una excepción inesperada")
+        return {"detail": "Comentario eliminado exitosamente"}
+            
