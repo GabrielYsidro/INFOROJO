@@ -7,6 +7,7 @@ type Props = {
   filtros: FiltrosData;
   onFiltrosChange: (filtros: FiltrosData) => void;
   onAplicar: () => void;
+  onLimpiar?: () => void; // nuevo callback opcional para limpiar filtros
   onClose: () => void;
 };
 
@@ -14,6 +15,7 @@ export default function ModalFiltros({
   filtros,
   onFiltrosChange,
   onAplicar,
+  onLimpiar,
   onClose,
 }: Props) {
   const [filtrosLocales, setFiltrosLocales] = useState<FiltrosData>(filtros);
@@ -69,6 +71,11 @@ export default function ModalFiltros({
   const handleAplicar = () => {
     onAplicar();
     onClose();
+  };
+
+  const handleLimpiar = () => {
+    if (onLimpiar) onLimpiar();
+    setFiltrosLocales({ ruta: '', distrito: '', distancia: '' });
   };
 
   return (
@@ -131,6 +138,9 @@ export default function ModalFiltros({
       </View>
 
       <View style={styles.footer}>
+        <Pressable onPress={handleLimpiar} style={styles.limpiarBtn}>
+          <Text style={styles.limpiarText}>Limpiar</Text>
+        </Pressable>
         <Pressable onPress={handleAplicar} style={styles.filtrarBtn}>
           <Text style={styles.filtrarText}>Filtrar</Text>
         </Pressable>
@@ -225,6 +235,20 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontSize: 16,
     fontWeight: '700',
+  },
+  limpiarBtn: {
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    backgroundColor: '#F3F4F6',
+    marginRight: 12,
+    borderWidth: 1,
+    borderColor: '#D1D5DB'
+  },
+  limpiarText: {
+    color: '#374151',
+    fontSize: 16,
+    fontWeight: '600'
   },
   placeholder: {
     color: '#9CA3AF',

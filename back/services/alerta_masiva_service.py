@@ -8,6 +8,8 @@ from models.Corredor import Corredor
 from models.Ruta import Ruta
 from models.Paradero import Paradero
 from datetime import datetime, timezone
+from models.UsuarioBase import UsuarioBase
+from config.firebase import get_firebase_admin
 
 class AlertaMasivaService:
     def __init__(self, engine=None):
@@ -68,6 +70,7 @@ class AlertaMasivaService:
         """
         Crea un nuevo reporte tipo "Otro" (id_tipo_reporte = 4) para alertas masivas.
         Guarda todos los campos del reporte en la base de datos.
+        Si se especifica, envía una notificación masiva a un tema.
         """
         try:
             with Session(self.engine) as session:
@@ -92,6 +95,20 @@ class AlertaMasivaService:
                 nuevo_reporte = result.scalar_one()
                 
                 session.commit()
+
+                # Si se solicita, enviar notificación al tema "all_users"
+                if payload.get("send_notification"):
+                    try:
+                        firebase_admin = get_firebase_admin()
+                        firebase_admin.send_to_topic(
+                            topic="all_users",
+                            title="Alerta General",
+                            body=payload.get("descripcion")
+                        )
+                        print("✅ Notificación de alerta masiva enviada al tema 'all_users'")
+                    except Exception as e:
+                        # Log del error pero no fallar la solicitud, ya que la alerta fue creada
+                        print(f"❌ [ERROR] Al enviar notificación de alerta masiva al tema: {e}")
                 
                 return {
                     "id_reporte": nuevo_reporte.id_reporte,
