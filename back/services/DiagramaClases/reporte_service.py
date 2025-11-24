@@ -265,38 +265,31 @@ class ReporteService:
         if id_corredor_asignado is None:
             raise ValueError("El conductor no tiene un corredor asignado en usuario_base")
 
-        # 3️⃣ Crear el record según si existe factory
-        if self.reporte_factory:
-            reporte_obj = self.reporte_factory.crear("falla", payload)
-            record = getattr(reporte_obj, "to_dict", lambda: None)()
-            if record is None:
-                # fallback: generar directamente desde objeto
-                record = {
-                    "id_reporte": reporte_obj.id_reporte,
-                    "id_tipo_reporte": payload.get("id_tipo_reporte", 1),  # tipo 1 = falla
-                    "id_emisor": int(reporte_obj.conductor_id),
-                    "descripcion": payload.get("descripcion"),
-                    "requiere_intervencion": payload.get("requiere_intervencion", False),
-                    "es_critica": payload.get("es_critica", False),
-                    "mensaje": reporte_obj.generar_mensaje(),
-                    # Campos NULL para fallas (no aplican)
-                    "id_ruta_afectada": None,
-                    "id_paradero_inicial": None,
-                    "id_paradero_final": None,
-                    "id_corredor_afectado": id_corredor_asignado,
-                    "tiempo_retraso_min": None,
-                }
-        else:
-            # Si no hay factory, usar directamente el payload
-            record = dict(payload)
-            record.setdefault("id_tipo_reporte", 1)
-            record.setdefault(
-                "mensaje",
-                f"Falla reportada: {payload.get('tipo_falla', 'No especificado')}"
-            )
+        # 3️⃣ Construir el record directamente (sin usar factory para evitar sobrescritura)
+        record = {
+            "id_tipo_reporte": payload.get("id_tipo_reporte", 1),  # SIEMPRE tipo 1 = falla
+            "id_emisor": int(conductor_id),
+            "descripcion": payload.get("descripcion"),
+            "requiere_intervencion": payload.get("requiere_intervencion", False),
+            "es_critica": payload.get("es_critica", False),
+            "id_corredor_afectado": id_corredor_asignado,
+            # Campos NULL para fallas (no aplican)
+            "id_ruta_afectada": None,
+            "id_paradero_inicial": None,
+            "id_paradero_final": None,
+            "tiempo_retraso_min": None,
+        }
         
-        # 4️⃣ Insertar corredor asignado automáticamente
-        record["id_corredor_afectado"] = id_corredor_asignado
+        # 4️⃣ Si existe factory, usar su generar_mensaje para el campo mensaje
+        if self.reporte_factory:
+            try:
+                reporte_obj = self.reporte_factory.crear("falla", payload)
+                record["mensaje"] = reporte_obj.generar_mensaje()
+            except Exception as e:
+                print(f"⚠️ Error al usar factory para mensaje: {e}")
+                record["mensaje"] = f"Falla: {payload.get('tipo_falla', 'No especificado')}"
+        else:
+            record["mensaje"] = f"Falla: {payload.get('tipo_falla', 'No especificado')}"
 
         # 5️⃣ Guardar
         saved = self.save_report(record)

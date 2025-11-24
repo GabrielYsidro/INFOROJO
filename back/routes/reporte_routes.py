@@ -176,7 +176,7 @@ def crear_reporte_retraso(payload: Dict = Body(...), conductor_header_id: Option
 @router.post("/falla")
 def crear_reporte_falla(payload: Dict = Body(...), conductor_header_id: Optional[int] = Depends(get_user_id_from_headers)):
     """
-    Crea un reporte de tipo 'falla'.
+    Crea un reporte de tipo 'falla' y envía notificaciones automáticas.
     El formulario envía: paradero (str), tipo_falla (str), requiere_mantenimiento (bool), unidad_afectada (str), motivo (str)
     """
     conductor_id = payload.get("conductor_id") or conductor_header_id
@@ -225,6 +225,50 @@ def crear_reporte_falla(payload: Dict = Body(...), conductor_header_id: Optional
 
     try:
         saved = service.crear_reporte_falla(mapped_payload)
+        
+        # 🆕 ENVIAR NOTIFICACIONES AUTOMÁTICAS
+        try:
+            from services.falla_notification_service import FallaNotificationService
+            notification_service = FallaNotificationService()
+            
+            # Obtener ubicación del conductor para calcular usuarios cercanos
+            lat_referencia = payload.get("lat") or payload.get("latitud")
+            lng_referencia = payload.get("lng") or payload.get("longitud")
+            
+            # Si no viene en el payload, intentar obtener del usuario
+            if not lat_referencia or not lng_referencia:
+                from services.usuario_service import UsuarioService
+                from config.db import SessionLocal
+                db = SessionLocal()
+                try:
+                    usuario_service = UsuarioService(db)
+                    conductor = usuario_service.get_usuario_by_id(int(conductor_id))
+                    if conductor:
+                        lat_referencia = conductor.ubicacion_actual_lat
+                        lng_referencia = conductor.ubicacion_actual_lng
+                finally:
+                    db.close()
+            
+            # Enviar notificaciones (sin agregar stats al response)
+            notification_service.enviar_notificaciones_falla(
+                reporte_id=saved.get("id_reporte"),
+                descripcion=descripcion_completa,
+                unidad_afectada=unidad_afectada,
+                tipo_falla=tipo_falla,
+                paradero=paradero_nombre,
+                id_corredor_afectado=mapped_payload.get("id_corredor_afectado"),
+                id_ruta_afectada=mapped_payload.get("id_ruta_afectada"),
+                lat_referencia=lat_referencia,
+                lng_referencia=lng_referencia,
+                requiere_intervencion=requiere_intervencion,
+                id_emisor=int(conductor_id)  # Excluir al conductor de las notificaciones
+            )
+            
+        except Exception as notif_error:
+            print(f"⚠️ Error al enviar notificaciones (reporte guardado exitosamente): {notif_error}")
+            traceback.print_exc()
+            # No fallar el endpoint si las notificaciones fallan
+        
         return {"ok": True, "reporte": saved}
     except Exception as e:
         print("[ERROR] crear_reporte_falla exception:", e)
@@ -257,3 +301,115 @@ def obtener_ultimo_reporte_por_corredor_id(id_corredor: int):
     except Exception as e:
         print("[ERROR] obtener_ultimo_reporte_por_corredor_id:", e)
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/falla/{id_reporte}")
+def obtener_detalle_reporte_falla(id_reporte: int):
+    """
+    Obtiene los detalles completos de un reporte de falla por su ID.
+    Usado por el frontend para mostrar el modal cuando el usuario toca la notificación.
+    
+    Retorna:
+    - Descripción completa (con unidad, paradero, tipo de falla, motivo)
+    - Información del emisor
+    - Corredor afectado
+    - Ruta sugerida alternativa
+    - Fecha del reporte
+    """
+    from sqlalchemy import select
+    from config.db import SessionLocal
+    from models.Reporte import Reporte
+    from models.UsuarioBase import UsuarioBase
+    from models.Corredor import Corredor
+    from models.Ruta import Ruta
+    
+    try:
+        db = SessionLocal()
+        
+        # Obtener el reporte con joins para traer info relacionada
+        stmt = select(Reporte).where(Reporte.id_reporte == id_reporte)
+        reporte = db.execute(stmt).scalar_one_or_none()
+        
+        if not reporte:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Reporte {id_reporte} no encontrado"
+            )
+        
+        # Verificar que sea un reporte de falla (tipo 1)
+        if reporte.id_tipo_reporte != 1:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"El reporte {id_reporte} no es de tipo falla"
+            )
+        
+        # Obtener información adicional
+        emisor_nombre = None
+        if reporte.id_emisor:
+            emisor = db.execute(
+                select(UsuarioBase).where(UsuarioBase.id_usuario == reporte.id_emisor)
+            ).scalar_one_or_none()
+            if emisor:
+                emisor_nombre = emisor.nombre
+        
+        # Obtener rutas alternativas si hay corredor afectado
+        rutas_alternativas = []
+        if reporte.id_corredor_afectado:
+            # Buscar 2 rutas diferentes al corredor afectado
+            rutas = db.execute(
+                select(Ruta).where(Ruta.id_ruta != reporte.id_ruta_afectada).limit(2)
+            ).scalars().all()
+            
+            rutas_alternativas = [
+                {
+                    "id_ruta": r.id_ruta,
+                    "nombre": r.nombre or f"Ruta {r.codigo}",
+                    "codigo": r.codigo
+                }
+                for r in rutas
+            ]
+        
+        db.close()
+        
+        # Parsear la descripción para extraer info estructurada
+        # Formato: "Falla en unidad ADV-294 | Paradero: San Luis_IDA | Tipo: Puertas | Requiere intervención: Sí | Motivo: prueba"
+        partes = {}
+        if reporte.descripcion:
+            for parte in reporte.descripcion.split(" | "):
+                if ":" in parte:
+                    clave, valor = parte.split(":", 1)
+                    partes[clave.strip()] = valor.strip()
+        
+        # Extraer info específica
+        unidad_afectada = partes.get("Falla en unidad", "").replace("Falla en unidad ", "")
+        paradero = partes.get("Paradero", "Automático")
+        tipo_falla = partes.get("Tipo", "No especificado")
+        motivo = partes.get("Motivo", "")
+        
+        return {
+            "ok": True,
+            "reporte": {
+                "id_reporte": reporte.id_reporte,
+                "fecha": reporte.fecha.isoformat() if reporte.fecha else None,
+                "descripcion_completa": reporte.descripcion,
+                "unidad_afectada": unidad_afectada,
+                "paradero": paradero,
+                "tipo_falla": tipo_falla,
+                "motivo": motivo,
+                "requiere_intervencion": reporte.requiere_intervencion,
+                "es_critica": reporte.es_critica,
+                "emisor": {
+                    "id": reporte.id_emisor,
+                    "nombre": emisor_nombre
+                },
+                "corredor_afectado_id": reporte.id_corredor_afectado,
+                "rutas_alternativas": rutas_alternativas
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"[ERROR] obtener_detalle_reporte_falla: {e}")
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
