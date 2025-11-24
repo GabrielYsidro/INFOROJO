@@ -115,6 +115,32 @@ def test_editar_comentario_paradero_exitoso(service, mock_db):
     mock_db.commit.assert_called_once()
     mock_db.refresh.assert_called_once_with(comentario)
 
+def test_editar_comentario_paradero_texto_vacio(service, mock_db):
+    """
+    Caso: nuevo_texto = "   " (solo espacios) → 400 BAD REQUEST.
+    """
+    user_id = 10
+
+    comentario = ComentarioUsuarioParadero(
+        id_comentario=1,
+        id_usuario=user_id,
+        id_paradero=700,
+        comentario="texto original",
+        created_at=datetime.now(timezone.utc),
+    )
+
+    service.leerToken = MagicMock(return_value={"id": user_id})
+    mock_db.query().filter().first.return_value = comentario
+
+    with pytest.raises(HTTPException) as exc:
+        service.editar_comentario(
+            token="Bearer valido",
+            id_comentario=1,
+            nuevo_texto="   "
+        )
+
+    assert exc.value.status_code == status.HTTP_400_BAD_REQUEST
+    assert "vacío o inválido" in exc.value.detail
 
 # ==========================================================
 #                 ELIMINAR COMENTARIO
