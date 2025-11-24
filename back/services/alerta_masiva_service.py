@@ -1,10 +1,15 @@
 from typing import List, Dict, Optional
 from sqlalchemy.orm import Session
-from sqlalchemy import select
+from sqlalchemy import select, insert
 from config.db import engine as shared_engine
 from models.TipoReporte import TipoReporte
 from models.Reporte import Reporte
-from datetime import datetime
+from models.Corredor import Corredor
+from models.Ruta import Ruta
+from models.Paradero import Paradero
+from datetime import datetime, timezone
+from models.UsuarioBase import UsuarioBase
+from config.firebase import get_firebase_admin
 
 class AlertaMasivaService:
     def __init__(self, engine=None):
@@ -12,87 +17,109 @@ class AlertaMasivaService:
         if self.engine is None:
             raise RuntimeError("No hay engine de DB disponible en AlertaMasivaService.")
 
-    def obtener_tipos_reporte(self) -> List[Dict]:
-        """Obtiene todos los tipos de reporte disponibles"""
-        try:
-            with Session(self.engine) as session:
-                stmt = select(TipoReporte)
-                result = session.execute(stmt)
-                tipos = result.scalars().all()
-                return [
-                    {
-                        "id_tipo_reporte": tipo.id_tipo_reporte,
-                        "tipo": tipo.tipo
-                    }
-                    for tipo in tipos
-                ]
-        except Exception as e:
-            print(f"[ERROR] AlertaMasivaService.obtener_tipos_reporte: {e}")
-            raise
-
-    def obtener_reportes_por_tipo(self, id_tipo_reporte: int) -> List[Dict]:
-        """Obtiene todos los reportes de un tipo específico para mostrar en la lista"""
-        try:
-            with Session(self.engine) as session:
-                stmt = select(Reporte).where(
-                    Reporte.id_tipo_reporte == id_tipo_reporte
-                ).order_by(Reporte.fecha.desc())
-                
-                result = session.execute(stmt)
-                reportes = result.scalars().all()
-                
-                return [
-                    {
-                        "id_reporte": reporte.id_reporte,
-                        "descripcion": reporte.descripcion,
-                        "fecha": reporte.fecha.isoformat() if reporte.fecha else None,
-                        "es_critica": reporte.es_critica,
-                        "requiere_intervencion": reporte.requiere_intervencion
-                    }
-                    for reporte in reportes
-                ]
-        except Exception as e:
-            print(f"[ERROR] AlertaMasivaService.obtener_reportes_por_tipo: {e}")
-            raise
-
-    def enviar_alerta_masiva(self, payload: Dict) -> Dict:
+    def obtener_datos_formulario(self) -> Dict:
         """
-        Simula el envío de una alerta masiva a todos los usuarios.
-        No guarda nada en la base de datos, solo retorna confirmación.
-        En una implementación real, aquí se enviarían notificaciones push.
+        Obtiene todos los datos necesarios para poblar los dropdowns del formulario:
+        - Corredores
+        - Rutas
+        - Paraderos
         """
         try:
-            id_tipo_reporte = payload["id_tipo_reporte"]
-            
-            # Obtener información del tipo de reporte
             with Session(self.engine) as session:
-                stmt = select(TipoReporte).where(
-                    TipoReporte.id_tipo_reporte == id_tipo_reporte
-                )
-                result = session.execute(stmt)
-                tipo_reporte = result.scalar_one_or_none()
+                # Obtener corredores
+                stmt_corredores = select(Corredor)
+                corredores = session.execute(stmt_corredores).scalars().all()
                 
-                if not tipo_reporte:
-                    raise ValueError(f"Tipo de reporte {id_tipo_reporte} no encontrado")
+                # Obtener rutas
+                stmt_rutas = select(Ruta)
+                rutas = session.execute(stmt_rutas).scalars().all()
                 
-                # Contar cuántos reportes de este tipo existen
-                count_stmt = select(Reporte).where(
-                    Reporte.id_tipo_reporte == id_tipo_reporte
-                )
-                count_result = session.execute(count_stmt)
-                reportes_count = len(count_result.scalars().all())
-            
-            # Aquí es donde se enviarían las notificaciones push reales
-            # Por ahora solo retornamos confirmación
-            return {
-                "success": True,
-                "mensaje": "Alerta masiva enviada exitosamente a todos los usuarios",
-                "tipo_alerta": tipo_reporte.tipo,
-                "id_tipo_reporte": id_tipo_reporte,
-                "reportes_asociados": reportes_count,
-                "fecha_envio": datetime.utcnow().isoformat(),
-                "destinatarios": ["Reguladores", "Clientes", "Conductores"]
-            }
+                # Obtener paraderos
+                stmt_paraderos = select(Paradero)
+                paraderos = session.execute(stmt_paraderos).scalars().all()
+                
+                return {
+                    "corredores": [
+                        {
+                            "id_corredor": c.id_corredor,
+                            "nombre": c.nombre
+                        }
+                        for c in corredores
+                    ],
+                    "rutas": [
+                        {
+                            "id_ruta": r.id_ruta,
+                            "codigo": r.codigo,
+                            "nombre": r.nombre
+                        }
+                        for r in rutas
+                    ],
+                    "paraderos": [
+                        {
+                            "id_paradero": p.id_paradero,
+                            "nombre": p.nombre
+                        }
+                        for p in paraderos
+                    ]
+                }
         except Exception as e:
-            print(f"[ERROR] AlertaMasivaService.enviar_alerta_masiva: {e}")
+            print(f"[ERROR] AlertaMasivaService.obtener_datos_formulario: {e}")
+            raise
+
+    def crear_alerta_masiva(self, payload: Dict) -> Dict:
+        """
+        Crea un nuevo reporte tipo "Otro" (id_tipo_reporte = 4) para alertas masivas.
+        Guarda todos los campos del reporte en la base de datos.
+        Si se especifica, envía una notificación masiva a un tema.
+        """
+        try:
+            with Session(self.engine) as session:
+                # Preparar los datos del reporte
+                datos_reporte = {
+                    "fecha": datetime.now(timezone.utc),
+                    "descripcion": payload.get("descripcion"),
+                    "id_emisor": payload.get("id_emisor"),
+                    "id_tipo_reporte": 4,  # Tipo "Otro" para alertas masivas
+                    "id_corredor_afectado": payload.get("id_corredor_afectado"),
+                    "es_critica": payload.get("es_critica", False),
+                    "requiere_intervencion": payload.get("requiere_intervencion", False),
+                    "id_ruta_afectada": payload.get("id_ruta_afectada"),
+                    "id_paradero_inicial": payload.get("id_paradero_inicial"),
+                    "id_paradero_final": payload.get("id_paradero_final"),
+                    "tiempo_retraso_min": payload.get("tiempo_retraso_min")
+                }
+                
+                # Insertar el nuevo reporte
+                stmt = insert(Reporte).values(**datos_reporte).returning(Reporte)
+                result = session.execute(stmt)
+                nuevo_reporte = result.scalar_one()
+                
+                session.commit()
+
+                # Si se solicita, enviar notificación al tema "all_users"
+                if payload.get("send_notification"):
+                    try:
+                        firebase_admin = get_firebase_admin()
+                        firebase_admin.send_to_topic(
+                            topic="all_users",
+                            title="Alerta General",
+                            body=payload.get("descripcion")
+                        )
+                        print("✅ Notificación de alerta masiva enviada al tema 'all_users'")
+                    except Exception as e:
+                        # Log del error pero no fallar la solicitud, ya que la alerta fue creada
+                        print(f"❌ [ERROR] Al enviar notificación de alerta masiva al tema: {e}")
+                
+                return {
+                    "id_reporte": nuevo_reporte.id_reporte,
+                    "fecha": nuevo_reporte.fecha.isoformat(),
+                    "descripcion": nuevo_reporte.descripcion,
+                    "id_emisor": nuevo_reporte.id_emisor,
+                    "id_tipo_reporte": nuevo_reporte.id_tipo_reporte,
+                    "es_critica": nuevo_reporte.es_critica,
+                    "requiere_intervencion": nuevo_reporte.requiere_intervencion,
+                    "mensaje": "Alerta masiva creada exitosamente"
+                }
+        except Exception as e:
+            print(f"[ERROR] AlertaMasivaService.crear_alerta_masiva: {e}")
             raise
