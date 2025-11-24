@@ -76,6 +76,45 @@ def test_editar_comentario_paradero_id_invalido(service, mock_db):
     # Aseguramos que nunca se haya llamado a la BD
     mock_db.query.assert_not_called()
 
+def test_editar_comentario_paradero_exitoso(service, mock_db):
+    """
+    Caso feliz:
+    - Token válido
+    - El payload trae un id de usuario
+    - El comentario existe
+    - El comentario pertenece al usuario
+    - El texto nuevo es válido
+    """
+    user_id = 10
+
+    # Simulamos el comentario existente en BD
+    comentario = ComentarioUsuarioParadero(
+        id_comentario=1,
+        id_usuario=user_id,
+        id_paradero=123,
+        comentario="texto viejo",
+        created_at=datetime.now(timezone.utc),
+    )
+
+    # Mock del token decodificado
+    service.leerToken = MagicMock(return_value={"id": user_id})
+
+    # Mock de la query a la BD
+    mock_db.query().filter().first.return_value = comentario
+
+    # Ejecutamos
+    resultado = service.editar_comentario(
+        token="Bearer token_valido",
+        id_comentario=1,
+        nuevo_texto="  nuevo texto actualizado  ",  # con espacios para probar el strip()
+    )
+
+    # Aserciones
+    assert resultado is comentario
+    assert resultado.comentario == "nuevo texto actualizado"  # debe venir sin espacios
+    mock_db.commit.assert_called_once()
+    mock_db.refresh.assert_called_once_with(comentario)
+
 
 # ==========================================================
 #                 ELIMINAR COMENTARIO
